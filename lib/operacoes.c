@@ -3,10 +3,11 @@
 #include<string.h>
 #define TAM 10000
 
-char* multiplica (char a[], char b[]);
+char* multiply (char a[], char b[]);
 char* soma (char a[], char b[]);
-char* char2int (char a[]);
-char* int2char (char a[]);
+char* multiplica (char a[], char b[]);
+int char2int (char a[]);
+int int2char (char a[], int tam);
 int inverte (char a[]);
 int maior (int a, int b);
 int menor (int a, int b);
@@ -21,9 +22,10 @@ int main()
     printf("Digite o segundo numero: ");
     scanf("%s",b);
     printf("Soma dos dois numeros: ");
+    fflush (stdin);
     c = soma (a, b);
-   // c = multiplica(a,b);
-    printf("%s\n", c);
+    //c = multiplica(a,b);
+    puts(c);
     return 0;
 }
 
@@ -40,20 +42,20 @@ int inverte (char a[]) //AJUSTAR ESSA FUNÇÃO, PARA QUE OS ZEROS A DIREITA FIQU
     return 1;
 }
 
-char* char2int (char a[])
+int char2int (char a[])
 {
     int i, tam = strlen (a);
     for (i=0; i<=tam; i++)
         a[i] = a[i] - '0';
-    return a;
+    return 1;
 }
 
-char* int2char (char a[])
+int int2char (char a[], int tam)
 {
-    int i, tam = strlen (a);
-    for (i=0; i<=tam; i++)
-        a[i] = a[i] + '0';
-    return a;
+    int i;
+    for (i=0; i<tam; i++)
+        a[i] += 48;
+    return 1;
 }
 
 int maior (int a, int b)
@@ -69,15 +71,12 @@ int menor (int a, int b)
 char* soma (char a[], char b[])
 {
     int ta = strlen (a), tb = strlen (b), ts = maior (ta, tb); //TAMANHO DAS STRINGS
-    int i, resto;
-    char* soma = (char*) malloc (ts);
+    int i, k, resto;
+    char* soma = (char*) malloc (ts+1); //TS+1 PORQUE A SOMA PODE GERAR MAIS 1 DIGITO A ESQUERDA (999+99 = 1098)
     for (i=0; i<ts; i++)
-        soma[i] = 0;
+        soma[i] = 0; //NÃO É PRECISO TRATAR O ARRAY SOMA COMO STRING, PORQUE SENÃO TERIA QUE CONVERTÊ-LO POSTERIORMENTE
     inverte (a); inverte (b);
     char2int (a); char2int (b);
-    putchar('\n');
-    //for (i=ta-1; i >= 0; i--)
-     //   printf("%d\n", a[i]);
     for (i=0; i<menor(ta, tb); i++)
     {
         soma[i] += a[i] + b[i];
@@ -89,9 +88,10 @@ char* soma (char a[], char b[])
             resto = 1; //RESTO VAI SER OU UM OU ZERO!
         }
     }
-    if (ta == tb)
+    //printf("\ni = %d\n", i);
+    if (ta == tb) //SE OS OPERANDOS FOREM DE IGUAL TAMANHO, COLOQUE O QUE RESTOU DA CONTA NA ULTIMA POSIÇÃO DO VETOR
         soma[i] = resto;
-    if (ta > tb)
+    else if (ta > tb)
     {
         while (i<ts)
         {
@@ -109,11 +109,20 @@ char* soma (char a[], char b[])
             i++;
         }
     }
-    int2char (soma);
+    //for (k=ts; k>=0; k--)
+    //    printf("%d\n", soma[k]);
+    //printf("%d\n", soma[i]);
+    int2char (soma, ts+1); //TS + 1 PORQUE A CONTA PODE TER GERADO UM OPERADOR A MAIS
+    inverte (soma);
     return soma;
 }
 
-char* multiplica (char a[],char b[])
+char* multiplica (char a[], char b[])
+{
+
+}
+
+char* multiply (char a[],char b[])
 {
     int ta,tb;
     int i,j,k=0,x=0,y;
