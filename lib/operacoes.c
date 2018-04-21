@@ -29,7 +29,7 @@ int main()
     return 0;
 }
 
-int inverte (char a[]) //AJUSTAR ESSA FUNÇÃO, PARA QUE OS ZEROS A DIREITA FIQUEM NA ESQUERA!
+int inverte (char a[])
 {
     int i, tam = strlen (a);
     char c;
