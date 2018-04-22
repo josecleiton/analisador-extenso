@@ -3,8 +3,8 @@
 #include<string.h>
 #define TAM 10000
 
-char* multiply (char a[], char b[]);
 char* soma (char a[], char b[]);
+char* subtrair (char a[], char b[]);
 char* multiplica (char a[], char b[]);
 int char2int (char a[]);
 int int2char (char a[], int tam);
@@ -117,12 +117,32 @@ char* soma (char a[], char b[])
     return soma;
 }
 
-char* multiplica (char a[], char b[])
+char* subtrair (char a[], char b[]) //em construção
 {
-
+    char *suc, *antc;
+    if (strcmp (a, b) > 0)
+    {
+        suc = a;
+        antc = b;
+    }
+    else
+    {
+        suc = b;
+        antc = a;
+    }
+    int tsuc = strlen (suc), tantc = strlen (antc), ts = tsuc; //TAMANHO DAS STRINGS
+    int i, k, resto;
+    char* subtrai = (char*) malloc (ts+1); //TS+1 PORQUE A SOMA PODE GERAR MAIS 1 DIGITO A ESQUERDA (999+99 = 1098)
+    for (i=0; i<ts; i++)
+        subtrai[i] = 0; //NÃO É PRECISO TRATAR O ARRAY SOMA COMO STRING, PORQUE SENÃO TERIA QUE CONVERTÊ-LO POSTERIORMENTE
+    inverte (a); inverte (b);
+    char2int (a); char2int (b);
+    for (i=0; i<tantc; i++)
+    {
+    }
 }
 
-char* multiply (char a[],char b[])
+char* multiplica (char a[],char b[])
 {
     int ta,tb;
     int i,j,k=0,x=0,y;
