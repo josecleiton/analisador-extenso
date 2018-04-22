@@ -1,0 +1,25 @@
+#POSSIVEL ALGORITMO DE MULTIPLICAR NUMEROS GRANDES
+declara ta <- tamanho (a); tb <- tamanho (b)
+declara ts <- ta+tb
+declara sp[ts]
+declara k <- 1, i, j, resto <- 0
+para (i=0; i<ts; i++)
+    sp[i] <- 0
+fim-para
+inverte (a e b)
+char2int (a e b)
+para (i=0; i<tb; i++)
+    para (j=0; j<ta; j++)
+    
+        se (!j) então 
+            k-- 
+        fim-se
+
+        sp[k] <- sp[k] + b[i] * a[j] + resto
+        resto <- sp[k] / 10 
+        sp[k] <- sp[k] % 10
+        k++
+    fim-para
+fim-para
+
+    
