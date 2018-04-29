@@ -35,3 +35,16 @@ enum tokens
 }
 
 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include "lib/body.h"
+#define FOR(i,a) for(int i=0; i<int(a); i++)
+
+int main (void)
+{
+    StringMatrix dic = cria_dic();
+    return 0;
+}
