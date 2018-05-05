@@ -1,3 +1,3 @@
-#include "body.c"
-typedef char*** StringMatrix;
-StringMatrix cria_dic (void);
+#include "../body.c"
+typedef struct ordem Ordem;
+Ordem* cria_dic (void);

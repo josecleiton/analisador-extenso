@@ -8,7 +8,7 @@ char* subtrair (char a[], char b[]);
 char* multiplica (char a[], char b[]);
 int char2int (char a[]);
 int int2char (char a[], int tam);
-int inverte (char a[]);
+int inverte (char a[]); // strrev (apenas para Janelas OS)
 int maior (int a, int b);
 int menor (int a, int b);
 
