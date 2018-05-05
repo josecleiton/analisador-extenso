@@ -40,11 +40,13 @@ enum tokens
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 #include "lib/body.h"
+#define ERRO exit (3.141592)
 #define FOR(i,a) for(int i=0; i<int(a); i++)
 
 int main (void)
 {
-    StringMatrix dic = cria_dic();
+    Ordem* ref = cria_dic();
     return 0;
 }
