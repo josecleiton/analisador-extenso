@@ -41,5 +41,6 @@ enum tokens
 int main (void)
 {
     Ordem* ref = cria_dic();
+    printf("%d\n", sizeof(Ordem));
     return 0;
 }

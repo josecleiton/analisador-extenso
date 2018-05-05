@@ -1,11 +1,10 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#define TAM 10000
+#include "preproc.h"
+#define MAX 10000
 
 char* soma (char a[], char b[]);
 char* subtrair (char a[], char b[]);
 char* multiplica (char a[], char b[]);
+char* completaMenor (char a[], char b[], char* menor);
 int char2int (char a[]);
 int int2char (char a[], int tam);
 int inverte (char a[]); // strrev (apenas para Janelas OS)
@@ -14,18 +13,16 @@ int menor (int a, int b);
 
 int main()
 {
-    char a[TAM];
-    char b[TAM];
+    char a[MAX];
+    char b[MAX];
     char *c;
     printf("Digite o primeiro numero: ");
     scanf("%s",a);
     printf("Digite o segundo numero: ");
     scanf("%s",b);
-    printf("Soma dos dois numeros: ");
-    fflush (stdin);
-    c = soma (a, b);
+    //printf("Soma dos dois numeros: ");
+    c = subtrair (a, b);
     //c = multiplica(a,b);
-    puts(c);
     return 0;
 }
 
@@ -113,32 +110,117 @@ char* soma (char a[], char b[])
     //    printf("%d\n", soma[k]);
     //printf("%d\n", soma[i]);
     int2char (soma, ts+1); //TS + 1 PORQUE A CONTA PODE TER GERADO UM OPERADOR A MAIS
+    if (soma[ts] == '0') soma[ts] = '\0';
     inverte (soma);
     return soma;
 }
 
 char* subtrair (char a[], char b[]) //em construção
 {
-    char *suc, *antc;
-    if (strcmp (a, b) > 0)
+    char *min, *subt, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
+    int i, j, k = 0;
+    int tamMinuendo = strlen(a), tamSubtraendo = strlen(b);
+    if (tamMinuendo != tamSubtraendo)
     {
-        suc = a;
-        antc = b;
+        subt = completaMenor (a, b, &flagMenor);
+        if (flagMenor)
+        {
+            min = b;
+            flagSinal = 1;
+        }
+        else
+        {
+            min = a;
+            flagSinal = 0;
+        }
     }
     else
     {
-        suc = b;
-        antc = a;
+        if (strcmp (a,b) >= 0)
+        {
+            min = a;
+            subt = b;
+            flagSinal = 0;
+        }
+        else
+        {
+            min = b;
+            subt = a;
+            flagSinal = 1;
+        }
     }
-    int tsuc = strlen (suc), tantc = strlen (antc), ts = tsuc; //TAMANHO DAS STRINGS
-    int i, k, resto;
-    char* subtrai = (char*) malloc (ts+1); //TS+1 PORQUE A SOMA PODE GERAR MAIS 1 DIGITO A ESQUERDA (999+99 = 1098)
-    for (i=0; i<ts; i++)
-        subtrai[i] = 0; //NÃO É PRECISO TRATAR O ARRAY SOMA COMO STRING, PORQUE SENÃO TERIA QUE CONVERTÊ-LO POSTERIORMENTE
-    inverte (a); inverte (b);
-    char2int (a); char2int (b);
-    for (i=0; i<tantc; i++)
+    tamMinuendo = strlen (min);
+    tamSubtraendo = strlen (subt);
+
+    char* diferenca = (char*) malloc (tamMinuendo+1);
+    if (! diferenca) ERRO;
+    for (i=0; i < tamMinuendo+1; i++)
+        diferenca[i] = 0;
+    puts (min);
+    puts (subt);
+    inverte (min); inverte (subt);
+    char2int (min); char2int (subt);
+    for (i=0; i<tamMinuendo; i++)
     {
+        diferenca[i] = min[i] - subt[i];
+        if (diferenca[i] < 0)
+        {
+            min[i+1]--;
+            diferenca[i] += 10;
+        }  
+    }
+    int2char (diferenca, tamMinuendo);
+    for (i=0; diferenca[i] != '0'; i++);
+    diferenca[i] = '\0';
+    inverte (diferenca);
+
+    return diferenca;
+}
+
+char* completaMenor (char a[], char b[], char* menor)
+{
+    int tamMaior = 0, tamMenor = 0, tamA = strlen(a), tamB = strlen(b);
+    char __menor;
+    int k = 0;
+    if (tamA > tamB)
+    {
+        tamMaior = tamA;
+        tamMenor = tamB;
+        __menor = 0;
+    }
+    else if (tamA < tamB)
+    {
+        tamMaior = tamB;
+        tamMenor = tamA;
+        __menor = 1;
+    }
+    if (tamMaior + tamMenor)
+    {
+        char* completaZeros = (char*) malloc (tamMaior);
+        while (k < tamMaior-tamMenor)
+        {    
+            completaZeros[k] = '0';
+            k++;
+        }
+        completaZeros[tamMaior-tamMenor] = '\0';
+
+        if (__menor)
+        {    
+            strcat (completaZeros, a);
+            *menor = __menor;
+        }
+        else
+        {
+            strcat (completaZeros, b);
+            *menor = __menor;
+        }
+        
+        return completaZeros;
+    }
+    else
+    {
+        *menor = -1;
+        return NULL;
     }
 }
 
