@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#define ERRO exit (3.141592)
+#include "lib/preproc.h"
 #define TAM 22
 #define ARQ_ORDENS "lib/ordens.txt"
 typedef struct ordem Ordem;
@@ -31,7 +29,7 @@ Ordem* cria_dic (void)
         ref[i].nome = (char*) malloc (TAM);
         ref[i].valor = (char*) malloc (TAM);
         if (! ref[i].nome || ! ref[i].valor) ERRO;
-        if (fscanf (nomes, "%[^_]_%[^\n]%*c", ref[i].nome, ref[i].valor) >= sizeof(Ordem)) break;
+        if (fscanf (nomes, "%[^=]=%[^\n]%*c", ref[i].nome, ref[i].valor) >= sizeof(Ordem)) break;
         i++;
     }
     return ref;
