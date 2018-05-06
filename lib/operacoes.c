@@ -1,10 +1,11 @@
 #include "preproc.h"
-#define MAX 10000
+#define MAX         10000
 
 char* soma (char a[], char b[]);
 char* subtrair (char a[], char b[]);
-char* multiplica (char a[], char b[]);
 char* completaMenor (char a[], char b[], char* menor);
+char* multiplica (char a[], char b[]);
+char* fatorial (char a[]);
 int char2int (char a[]);
 int int2char (char a[], int tam);
 int inverte (char a[]); // strrev (apenas para Janelas OS)
@@ -16,13 +17,14 @@ int main()
     char a[MAX];
     char b[MAX];
     char *c;
-    printf("Digite o primeiro numero: ");
+    //printf("Digite o primeiro numero: ");
     scanf("%s",a);
-    printf("Digite o segundo numero: ");
-    scanf("%s",b);
+    //printf("Digite o segundo numero: ");
+    //scanf("%s",b);
     //printf("Soma dos dois numeros: ");
-    c = subtrair (a, b);
-    //c = multiplica(a,b);
+    //c = fatorial (a);
+    c = fatorial(a);
+    puts (c);
     return 0;
 }
 
@@ -172,6 +174,11 @@ char* subtrair (char a[], char b[]) //em construção
     int2char (diferenca, tamMinuendo);
     for (i=0; diferenca[i] != '0'; i++);
     diferenca[i] = '\0';
+    if (flagMenor)
+    {
+        diferenca[i] = '-';
+        diferenca[i+1] = '\0';
+    }
     inverte (diferenca);
 
     return diferenca;
@@ -274,4 +281,39 @@ char* multiplica (char a[],char b[])
     }
     produto[j]='\0';
     return produto;
+}
+
+char* fatorial (char a[])
+{
+    int i=0,k=0,j,resto=0, tamA = strlen (a);
+    char* fat = (char*) malloc(500);
+    fat[i] = 1;
+    int num = 0;
+    inverte (a);
+    char2int (a);
+    while (i<tamA)
+    {
+        num += (int) a[i] * pow (10, i);
+        i++;
+    }
+    printf ("%lld\n", num);
+    if (num > 170) return (char*) "Numero muito grande para o fatorial.";
+    for(i=1;i<=num;i++)
+    {
+        for(j=0;j<=k;j++)
+        {
+            fat[j]=fat[j]*i+resto;
+            resto=fat[j]/10;
+            fat[j]=fat[j]%10;
+        }
+        while(resto)
+        {
+            k++;
+            fat[k]=resto%10;
+            resto/=10;
+        }
+    }
+    inverte (fat);
+    int2char (fat, k+1);
+    return fat;
 }
