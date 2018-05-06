@@ -6,6 +6,7 @@ char* subtrair (char a[], char b[]);
 char* completaMenor (char a[], char b[], char* menor);
 char* multiplica (char a[], char b[]);
 char* fatorial (char a[]);
+int fatorial_multiplicador (int a, char fat[], int limit);
 int char2int (char a[]);
 int int2char (char a[], int tam);
 int inverte (char a[]); // strrev (apenas para Janelas OS)
@@ -285,9 +286,9 @@ char* multiplica (char a[],char b[])
 
 char* fatorial (char a[])
 {
-    int i=0,k=0,j,resto=0, tamA = strlen (a);
+    int i=0,k=1,j,resto=0, tamA = strlen (a);
     char* fat = (char*) malloc(500);
-    fat[i] = 1;
+    fat[0] = 1;
     int num = 0;
     inverte (a);
     char2int (a);
@@ -296,24 +297,30 @@ char* fatorial (char a[])
         num += (int) a[i] * pow (10, i);
         i++;
     }
-    printf ("%lld\n", num);
-    if (num > 170) return (char*) "Numero muito grande para o fatorial.";
-    for(i=1;i<=num;i++)
+    //if (num > 10000) return (char*) "Numero excede o limite do fatorial! (por questoes de memória)";
+    for (i=2; i<=num; i++)
     {
-        for(j=0;j<=k;j++)
-        {
-            fat[j]=fat[j]*i+resto;
-            resto=fat[j]/10;
-            fat[j]=fat[j]%10;
-        }
-        while(resto)
-        {
-            k++;
-            fat[k]=resto%10;
-            resto/=10;
-        }
+        k = fatorial_multiplicador (i, fat, k);
     }
+    int2char (fat, k);
     inverte (fat);
-    int2char (fat, k+1);
     return fat;
+}
+
+int fatorial_multiplicador (int a, char fat[], int limit)
+{
+    int count, produto, resto = 0;
+    for (count = 0; count<limit; count++)
+    {
+        produto = fat[count] * a + resto;
+        fat[count] = produto % 10;
+        resto = produto / 10;
+    }
+    while (resto)
+    {
+        fat[limit] = resto % 10;
+        resto = resto / 10;
+        limit++;
+    }
+    return limit;
 }
