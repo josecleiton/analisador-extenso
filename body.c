@@ -74,11 +74,9 @@ int compara (char* s1, char* s2) //relativo a strcmp
 
 char* erroSintaxe (char* a, int cursor)
 {
-    int tam = strlen(a)+64+cursor;
-    char* erro = (char*) malloc (tam);
+    char* erro = (char*) malloc (strlen(a)+64+cursor);
     if (!erro) ERRO;
-    printf("%d\n", strlen(a)+64+cursor);
-    erro = "erro: palavra nao faz parte de uma expressao numerica valida.\n\t";
+    strcpy (erro, "erro: palavra nao faz parte de uma expressao numerica valida.\n\t");
     strcat (erro, a);
     strcat (erro, "\n\t");
     int tamErro = strlen(erro), i = 0;
