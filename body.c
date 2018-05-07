@@ -19,7 +19,7 @@ enum tokens
     MILHAO,
     BILHAO,
     TRILHAO,
-    QUATILHAO,
+    QUATRILHAO,
     QUINTILHAO,
     SEXTILHAO,
     ABRE_P,
@@ -68,7 +68,28 @@ int compara (char* s1, char* s2) //relativo a strcmp
 		if (d != 0)
 			return d;
 	}
-	return 0;
+	if (s1[i]==' ') return 0;
+    return s1[i]-s2[i];
+}
+
+char* erroSintaxe (char* a, int cursor)
+{
+    int tam = strlen(a)+64+cursor;
+    char* erro = (char*) malloc (tam);
+    if (!erro) ERRO;
+    printf("%d\n", strlen(a)+64+cursor);
+    erro = "erro: palavra nao faz parte de uma expressao numerica valida.\n\t";
+    strcat (erro, a);
+    strcat (erro, "\n\t");
+    int tamErro = strlen(erro), i = 0;
+    while (i<cursor)
+    {
+        erro[tamErro+i] = ' ';
+        i++;
+    }
+    erro[tamErro+i] = '^';
+    erro[tamErro+i+1] = '\n';
+    return erro;
 }
 
 char* cardinalNumeral (char a[])
@@ -79,24 +100,22 @@ char* cardinalNumeral (char a[])
     char* num = (char*) malloc (strlen(a));
     while(a[cursor]!='\0') // PROCURAR FUNCAO DA STRING.H QUE FAÇA ISSO
     {
-        if (! isspace (a[cursor])) 
+        i=0;
+        while (i<TAM*2)
         {
-            i=0;
-            while (i<TAM*2)
+            if (! compara(&a[cursor], ref[i].nome))
             {
-                if (! compara(&a[cursor], ref[i].nome))
-                {
-                    break;
-                }
-                i++;
+                strcat (num, ref[i].valor);
+                break;
             }
-            if (i == TAM*2) return (char*) "Expressao invalida";
+            i++;
         }
+        if (i == TAM*2) return erroSintaxe(a, cursor);
         flag = strpbrk (&a[cursor], " ");
         if (! flag) break;
         cursor = flag + 1 - a;
     }
-    return (char*) "";
+    return num;
 }
 
 int main (void)
