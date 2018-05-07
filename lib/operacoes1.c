@@ -1,4 +1,7 @@
-#include "preproc.h"
+#ifndef INCLUSOS
+    #define INCLUSOS
+    #include "preproc.h"
+#endif
 #define MAX         10000
 
 char* soma (char a[], char b[]);
@@ -24,7 +27,7 @@ int main()
     scanf("%s",b);
     //printf("Soma dos dois numeros: ");
     //c = fatorial (a);
-    c = subtrair (a, b);
+    c = subtrair(a, b);
     puts (c);
     return 0;
 }
@@ -159,6 +162,8 @@ char* subtrair (char a[], char b[]) //em construção
     if (! diferenca) ERRO;
     for (i=0; i < tamMinuendo+1; i++)
         diferenca[i] = 0;
+    puts (min);
+    puts (subt);
     inverte (min); inverte (subt);
     char2int (min); char2int (subt);
     for (i=0; i<tamMinuendo; i++)
@@ -173,12 +178,11 @@ char* subtrair (char a[], char b[]) //em construção
     int2char (diferenca, tamMinuendo);
     for (i=0; diferenca[i] != '0'; i++);
     diferenca[i] = '\0';
- /*   if (flagMenor)
+    if (flagMenor)
     {
         diferenca[i] = '-';
         diferenca[i+1] = '\0';
     }
-    */
     inverte (diferenca);
 
     return diferenca;
@@ -296,9 +300,11 @@ char* fatorial (char a[])
         num += (int) a[i] * pow (10, i);
         i++;
     }
-    if (num > 15000) return (char*) "Numero excede o limite do fatorial! (O comportamento do fatorial acima de 15000 eh indefinido, depende do host)";
+    //if (num > 10000) return (char*) "Numero excede o limite do fatorial! (por questoes de memória)";
     for (i=2; i<=num; i++)
+    {
         k = fatorial_multiplicador (i, fat, k);
+    }
     int2char (fat, k);
     inverte (fat);
     return fat;
