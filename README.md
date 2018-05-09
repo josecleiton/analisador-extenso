@@ -1,2 +1,2 @@
 # compilha
-Sempre colocando pilha
+Analisador de expressões por extenso em C
