@@ -1,4 +1,4 @@
-//    ARQUIVO QUE CARREGA TODAS AS BIBLIOTECAS USADAS
+/*    ARQUIVO QUE CARREGA TODAS AS BIBLIOTECAS USADAS */
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
