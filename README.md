@@ -1,2 +1,2 @@
 # compilha
-Analisador de expressões por extenso em C
+Analisador de expressões numéricas por extenso em C

@@ -9,6 +9,7 @@
 #define ARQ_SAIDA "lib/resultados.txt"
 #define ARQ_ERROS "lib/erros.txt"
 #define TAM 26
+
 typedef struct ordem Ordem;
 typedef struct ocorre Ocorre;
 struct ordem
@@ -35,7 +36,7 @@ enum tokens
     SEXTILHAO,
     ABRE_P,
     FECHA_P,
-    DEL_E,
+    CONJUCAO,
     SOMA,
     SUBTRACAO,
     MULTI,
@@ -52,7 +53,7 @@ enum tokens
 *
 */
 Ordem* ref;
-char *EXP, *_TEXP;
+char *EXP, *_TEXP, *NUMERO;
 char token[30];
 char tipoToken;
 char strErro[300];
@@ -63,16 +64,18 @@ void expResTerms (char resultado[]); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
 void expResFator (char resultado[]);
 void atomo (char resultado[]);
 void get_token (void);
+void getNumber (void);
 Ordem* cria_dic (void);
 int compara (char* s1, char* s2);
-char* cardinalNumeral (void);
+char* cardinalNumeral (char* card);
 
 int main (void)
 {
     EXP = (char*) malloc (sizeof (TAM*10));
+    char* resultado;
     scanf("%[^\n]", EXP);
-    char* res = cardinalNumeral ();
-    puts (res);
+    expAnaliserStart (resultado);
+    puts (resultado);
     return 0;
 }
 
@@ -102,7 +105,9 @@ Ordem* cria_dic (void)
 
 void expAnaliserStart (char resultado[])
 {
+    ref = cria_dic ();
     _TEXP = EXP;
+    tipoToken = 0;
     get_token ();
     if (!*token)
     {
@@ -136,6 +141,7 @@ void expResTerms (char resultado[])
 void expResFator (char resultado[])
 {
     register char op;
+    char* temp;
 }
 
 void expResFatorial (char resultado[])
@@ -151,11 +157,23 @@ void expResParenteses (char resultado[])
         expResTerms (resultado);
         if (*token != ')')
             erroSintaxe (1);
+        get_token ();
     }
-    get_token ();
+    else atomo (resultado);
 }
 
 void atomo (char resultado[])
+{
+    if (tipoToken >= UNIT && tipoToken <= SEXTILHAO)
+    {
+        resultado = cardinalNumeral (token);
+        get_token ();
+        return;
+    }
+    erroSintaxe (0);
+}
+
+void getNumber (void)
 {
     
 }
@@ -164,6 +182,7 @@ void get_token (void)
 {
     register char *temp;
     int i;
+    if (!tipoToken) NUMERO = EXP;
     tipoToken = 0;
     temp = token;
     *temp = '\0';
@@ -184,9 +203,7 @@ void get_token (void)
             {
                 tipoToken = i;
                 while (*EXP && (isalpha (*EXP) || isspace (*EXP)))
-                {
                     EXP++;
-                }
                 strcat (temp, ref[i].nome);
                 /*temp[strlen(ref[i].nome)] = '\0';*/
                 break;
@@ -256,12 +273,10 @@ void erroSintaxe (int tipoErro)
     fclose (erroS);
 }
 
-char* cardinalNumeral (void)
+char* cardinalNumeral (char* card)
 {
-    ref = cria_dic ();
     int cursor = 0, i = 0, k;
     char* flag = NULL;
-    char* num = (char*) malloc (strlen(EXP));
-    expAnaliserStart (num);
+    char* num = (char*) malloc (strlen(card));
     return num;
 }
