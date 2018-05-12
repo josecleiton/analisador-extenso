@@ -1,4 +1,8 @@
-#include "preproc.h"
+#ifndef INCLUSOS
+    #define INCLUSOS
+    #include "preproc.h"
+#endif
+#define ERRO exit (3141592)
 #define MAX         10000
 
 char* soma (char a[], char b[]);
@@ -13,6 +17,7 @@ int inverte (char a[]); // strrev (apenas para Janelas OS)
 int maior (int a, int b);
 int menor (int a, int b);
 
+/*
 int main()
 {
     char a[MAX];
@@ -21,14 +26,14 @@ int main()
     //printf("Digite o primeiro numero: ");
     scanf("%s",a);
     //printf("Digite o segundo numero: ");
-    scanf("%s",b);
+   // scanf("%s",b);
     //printf("Soma dos dois numeros: ");
-    //c = fatorial (a);
-    c = subtrair (a, b);
+    c = fatorial (a);
+   // c = subtrair (a, b);
     puts (c);
     return 0;
 }
-
+*/
 int inverte (char a[])
 {
     int i, tam = strlen (a);
@@ -283,10 +288,23 @@ char* multiplica (char a[],char b[])
     return produto;
 }
 
-char* fatorial (char a[])
+char* fatorial (char in[])
 {
+    char* a = (char*) malloc(strlen(in));
+    register char* fat = (char*) malloc(500);
+    if (!a || !fat) ERRO;
+    strcpy (a, in);
     int i=0,k=1,j,resto=0, tamA = strlen (a);
-    char* fat = (char*) malloc(500);
+    if (tamA > 5) return (char*) "Numero excede o limite do fatorial! (O comportamento do fatorial acima de 15000 eh indefinido)";
+    while (i<30)
+    {
+        if (! isdigit(a[i]))
+        {
+            a[i]= 0;
+        }
+        i++;
+    }
+    i=0;
     fat[0] = 1;
     int num = 0;
     inverte (a);
@@ -296,7 +314,7 @@ char* fatorial (char a[])
         num += (int) a[i] * pow (10, i);
         i++;
     }
-    if (num > 15000) return (char*) "Numero excede o limite do fatorial! (O comportamento do fatorial acima de 15000 eh indefinido, depende do host)";
+    if (num > 15000) return (char*) "Numero excede o limite do fatorial! (O comportamento do fatorial acima de 15000 eh indefinido)";
     for (i=2; i<=num; i++)
         k = fatorial_multiplicador (i, fat, k);
     int2char (fat, k);
