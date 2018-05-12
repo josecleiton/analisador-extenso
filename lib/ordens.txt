@@ -49,5 +49,4 @@ mais=+
 menos=-
 vezes=*
 dividido por=/
-mod=%
 fatorial=!
