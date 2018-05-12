@@ -61,6 +61,7 @@ void erroSintaxe (int tipoErro);
 void expAnaliserStart (char resultado[]);
 void expResTerms (char resultado[]); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
 void expResFator (char resultado[]);
+void atomo (char resultado[]);
 void get_token (void);
 Ordem* cria_dic (void);
 int compara (char* s1, char* s2);
@@ -73,90 +74,6 @@ int main (void)
     char* res = cardinalNumeral ();
     puts (res);
     return 0;
-}
-
-void expAnaliserStart (char resultado[])
-{
-    _TEXP = EXP;
-    get_token ();
-    if (!*token)
-    {
-        erroSintaxe (3);
-        return;
-    }
-    expResTerms (resultado);
-}
-
-void expResTerms (char resultado[])
-{
-    register char op;
-    char* temp;
-    expResFator (resultado);
-    while ((op=*token) == '+' || op == '-')
-    {
-        get_token();
-        expResFator (temp);
-        switch (op)
-        {
-            case '+':
-            subtrair (resultado, temp);
-            break;
-            case '-':
-            soma (resultado, temp);
-            break;
-        }
-    }
-}
-
-void expResFator (char resultado[])
-{
-
-}
-
-void get_token (void)
-{
-    register char *temp;
-    int i;
-    tipoToken = 0;
-    temp = token;
-    *temp = '\0';
-    if (!*EXP) return;
-    while (isspace (*EXP)) 
-        ++EXP;
-    int k = 0;
-    char chEXP;
-    while (EXP[k] && isalpha (EXP[k])) k++;
-    chEXP = EXP[k];
-    EXP[k] = '\0';
-    for (i=0; i<=TAM*2; i++)
-    {
-        if (! compara (EXP, ref[i].nome)) /*SE ELE FOR UM NUMERO*/
-        {
-            int j = 0;
-            if (isdigit (ref[i].valor[0]))
-            {
-                tipoToken = i;
-                while (*EXP && (isalpha (*EXP) || isspace (*EXP)))
-                {
-                    EXP++;
-                }
-                strcat (temp, ref[i].valor);
-                temp[strlen(ref[i].valor)] = '\0';
-                break;
-            }
-            else if (strchr("()+-*/%!", ref[i].valor[0]))
-            {
-                tipoToken = DELIMITADOR;
-                while (*EXP && (isalpha (*EXP) || isspace (*EXP)))
-                {
-                    EXP++;
-                }
-                *temp++ = ref[i].valor[0];
-                *temp = '\0';
-                break;
-            }
-        }
-    }
 }
 
 Ordem* cria_dic (void)
@@ -183,6 +100,112 @@ Ordem* cria_dic (void)
     return ref;
 }
 
+void expAnaliserStart (char resultado[])
+{
+    _TEXP = EXP;
+    get_token ();
+    if (!*token)
+    {
+        erroSintaxe (3);
+        return;
+    }
+    expResTerms (resultado);
+}
+
+void expResTerms (char resultado[])
+{
+    register char op = *token;
+    char* temp;
+    expResFator (resultado);
+    while (op == '+' || op == '-')
+    {
+        get_token();
+        expResFator (temp);
+        switch (op)
+        {
+            case '-':
+            subtrair (resultado, temp);
+            break;
+            case '+':
+            soma (resultado, temp);
+            break;
+        }
+    }
+}
+
+void expResFator (char resultado[])
+{
+    register char op;
+}
+
+void expResFatorial (char resultado[])
+{
+
+}
+
+void expResParenteses (char resultado[])
+{
+    if (*token == '(')
+    {
+        get_token ();
+        expResTerms (resultado);
+        if (*token != ')')
+            erroSintaxe (1);
+    }
+    get_token ();
+}
+
+void atomo (char resultado[])
+{
+    
+}
+
+void get_token (void)
+{
+    register char *temp;
+    int i;
+    tipoToken = 0;
+    temp = token;
+    *temp = '\0';
+    if (!*EXP) return;
+    while (isspace (*EXP)) 
+        ++EXP;
+    int k = 0;
+    char chEXP;
+    while (EXP[k] && isalpha (EXP[k])) k++;
+    chEXP = EXP[k];
+    EXP[k] = '\0';
+    for (i=0; i<TAM*2; i++)
+    {
+        if (! compara (EXP, ref[i].nome)) /*SE ELE FOR UM NUMERO*/
+        {
+            int j = 0;
+            if (isdigit (ref[i].valor[0]))
+            {
+                tipoToken = i;
+                while (*EXP && (isalpha (*EXP) || isspace (*EXP)))
+                {
+                    EXP++;
+                }
+                strcat (temp, ref[i].nome);
+                /*temp[strlen(ref[i].nome)] = '\0';*/
+                break;
+            }
+            else if (strchr("()+-*/!", ref[i].valor[0]))
+            {
+                tipoToken = DELIMITADOR;
+                while (*EXP && (isalpha (*EXP) || isspace (*EXP)))
+                {
+                    EXP++;
+                }
+                *temp++ = ref[i].valor[0];
+                *temp = '\0';
+                break;
+            }
+        }
+    }
+}
+
 int compara (char* s1, char* s2) /*relativo a strcmp mas para quando encontra o espaço*/
 {
 	int i;
@@ -198,7 +221,7 @@ int compara (char* s1, char* s2) /*relativo a strcmp mas para quando encontra o 
 
 void erroSintaxe (int tipoErro)
 {
-    FILE* erroS = fopen (ARQ_ERROS, "rb");
+    FILE* erroS = fopen (ARQ_ERROS, "r");
     int temp, i = 0, tamErro;
     if (! tipoErro)
     {
