@@ -67,17 +67,17 @@ char token[30], *token_tmp;
 char tipoToken;
 char strErro[300];
 
-void erroSintaxe (int tipoErro);
-void expParsingStart (char resultado[]);
+Ordem* cria_dic (void); /* DICIONÁRIO UTILIZADO (CHECAR lib/ordens.txt) */
+void expParsingStart (char resultado[]); /* GATILHO DE PARTIDA */
 void expResTerms (char resultado[]); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
-void expResFator (char resultado[]);
-void expResFatorial (char resultado[]);
-void expResParenteses (char resultado[]);
-void atomo (char resultado[]);
-char* get_token (void);
-void getNumber (char resultado[]);
-Ordem* cria_dic (void);
-int compara (char* s1, char* s2);
+void expResFator (char resultado[]); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
+void expResFatorial (char resultado[]); /* ROTINA QUE RESOLVE O FATORIAL DE UM FATOR */
+void expResParenteses (char resultado[]); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DENTRO DE PARENTESES */
+void atomo (char resultado[]); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
+char* get_token (void); /* PEGA O PROX TOKEN */
+void getNumber (char resultado[]); /* PEGA TODO UM NUMERO POR EXTENSO */
+void erroSintaxe (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
+int compara (char* s1, char* s2); /* VERSÃO ADAPTADA DO strcmp */
 
 int main (void)
 {
