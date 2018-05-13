@@ -34,9 +34,9 @@ enum tokens
     QUATRILHAO,
     QUINTILHAO,
     SEXTILHAO,
-    CONJUCAO,
     ABRE_P,
     FECHA_P,
+    CONJUCAO,
     SOMA,
     SUBTRACAO,
     MULTI,
@@ -54,7 +54,7 @@ enum tokens
 */
 Ordem* ref;
 char *EXP, *_TEXP, *NUMERO, *FIMNUMERO;
-char token[30], *token_tmp;
+char token[30];
 char tipoToken;
 char strErro[300];
 
@@ -63,7 +63,7 @@ void expParsingStart (char resultado[]);
 void expResTerms (char resultado[]); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
 void expResFator (char resultado[]);
 void atomo (char resultado[]);
-char* get_token (void);
+void get_token (void);
 void getNumber (char resultado[]);
 Ordem* cria_dic (void);
 int compara (char* s1, char* s2);
@@ -74,7 +74,6 @@ int main (void)
     EXP = (char*) malloc (sizeof (TAM*10));
     char* resultado;
     scanf("%[^\n]", EXP);
-    resultado = (char*) malloc(strlen(EXP)*2);
     expParsingStart (resultado);
     puts (resultado);
     return 0;
@@ -114,20 +113,13 @@ void expParsingStart (char resultado[])
 
 void getNumber (char resultado[])
 {
-    register char *temp;
-    int count = 0;
-    if (!tipoToken) temp = NUMERO = token;
+    register char *temp = token;
+    if (!tipoToken) NUMERO = EXP;
     while (tipoToken != DELIMITADOR)
     {
-        if (count)
-        { 
-            strcat (resultado, (char*) "-");
-            temp = get_token ();
-        }
-        else get_token ();
-        if (!tipoToken) break;
+        get_token ();
+        strcat (resultado, (char*) "-");
         strcat (resultado, temp);
-        count++;
     }
     FIMNUMERO = EXP-2;
     NUMERO = EXP;
@@ -146,7 +138,7 @@ void expResTerms (char resultado[])
     expResFator (resultado);
     while (op == '+' || op == '-')
     {
-        getNumber (temp);
+        get_token();
         expResFator (temp);
         switch (op)
         {
@@ -162,36 +154,24 @@ void expResTerms (char resultado[])
 
 void expResFator (char resultado[])
 {
-    register char op = *token;
+    register char op;
     char* temp;
-    expResFatorial (resultado);
 }
 
 void expResFatorial (char resultado[])
 {
-    char* temp;
-    expResParenteses (resultado);
-    if (*token == '!')
-    {
-        getNumber (temp);
-        if (*temp == '-')
-        {
-            erroSintaxe (4);
-            return;
-        }
-    }
+
 }
 
 void expResParenteses (char resultado[])
 {
-    char* temp;
     if (*token == '(')
     {
-        getNumber (resultado);
+        get_token ();
         expResTerms (resultado);
         if (*token != ')')
             erroSintaxe (1);
-        getNumber (temp);
+        get_token ();
     }
     else atomo (resultado);
 }
@@ -207,14 +187,14 @@ void atomo (char resultado[])
     erroSintaxe (0);
 }
 
-char* get_token (void)
+void get_token (void)
 {
     register char *temp;
     int i;
     tipoToken = 0;
-    temp = NUMERO;
+    temp = token;
     *temp = '\0';
-    if (!*EXP) return NULL;
+    if (!*EXP) return;
     while (isspace (*EXP)) 
         ++EXP;
     int k = 0;
@@ -230,28 +210,22 @@ char* get_token (void)
             if (isdigit (ref[i].valor[0]))
             {
                 tipoToken = i;
-                while (*EXP && (isalpha (*EXP))) EXP++;
+                while (*EXP && (isalpha (*EXP) || isspace (*EXP)))
+                    EXP++;
                 strcat (temp, ref[i].nome);
-                *EXP = chEXP;
-                /* PROCURAR FUNÇÃO QUE POSICIONE O PONTEIRO TEMP APÓS A ULTIMA LETRA DE REF[I].NOME */
-                NUMERO = temp + 1 +  strlen (ref[i].nome);
                 /*temp[strlen(ref[i].nome)] = '\0';*/
-                if (!*NUMERO) return temp;
-                return NUMERO;
+                break;
             }
-            else if (strchr("()+-*/!e", ref[i].valor[0]))
+            else if (strchr("()+-*/!", ref[i].valor[0]))
             {
-                tipoToken = CONJUCAO;
+                tipoToken = DELIMITADOR;
                 while (*EXP && (isalpha (*EXP) || isspace (*EXP)))
                 {
                     EXP++;
                 }
-                NUMERO = temp;
                 *temp++ = ref[i].valor[0];
                 *temp = '\0';
-                *EXP = chEXP; /* RECOLOCANDO O NULO OU O ESPAÇO NO DEVIDO LUGAR */
-                if (i!=CONJUCAO) tipoToken = DELIMITADOR;
-                return NUMERO;
+                break;
             }
         }
     }
