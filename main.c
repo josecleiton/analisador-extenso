@@ -1,9 +1,14 @@
 /*
-    BY: José Cleiton Borges Correia
+    Universidade Estadual do Estado da Bahia - UNEB
+    Por: José Cleiton Borges Correia
     Prof: Jorge Sampaio Farias
     Disciplina: Linguagem de Programação 1 - 2018.1
-    ESTRUTURA DO ANALISADOR:
-    resultado := expressão númerica por extenso
+    #################################################
+    | AVALIADOR DE EXPRESSÕES NUMERICAS POR EXTENSO |
+    | Entrada: expressão numérica por extenso       |
+    | Saída ideal: expressão resolvida por extenso  |
+    | Saída realística: expressão númerica          |
+    #################################################
 */
 
 #ifndef INCLUSOS
@@ -25,6 +30,7 @@ struct ordem
     char* nome;
     char* valor;
 };
+
 enum tokens
 {
     UNIT,
@@ -56,7 +62,7 @@ enum tokens
 *
 */
 Ordem* ref;
-char *EXP, *_TEXP, *NUMERO, *FIMNUMERO;
+char *EXP, *_TEXP, *NUMERO;
 char token[30], *token_tmp;
 char tipoToken;
 char strErro[300];
@@ -72,7 +78,6 @@ char* get_token (void);
 void getNumber (char resultado[]);
 Ordem* cria_dic (void);
 int compara (char* s1, char* s2);
-char* cardinalNumeral (char* card);
 
 int main (void)
 {
@@ -134,8 +139,6 @@ void getNumber (char resultado[])
         strcat (resultado, temp);
         count++;
     }
-    FIMNUMERO = EXP-2;
-    NUMERO = EXP;
     if (!*token)
     {
         erroSintaxe (3);
