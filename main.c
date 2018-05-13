@@ -20,16 +20,10 @@
 #define TAM 26
 
 typedef struct ordem Ordem;
-typedef struct ocorre Ocorre;
 struct ordem
 {
     char* nome;
     char* valor;
-};
-struct ocorre
-{
-    char pos;
-    char cursor;
 };
 enum tokens
 {
