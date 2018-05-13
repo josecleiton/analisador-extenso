@@ -2,13 +2,14 @@
     #define INCLUSOS
     #include "preproc.h"
 #endif
-#define ERRO exit (3141592)
-#define MAX         10000
+#define ERRO exit (2718281)
+#define MAX 10000
 
 char* soma (char a[], char b[]);
 char* subtrair (char a[], char b[]);
 char* completaMenor (char a[], char b[], char* menor);
 char* multiplica (char a[], char b[]);
+char* divide (char a[], char b[]);
 char* fatorial (char a[]);
 int fatorial_multiplicador (int a, char fat[], int limit);
 int char2int (char a[]);

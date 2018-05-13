@@ -33,25 +33,15 @@ struct ordem
 
 enum tokens
 {
-    UNIT,
-    DEZ = 20,
-    CENT = 28,
-    MIL = 37,
-    MILHAO,
+    NUM=1,
+    CONJUCAO,
+    DELIMITADOR, /* 3 */
+    MILHAO = 38,
     BILHAO,
     TRILHAO,
     QUATRILHAO,
     QUINTILHAO,
     SEXTILHAO,
-    CONJUCAO,
-    ABRE_P,
-    FECHA_P,
-    SOMA,
-    SUBTRACAO,
-    MULTI,
-    DIV,
-    FATORIAL,
-    DELIMITADOR /* 52 */
 };
 
 /* 
@@ -76,6 +66,7 @@ void expResParenteses (char resultado[]); /* ROTINA QUE RESOLVE UMA EXPRESSÃO D
 void atomo (char resultado[]); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
 char* get_token (void); /* PEGA O PROX TOKEN */
 void getNumber (char resultado[]); /* PEGA TODO UM NUMERO POR EXTENSO */
+void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void erroSintaxe (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
 int compara (char* s1, char* s2); /* VERSÃO ADAPTADA DO strcmp */
 
@@ -126,7 +117,12 @@ void getNumber (char resultado[])
 {
     register char *temp;
     int count = 0;
-    if (!tipoToken) temp = NUMERO = token;
+    if (!tipoToken || tipoToken == DELIMITADOR) /*QUER DIZER UM NOVO NUMERO */
+    {
+        *token = '\0';
+        NUMERO = temp = token;
+        tipoToken = 0;
+    }
     while (tipoToken != DELIMITADOR)
     {
         if (count)
@@ -136,7 +132,7 @@ void getNumber (char resultado[])
         }
         else get_token ();
         if (!tipoToken) break;
-        strcat (resultado, temp);
+        if (tipoToken != DELIMITADOR) strcat (resultado, temp);
         count++;
     }
     if (!*token)
@@ -149,30 +145,46 @@ void getNumber (char resultado[])
 
 void expResTerms (char resultado[])
 {
-    register char op = *token;
-    char* temp;
+    register char op = *NUMERO;
+    char segTermo[300];
     expResFator (resultado);
     while (op == '+' || op == '-')
     {
-        getNumber (temp);
-        expResFator (temp);
+        getNumber (segTermo);
+        expResFator (segTermo);
         switch (op)
         {
             case '-':
-            subtrair (resultado, temp);
+            subtrair (resultado, segTermo);
             break;
             case '+':
-            soma (resultado, temp);
+            soma (resultado, segTermo);
             break;
         }
+        break; 
     }
 }
 
 void expResFator (char resultado[])
 {
-    register char op = *token;
-    char* temp;
+    register char op = *NUMERO;
+    char segFator[300];
     expResFatorial (resultado);
+    while (op == '*' || op == '/')
+    {
+        getNumber (segFator);
+        expResFatorial (segFator);
+        switch (op)
+        {
+            case '*':
+            multiplica (resultado, segFator);
+            break;
+            case '/':
+            divide (resultado, segFator);
+            break;
+        }
+        break;
+    }
 }
 
 void expResFatorial (char resultado[])
@@ -206,7 +218,7 @@ void expResParenteses (char resultado[])
 
 void atomo (char resultado[])
 {
-    if (tipoToken >= UNIT && tipoToken <= SEXTILHAO)
+    if (tipoToken == NUM)
     {
         resultado = cardinalNumeral (token);
         get_token ();
@@ -222,27 +234,28 @@ char* get_token (void)
     tipoToken = 0;
     temp = NUMERO;
     *temp = '\0';
-    if (!*EXP) return NULL;
-    while (isspace (*EXP)) 
+    if (!*EXP) return NULL; /* SE FOR A EXPRESSÃO FOR VAZIA */
+    while (isspace (*EXP)) /* IGNORA OS ESPAÇOS */
         ++EXP;
     int k = 0;
     char chEXP;
     while (EXP[k] && isalpha (EXP[k])) k++;
     chEXP = EXP[k];
     EXP[k] = '\0';
+    ajustaDelim (&k, &chEXP);
     for (i=0; i<TAM*2; i++)
     {
-        if (! compara (EXP, ref[i].nome)) /*SE ELE FOR UM NUMERO*/
+        if (strstr (ref[i].nome, EXP)) /*SE ELE FOR UM NUMERO*/
         {
             int j = 0;
             if (isdigit (ref[i].valor[0]))
             {
-                tipoToken = i;
+                strcat (temp, EXP);
+                NUMERO = temp + strlen (EXP); /* CURSOR FICA NO FIM DE TOKEN */
                 while (*EXP && (isalpha (*EXP))) EXP++;
-                strcat (temp, ref[i].nome);
                 *EXP = chEXP;
                 /* PROCURAR FUNÇÃO QUE POSICIONE O PONTEIRO TEMP APÓS A ULTIMA LETRA DE REF[I].NOME */
-                NUMERO = temp + 1 +  strlen (ref[i].nome);
+                tipoToken = NUM;
                 /*temp[strlen(ref[i].nome)] = '\0';*/
                 if (!*NUMERO) return temp;
                 return NUMERO;
@@ -262,6 +275,26 @@ char* get_token (void)
                 return NUMERO;
             }
         }
+    }
+}
+
+void ajustaDelim (int* k, char* temp) /* COLOCA UM HIFEN ENTRE OS DELIMITADORES COMPOSTOS */
+{
+    /*
+    *   DELIMITADORES COMPOSTOS:
+    *   dividido-por
+    *   fatorial-de
+    *   abre-parentese
+    *   fecha-parentese
+    */
+    if (*EXP != 'a' && *EXP != 'f' && *EXP != 'd') return;
+    else if (! strcmp (EXP, (char*) "abre") || ! strcmp (EXP, (char*) "fecha") || ! strcmp (EXP, (char*) "dividido") || ! strcmp (EXP, (char*) "fatorial"))
+    {
+        int i = 0;
+        EXP[*k] = '-';
+        while (isalpha(EXP[i])) i++;
+        *temp = EXP[i];
+        EXP[i] = '\0';
     }
 }
 

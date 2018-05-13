@@ -48,5 +48,5 @@ fecha-parentese=)
 mais=+
 menos=-
 vezes=*
-dividido por=/
-fatorial=!
+dividido-por=/
+fatorial-de=!
