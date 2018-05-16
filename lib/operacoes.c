@@ -2,7 +2,9 @@
     #define INCLUSOS
     #include "preproc.h"
 #endif
-#define ERRO exit (2718281)
+#ifndef ERRO
+    #define ERRO exit (3141592)
+#endif
 #define MAX 10000
 
 char* soma (char a[], char b[]);
@@ -287,6 +289,11 @@ char* multiplica (char a[],char b[])
     }
     produto[j]='\0';
     return produto;
+}
+
+char* divide (char a[], char b[])
+{
+
 }
 
 char* fatorial (char in[])
