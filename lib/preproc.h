@@ -4,8 +4,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define OPENFILE(ptr_file, file_name) { \
-    ptr_file = fopen (file_name, "r"); \
+#define OPENFILE(ptr_file, file_name, type) { \
+    ptr_file = fopen (file_name, type); \
     if (! ptr_file) { \
         fprintf (stderr, "arquivo nao encontrado\n"); \
         exit (2718); \

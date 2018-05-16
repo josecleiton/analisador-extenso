@@ -21,10 +21,12 @@
 #define ARQ_ORDENS "lib/ordens.txt"
 #define ARQ_ENTRADA "lib/expressoes.txt"
 #define ARQ_SAIDA "lib/resultados.txt"
-#define ARQ_ERROS "lib/eros.txt"
+#define ARQ_ERROS "lib/erros.txt"
 
 #define TAM 26
+#define NUM_ERROS 5
 
+typedef short int Int2B;
 typedef struct ordem Ordem;
 struct ordem
 {
@@ -69,6 +71,7 @@ void getNumber (char resultado[]); /* PEGA TODO UM NUMERO POR EXTENSO */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void analisaSintaxe (char* expressao);
 void erroSintaxe (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
+void criaIndices (FILE* in, Int2B** out, int size);
 int compara (char* s1, char* s2); /* VERSÃO ADAPTADA DO strcmp */
 
 int main (void)
@@ -85,7 +88,7 @@ int main (void)
 Ordem* cria_dic (void)
 {
     FILE* nomes;
-    OPENFILE (nomes, ARQ_ORDENS);
+    OPENFILE (nomes, ARQ_ORDENS, "r");
     Ordem* ref = (Ordem*) malloc (sizeof(Ordem)*TAM*2);
     if (! ref) ERRO;
     char i = 0;
@@ -105,8 +108,16 @@ void expParsingStart (char resultado[])
 {
     ref = cria_dic ();
     _TEXP = EXP;
-    tipoToken = 0;
+    *token = '\0';
+    NUMERO = token;
+    get_token();
+    if (!*token)
+    {
+        erroSintaxe(3);
+        return;
+    }
     getNumber (resultado);
+    if (*token) erroSintaxe (0);
 }
 
 void expResTerms (char resultado[])
@@ -219,7 +230,7 @@ void analisaSintaxe (char* expressao)
 void erroSintaxe (int tipoErro)
 {
     FILE* erroS;
-    OPENFILE (erroS, ARQ_ERROS);
+    OPENFILE (erroS, ARQ_ERROS, "rb");
     int temp, i = 0, tamErro;
     if (! tipoErro)
     {
@@ -237,23 +248,48 @@ void erroSintaxe (int tipoErro)
         strErro[tamErro+i] = '^';
         strErro[tamErro+i+1] = '\n';
     }
-    else if (tipoErro == 1)
+    else
     {
-
-    }
-    else if (tipoErro == 2)
-    {
-
-    }
-    else if (tipoErro == 3)
-    {
-
-        fseek (erroS, 175, SEEK_SET);
-        fscanf (erroS, "%s*c", strErro);
+        Int2B *idc = NULL;
+        criaIndices (erroS, &idc, NUM_ERROS);
+        if (tipoErro == 1 || tipoErro == 3)
+        {
+            fseek (erroS, idc[tipoErro-1], SEEK_SET);
+            fscanf (erroS, "%[^\n]%c", strErro);
+            strcat (strErro, "\n\t");
+            strcat (strErro, _TEXP);
+            strcat (strErro, "~\n\t");
+            temp = EXP - _TEXP;
+            tamErro = strlen (strErro);
+            while (i < temp)
+            {
+                strErro[tamErro+i] = ' ';
+                i++;
+            } 
+            strErro[tamErro+i] = '^';
+            strErro[tamErro+i+1] = '\n';
+        }
     }
     puts (strErro);
     fclose (erroS);
     ERRO;
+}
+
+void criaIndices (FILE* in, Int2B** out, int size)
+{
+    Int2B *ind, i=0;
+    MALLOC(ind, sizeof(Int2B)*size);
+    char ch = getc (in);
+    while (ch != EOF)
+    {
+        if (ch == '\n')
+        {
+            ind[i] = (Int2B) ftell (in);
+            i++;
+        }
+        ch = getc (in);
+    }
+    *out = ind;
 }
 
 void getNumber (char resultado[])
@@ -296,6 +332,7 @@ char* get_token (void)
     if (!*EXP) return NULL; /* SE FOR A EXPRESSÃO FOR VAZIA */
     while (isspace (*EXP)) /* IGNORA OS ESPAÇOS */
         ++EXP;
+    if (!*EXP) return NULL;
     int k = 0;
     char chEXP;
     while (EXP[k] && isalpha (EXP[k])) k++;
