@@ -21,7 +21,8 @@
 #define ARQ_ORDENS "lib/ordens.txt"
 #define ARQ_ENTRADA "lib/expressoes.txt"
 #define ARQ_SAIDA "lib/resultados.txt"
-#define ARQ_ERROS "lib/erros.txt"
+#define ARQ_ERROS "lib/eros.txt"
+
 #define TAM 26
 
 typedef struct ordem Ordem;
@@ -41,19 +42,17 @@ enum tokens
     TRILHAO,
     QUATRILHAO,
     QUINTILHAO,
-    SEXTILHAO,
+    SEXTILHAO, /*43*/
 };
 
 /* 
 *
-*
 *       VARIAVEIS GLOBAIS 
-*
 *
 */
 Ordem* ref;
 char *EXP, *_TEXP, *NUMERO;
-char token[30], *token_tmp;
+char token[30], flagNUM;
 char tipoToken;
 char strErro[300];
 
@@ -63,10 +62,12 @@ void expResTerms (char resultado[]); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
 void expResFator (char resultado[]); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
 void expResFatorial (char resultado[]); /* ROTINA QUE RESOLVE O FATORIAL DE UM FATOR */
 void expResParenteses (char resultado[]); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DENTRO DE PARENTESES */
+void expAvalSinal (char resultado[]); /* AVALIA + OU - UNÁRIO */
 void atomo (char resultado[]); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
 char* get_token (void); /* PEGA O PROX TOKEN */
 void getNumber (char resultado[]); /* PEGA TODO UM NUMERO POR EXTENSO */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
+void analisaSintaxe (char* expressao);
 void erroSintaxe (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
 int compara (char* s1, char* s2); /* VERSÃO ADAPTADA DO strcmp */
 
@@ -83,16 +84,11 @@ int main (void)
 
 Ordem* cria_dic (void)
 {
-    FILE* nomes = fopen (ARQ_ORDENS, "rt");
-    if (! nomes)
-    {
-        printf("Arquivo não encontrado!\nFinalizando o programa...\n");
-        ERRO;
-    }
+    FILE* nomes;
+    OPENFILE (nomes, ARQ_ORDENS);
     Ordem* ref = (Ordem*) malloc (sizeof(Ordem)*TAM*2);
-    char i = 0;
     if (! ref) ERRO;
-
+    char i = 0;
     while (! feof(nomes))
     {
         ref[i].nome = (char*) malloc (TAM);
@@ -111,36 +107,6 @@ void expParsingStart (char resultado[])
     _TEXP = EXP;
     tipoToken = 0;
     getNumber (resultado);
-}
-
-void getNumber (char resultado[])
-{
-    register char *temp;
-    int count = 0;
-    if (!tipoToken || tipoToken == DELIMITADOR) /*QUER DIZER UM NOVO NUMERO */
-    {
-        *token = '\0';
-        NUMERO = temp = token;
-        tipoToken = 0;
-    }
-    while (tipoToken != DELIMITADOR)
-    {
-        if (count)
-        { 
-            strcat (resultado, (char*) "-");
-            temp = get_token ();
-        }
-        else get_token ();
-        if (!tipoToken) break;
-        if (tipoToken != DELIMITADOR) strcat (resultado, temp);
-        count++;
-    }
-    if (!*token)
-    {
-        erroSintaxe (3);
-        return;
-    }
-    expResTerms (resultado);
 }
 
 void expResTerms (char resultado[])
@@ -189,12 +155,12 @@ void expResFator (char resultado[])
 
 void expResFatorial (char resultado[])
 {
-    char* temp;
+    char proxFator[300];
     expResParenteses (resultado);
     if (*token == '!')
     {
-        getNumber (temp);
-        if (*temp == '-')
+        getNumber (proxFator);
+        if (*proxFator == '-')
         {
             erroSintaxe (4);
             return;
@@ -202,29 +168,122 @@ void expResFatorial (char resultado[])
     }
 }
 
+void expAvalSinal (char resultado[])
+{
+    register char op;
+    char proxToken[300];
+    char* tempPT = proxToken+1;
+    op = 0;
+    if ((tipoToken == DELIMITADOR) && *token=='+' || *token=='-')
+    {
+        op = *token;
+        getNumber (tempPT);
+    }
+    expResParenteses (tempPT);
+    if (op=='-')
+        *--tempPT = '-';
+    /* NADA DE INVERSÃO */
+}
+
 void expResParenteses (char resultado[])
 {
-    char* temp;
+    char proxToken[300];
     if (*token == '(')
     {
         getNumber (resultado);
         expResTerms (resultado);
         if (*token != ')')
             erroSintaxe (1);
-        getNumber (temp);
+        getNumber (proxToken);
     }
     else atomo (resultado);
 }
 
 void atomo (char resultado[])
 {
-    if (tipoToken == NUM)
+    char proxToken [300];
+    if (flagNUM == 1)
     {
-        resultado = cardinalNumeral (token);
-        get_token ();
-        return;
+        analisaSintaxe (token);
+        get_token();
     }
     erroSintaxe (0);
+}
+
+void analisaSintaxe (char* expressao)
+{
+    
+}
+
+
+void erroSintaxe (int tipoErro)
+{
+    FILE* erroS;
+    OPENFILE (erroS, ARQ_ERROS);
+    int temp, i = 0, tamErro;
+    if (! tipoErro)
+    {
+        fscanf (erroS, "%[^\n]%c", strErro);
+        strcat (strErro, "\n\t");
+        strcat (strErro, _TEXP);
+        strcat (strErro, "\n\t");
+        temp = EXP - _TEXP;
+        tamErro = strlen (strErro);
+        while (i < temp)
+        {
+            strErro[tamErro+i] = ' ';
+            i++;
+        } 
+        strErro[tamErro+i] = '^';
+        strErro[tamErro+i+1] = '\n';
+    }
+    else if (tipoErro == 1)
+    {
+
+    }
+    else if (tipoErro == 2)
+    {
+
+    }
+    else if (tipoErro == 3)
+    {
+
+        fseek (erroS, 175, SEEK_SET);
+        fscanf (erroS, "%s*c", strErro);
+    }
+    puts (strErro);
+    fclose (erroS);
+    ERRO;
+}
+
+void getNumber (char resultado[])
+{
+    register char *temp;
+    int count = 0;
+    if (!tipoToken || tipoToken == DELIMITADOR) /*QUER DIZER UM NOVO NUMERO */
+    {
+        *token = '\0';
+        NUMERO = temp = token;
+        tipoToken = 0;
+    }
+    while (tipoToken != DELIMITADOR)
+    {
+        if (count)
+        { 
+            strcat (token, (char*) "-");
+            temp = get_token ();
+        }
+        else get_token ();
+        if (!tipoToken) break;
+        if (tipoToken != DELIMITADOR) strcat (token, temp);
+        count++;
+    }
+    if (!*token)
+    {
+        erroSintaxe (3);
+        return;
+    }
+    expResTerms (resultado);
 }
 
 char* get_token (void)
@@ -256,6 +315,7 @@ char* get_token (void)
                 *EXP = chEXP;
                 /* PROCURAR FUNÇÃO QUE POSICIONE O PONTEIRO TEMP APÓS A ULTIMA LETRA DE REF[I].NOME */
                 tipoToken = NUM;
+                flagNUM = 1; /*AQ*/
                 /*temp[strlen(ref[i].nome)] = '\0';*/
                 if (!*NUMERO) return temp;
                 return NUMERO;
@@ -263,7 +323,7 @@ char* get_token (void)
             else if (strchr("()+-*/!e", ref[i].valor[0]))
             {
                 tipoToken = CONJUCAO;
-                while (*EXP && (isalpha (*EXP) || isspace (*EXP)))
+                while (*EXP && (isalpha (*EXP) || isspace (*EXP) || *EXP == '-'))
                 {
                     EXP++;
                 }
@@ -292,58 +352,15 @@ void ajustaDelim (int* k, char* temp) /* COLOCA UM HIFEN ENTRE OS DELIMITADORES 
     {
         int i = 0;
         EXP[*k] = '-';
-        while (isalpha(EXP[i])) i++;
+        while (isalpha(EXP[i]) || EXP[i] == '-') i++;
         *temp = EXP[i];
         EXP[i] = '\0';
-    }
-}
-
-int compara (char* s1, char* s2) /*relativo a strcmp mas para quando encontra o espaço*/
-{
-	int i;
-	for(i=0; (s1[i]!='\0' && s1[i]!=' ') && s2[i]!='\0'; ++i)
-	{
-		int d = s1[i] - s2[i];
-		if (d != 0)
-			return d;
-	}
-	if (s1[i]==' ') return 0;
-    return s1[i]-s2[i];
-}
-
-void erroSintaxe (int tipoErro)
-{
-    FILE* erroS = fopen (ARQ_ERROS, "r");
-    int temp, i = 0, tamErro;
-    if (! tipoErro)
-    {
-        fscanf (erroS, "%s\n\t", strErro);
-        strcat (strErro, _TEXP);
-        strcat (strErro, "\n\t");
-        temp = EXP - _TEXP;
-        tamErro = strlen (strErro);
-        while (i < temp)
+        if (strcmp (&EXP[*k+1], (char*) "parentese"))
         {
-            strErro[tamErro+i] = ' ';
-            i++;
-        } 
-        strErro[tamErro+i] = '^';
-        strErro[tamErro+i+1] = '\n';
+            EXP[*k] = ' '; 
+            erroSintaxe(0);
+            return;
+        }
     }
-    else if (tipoErro == 1)
-    {
 
-    }
-    else if (tipoErro == 2)
-    {
-
-    }
-    else if (tipoErro == 3)
-    {
-
-        fseek (erroS, 175, SEEK_SET);
-        fscanf (erroS, "%s*c", strErro);
-    }
-    puts (strErro);
-    fclose (erroS);
 }
