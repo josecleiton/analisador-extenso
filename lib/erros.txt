@@ -3,3 +3,5 @@ erro de sintaxe: falta parentese.
 erro de semantico: token nao respeita a precedencia de ordens numericas.
 erro: o analisador espera uma expressao.
 erro: fatorial de numero negativo nao existe.
+erro
+erro de sintaxe: falta termo ou termo apos delimitador.
