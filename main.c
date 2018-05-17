@@ -54,13 +54,13 @@ enum tokens
 */
 Ordem* ref;
 char *EXP, *_TEXP, *NUMERO;
-char token[30], flagNUM;
+char token[30], flagNUM, tk_tmp[60];
 char tipoToken;
 char strErro[300];
 
 Ordem* cria_dic (void); /* DICIONÁRIO UTILIZADO (CHECAR lib/ordens.txt) */
 void expParsingStart (char resultado[]); /* GATILHO DE PARTIDA */
-void expResTerms (char resultado[]); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
+void expResTermo (char resultado[]); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
 void expResFator (char resultado[]); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
 void expResFatorial (char resultado[]); /* ROTINA QUE RESOLVE O FATORIAL DE UM FATOR */
 void expResParenteses (char resultado[]); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DENTRO DE PARENTESES */
@@ -69,7 +69,7 @@ void atomo (char resultado[]); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR E
 char* get_token (void); /* PEGA O PROX TOKEN */
 void getNumber (char resultado[]); /* PEGA TODO UM NUMERO POR EXTENSO */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
-void analisaSintaxe (char* expressao);
+char* analisaSintaxe (char* expressao);
 void erroSintaxe (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
 void criaIndices (FILE* in, Int2B** out, int size);
 int compara (char* s1, char* s2); /* VERSÃO ADAPTADA DO strcmp */
@@ -110,17 +110,17 @@ void expParsingStart (char resultado[])
     _TEXP = EXP;
     *token = '\0';
     NUMERO = token;
-    get_token();
+    //get_token();
+    getNumber (resultado);
     if (!*token)
     {
         erroSintaxe(3);
         return;
     }
-    getNumber (resultado);
     if (*token) erroSintaxe (0);
 }
 
-void expResTerms (char resultado[])
+void expResTermo (char resultado[])
 {
     register char op = *NUMERO;
     char segTermo[300];
@@ -202,7 +202,7 @@ void expResParenteses (char resultado[])
     if (*token == '(')
     {
         getNumber (resultado);
-        expResTerms (resultado);
+        expResTermo (resultado);
         if (*token != ')')
             erroSintaxe (1);
         getNumber (proxToken);
@@ -215,15 +215,16 @@ void atomo (char resultado[])
     char proxToken [300];
     if (flagNUM == 1)
     {
-        analisaSintaxe (token);
-        get_token();
+        resultado = analisaSintaxe (tk_tmp);
+        *tk_tmp = '\0';
+        return;
     }
     erroSintaxe (0);
 }
 
-void analisaSintaxe (char* expressao)
+char* analisaSintaxe (char* expressao)
 {
-    
+    return expressao;
 }
 
 
@@ -252,13 +253,13 @@ void erroSintaxe (int tipoErro)
     {
         Int2B *idc = NULL;
         criaIndices (erroS, &idc, NUM_ERROS);
-        if (tipoErro == 1 || tipoErro == 3)
+        if (tipoErro%2)
         {
             fseek (erroS, idc[tipoErro-1], SEEK_SET);
             fscanf (erroS, "%[^\n]%c", strErro);
             strcat (strErro, "\n\t");
             strcat (strErro, _TEXP);
-            strcat (strErro, "~\n\t");
+            strcat (strErro, "\n\t");
             temp = EXP - _TEXP;
             tamErro = strlen (strErro);
             while (i < temp)
@@ -295,6 +296,7 @@ void criaIndices (FILE* in, Int2B** out, int size)
 void getNumber (char resultado[])
 {
     register char *temp;
+    char* ptr = tk_tmp;
     int count = 0;
     if (!tipoToken || tipoToken == DELIMITADOR) /*QUER DIZER UM NOVO NUMERO */
     {
@@ -306,20 +308,22 @@ void getNumber (char resultado[])
     {
         if (count)
         { 
-            strcat (token, (char*) "-");
+            strcat (tk_tmp, token);
+            strcat (tk_tmp, (char*) "-");
             temp = get_token ();
         }
         else get_token ();
         if (!tipoToken) break;
-        if (tipoToken != DELIMITADOR) strcat (token, temp);
+        //if (tipoToken != DELIMITADOR) strcat (token, temp);
         count++;
     }
     if (!*token)
     {
-        erroSintaxe (3);
+        erroSintaxe (5);
         return;
     }
-    expResTerms (resultado);
+    expResTermo (resultado);
+    flagNUM = 0;
 }
 
 char* get_token (void)
@@ -327,8 +331,12 @@ char* get_token (void)
     register char *temp;
     int i;
     tipoToken = 0;
-    temp = NUMERO;
-    *temp = '\0';
+    if (!tipoToken || tipoToken == DELIMITADOR) /*QUER DIZER UM NOVO NUMERO */
+    {
+        *token = '\0';
+        NUMERO = temp = token;
+        tipoToken = 0;
+    }
     if (!*EXP) return NULL; /* SE FOR A EXPRESSÃO FOR VAZIA */
     while (isspace (*EXP)) /* IGNORA OS ESPAÇOS */
         ++EXP;
