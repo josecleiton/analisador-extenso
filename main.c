@@ -25,14 +25,12 @@
 
 #define TAM 26
 #define NUM_ERROS 5
-
-typedef short int Int2B;
-typedef struct ordem Ordem;
+/*
 struct ordem
 {
     char* nome;
     char* valor;
-};
+};*/
 
 enum tokens
 {
@@ -69,17 +67,16 @@ void atomo (char resultado[]); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR E
 char* get_token (void); /* PEGA O PROX TOKEN */
 void getNumber (char resultado[]); /* PEGA TODO UM NUMERO POR EXTENSO */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
-char* analisaSintaxe (char* expressao);
 void erroSintaxe (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
 void criaIndices (FILE* in, Int2B** out, int size);
 int compara (char* s1, char* s2); /* VERSÃO ADAPTADA DO strcmp */
 
 int main (void)
 {
-    EXP = (char*) malloc (sizeof (TAM*10));
+    MALLOC (EXP, TAM*10);
     char* resultado;
     scanf("%[^\n]", EXP);
-    resultado = (char*) malloc(strlen(EXP)*2);
+    MALLOC (resultado, strlen(EXP)*2);
     expParsingStart (resultado);
     puts (resultado);
     return 0;
@@ -88,15 +85,14 @@ int main (void)
 Ordem* cria_dic (void)
 {
     FILE* nomes;
+    Ordem* ref;
     OPENFILE (nomes, ARQ_ORDENS, "r");
-    Ordem* ref = (Ordem*) malloc (sizeof(Ordem)*TAM*2);
-    if (! ref) ERRO;
+    MALLOC (ref, sizeof(Ordem)*TAM*2);
     char i = 0;
     while (! feof(nomes))
     {
-        ref[i].nome = (char*) malloc (TAM);
-        ref[i].valor = (char*) malloc (TAM);
-        if (! ref[i].nome || ! ref[i].valor) ERRO;
+        MALLOC (ref[i].nome, TAM);
+        MALLOC (ref[i].valor, TAM);
         if (fscanf (nomes, "%[^=]=%[^\n]%*c", ref[i].nome, ref[i].valor) >= sizeof(Ordem)) break;
         i++;
     }
@@ -110,7 +106,7 @@ void expParsingStart (char resultado[])
     _TEXP = EXP;
     *token = '\0';
     NUMERO = token;
-    //get_token();
+    /*get_token();*/
     getNumber (resultado);
     if (!*token)
     {
@@ -215,18 +211,12 @@ void atomo (char resultado[])
     char proxToken [300];
     if (flagNUM == 1)
     {
-        resultado = analisaSintaxe (tk_tmp);
+        resultado = analiSemantica (tk_tmp, ref);
         *tk_tmp = '\0';
         return;
     }
     erroSintaxe (0);
 }
-
-char* analisaSintaxe (char* expressao)
-{
-    return expressao;
-}
-
 
 void erroSintaxe (int tipoErro)
 {
@@ -314,7 +304,7 @@ void getNumber (char resultado[])
         }
         else get_token ();
         if (!tipoToken) break;
-        //if (tipoToken != DELIMITADOR) strcat (token, temp);
+        /*if (tipoToken != DELIMITADOR) strcat (token, temp);*/
         count++;
     }
     if (!*token)
