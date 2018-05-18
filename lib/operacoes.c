@@ -29,9 +29,9 @@ int main()
     //printf("Digite o primeiro numero: ");
     scanf("%s",a);
     //printf("Digite o segundo numero: ");
-   // scanf("%s",b);
+    scanf("%s",b);
     //printf("Soma dos dois numeros: ");
-    c = fatorial (a);
+    c = multiplica (a, b);
    // c = subtrair (a, b);
     puts (c);
     return 0;
@@ -246,47 +246,48 @@ char* multiplica (char a[],char b[])
     long soma = 0;
     ta=strlen(a)-1;
     tb=strlen(b)-1;
-    char* produto = (char*) malloc (ta+tb+2);
-    char c[ta+tb+2];
-    char temp[ta+tb+2];
-    char2int (a);
-    char2int (b);
-    for(i=tb;i>=0;i--){
+    char *produto, *c, *temp;
+    MALLOC (produto, ta+tb+2);
+    MALLOC (temp, ta+tb+2);
+    MALLOC (c, ta+tb+2);
+    /* converte as strings a e b de digito para seu correspondente em inteiro */
+    for (i=0; i<=ta; i++)
+        a[i] -= '0';
+    for (i=0; i<=tb; i++)
+        b[i] -= '0';
+    for(i=tb; i>=0; i--){
          r=0;
-         for(j=ta;j>=0;j--)
+         for(j=ta; j>=0; j--)
          {
-            temp[k++] = (b[i]*a[j] + r)%10;
-            r = (b[i]*a[j]+r)/10;
+            temp[k++] = (b[i] * a[j] + r) % 10;
+            r = (b[i] * a[j] + r) / 10;
          }
          temp[k++] = r;
          x++;
-         for(y = 0;y<x;y++)
+         for(y = 0; y < x; y++)
             temp[k++] = 0;
     }
     k=0;
     r=0;
-    for(i=0;i<ta+tb+2;i++)
+    for(i=0; i<ta+tb+2; i++)
     {
         soma = 0;
         y = 0;
-        for(j=1;j<=tb+1;j++)
+        for(j=1; j<=tb+1; j++)
         {
             if(i <= ta+j)
-            {
-                soma = soma + temp[y+i];
-            }
+                soma += temp[y+i];
             y += j + ta + 1;
         }
-        c[k++] = (soma+r) %10;
-        r = (soma+r)/10;
+        c[k++] = (soma + r) % 10;
+        r = (soma + r) / 10;
     }
     c[k] = r;
     j = 0;
-    for(i=k-1;i>=0;i--)
-    {
-        produto[j++]=c[i] + 48;
-    }
+    for(i=k-1; i>=0; i--)
+        produto[j++]=c[i] + '0';
     produto[j]='\0';
+    if (*produto == '0') produto++;
     return produto;
 }
 
