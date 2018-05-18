@@ -46,7 +46,8 @@ char* convNumeral (char* extenso, Ordem* ref)
         i=0;
         while (i<TAM*2)
         {
-            if (*aux!='e' && strstr (ref[i].nome, aux))
+            if (*aux == 'e') break;
+            if (strstr (ref[i].nome, aux))
             {
                 resultado = soma (ref[i].valor, resultado);
                 break;

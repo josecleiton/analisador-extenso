@@ -57,15 +57,15 @@ char tipoToken;
 char strErro[300];
 
 Ordem* cria_dic (void); /* DICIONÁRIO UTILIZADO (CHECAR lib/ordens.txt) */
-void expParsingStart (char resultado[]); /* GATILHO DE PARTIDA */
-void expResTermo (char resultado[]); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
-void expResFator (char resultado[]); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
-void expResFatorial (char resultado[]); /* ROTINA QUE RESOLVE O FATORIAL DE UM FATOR */
-void expResParenteses (char resultado[]); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DENTRO DE PARENTESES */
-void expAvalSinal (char resultado[]); /* AVALIA + OU - UNÁRIO */
-void atomo (char resultado[]); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
+void expParsingStart (char* resposta); /* GATILHO DE PARTIDA */
+void expResTermo (char* resposta); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
+void expResFator (char* resposta); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
+void expResFatorial (char* resposta); /* ROTINA QUE RESOLVE O FATORIAL DE UM FATOR */
+void expResParenteses (char* resposta); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DENTRO DE PARENTESES */
+void expAvalSinal (char* resposta); /* AVALIA + OU - UNÁRIO */
+void atomo (char* resposta); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
 char* get_token (void); /* PEGA O PROX TOKEN */
-void getNumber (char resultado[]); /* PEGA TODO UM NUMERO POR EXTENSO */
+void getNumber (char* resposta); /* PEGA TODO UM NUMERO POR EXTENSO */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
 void criaIndices (FILE* in, Int2B** out, int size);
@@ -100,15 +100,15 @@ Ordem* cria_dic (void)
     return ref;
 }
 
-void expParsingStart (char resultado[])
+void expParsingStart (char* resposta)
 {
     ref = cria_dic ();
     _TEXP = EXP;
     *token = '\0';
     NUMERO = token;
     /*get_token();*/
-    getNumber (resultado);
-    if (!*token)
+    getNumber (resposta);
+    if (!*token && !*resposta)
     {
         erroSS(3);
         return;
@@ -116,11 +116,11 @@ void expParsingStart (char resultado[])
     if (*token) erroSS (0);
 }
 
-void expResTermo (char resultado[])
+void expResTermo (char* resposta)
 {
     register char op = *NUMERO;
     char segTermo[300];
-    expResFator (resultado);
+    expResFator (resposta);
     while (op == '+' || op == '-')
     {
         getNumber (segTermo);
@@ -128,21 +128,21 @@ void expResTermo (char resultado[])
         switch (op)
         {
             case '-':
-            subtrair (resultado, segTermo);
+            subtrair (resposta, segTermo);
             break;
             case '+':
-            soma (resultado, segTermo);
+            soma (resposta, segTermo);
             break;
         }
         break; 
     }
 }
 
-void expResFator (char resultado[])
+void expResFator (char* resposta)
 {
     register char op = *NUMERO;
     char segFator[300];
-    expResFatorial (resultado);
+    expResFatorial (resposta);
     while (op == '*' || op == '/')
     {
         getNumber (segFator);
@@ -150,20 +150,20 @@ void expResFator (char resultado[])
         switch (op)
         {
             case '*':
-            multiplica (resultado, segFator);
+            multiplica (resposta, segFator);
             break;
             case '/':
-            divide (resultado, segFator);
+            divide (resposta, segFator);
             break;
         }
         break;
     }
 }
 
-void expResFatorial (char resultado[])
+void expResFatorial (char* resposta)
 {
     char proxFator[300];
-    expResParenteses (resultado);
+    expAvalSinal (resposta);
     if (*token == '!')
     {
         getNumber (proxFator);
@@ -175,43 +175,45 @@ void expResFatorial (char resultado[])
     }
 }
 
-void expAvalSinal (char resultado[])
+void expAvalSinal (char* resposta)
 {
-    register char op;
+    register char op = 0;
     char proxToken[300];
-    char* tempPT = proxToken+1;
-    op = 0;
+    char* tempPT;
     if ((tipoToken == DELIMITADOR) && *token=='+' || *token=='-')
     {
+        tempPT = proxToken + 1;
         op = *token;
         getNumber (tempPT);
     }
-    expResParenteses (tempPT);
+    expResParenteses (resposta);
     if (op=='-')
+    {
         *--tempPT = '-';
-    /* NADA DE INVERSÃO */
+        strcpy (resposta, tempPT);
+    }
 }
 
-void expResParenteses (char resultado[])
+void expResParenteses (char* resposta)
 {
     char proxToken[300];
     if (*token == '(')
     {
-        getNumber (resultado);
-        expResTermo (resultado);
+        getNumber (resposta);
+        expResTermo (resposta);
         if (*token != ')')
             erroSS (1);
         getNumber (proxToken);
     }
-    else atomo (resultado);
+    else atomo (resposta);
 }
 
-void atomo (char resultado[])
+void atomo (char* resposta)
 {
     char proxToken [300];
     if (flagNUM == 1)
     {
-        resultado = analiSemantica (tk_tmp, ref);
+        strcpy (resposta, analiSemantica (tk_tmp, ref));
         *tk_tmp = '\0';
         return;
     }
@@ -283,7 +285,7 @@ void criaIndices (FILE* in, Int2B** out, int size)
     *out = ind;
 }
 
-void getNumber (char resultado[])
+void getNumber (char* resposta)
 {
     register char *temp;
     char* ptr = tk_tmp;
@@ -307,12 +309,12 @@ void getNumber (char resultado[])
         /*if (tipoToken != DELIMITADOR) strcat (token, temp);*/
         count++;
     }
-    if (!*tk_tmp)
+    if (!*token && !*tk_tmp)
     {
         erroSS (5);
         return;
     }
-    expResTermo (resultado);
+    expResTermo (resposta);
     flagNUM = 0;
 }
 
