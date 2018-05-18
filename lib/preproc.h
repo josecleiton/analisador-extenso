@@ -28,3 +28,4 @@ typedef struct ordem Ordem;
     };
 #endif
 typedef short int Int2B;
+

@@ -61,8 +61,12 @@ int char2int (char a[])
 int int2char (char a[], int tam)
 {
     int i;
-    for (i=0; i<tam; i++)
-        a[i] += 48;
+    for (i=0; i<tam-1; i++)
+    {
+        a[i] += '0';
+    }
+    if (! isdigit(a[i-1])) a[i-1] = '\0'; 
+    a[i] = '\0';
     return 1;
 }
 
@@ -116,8 +120,7 @@ char* soma (char a[], char b[])
             i++;
         }
     }
-    int2char (soma, ts+1); /*TS + 1 PORQUE A CONTA PODE TER GERADO UM OPERADOR A MAIS*/
-    if (soma[ts] == '0') soma[ts] = '\0';
+    int2char (soma, ts+2); /*TS + 1 PORQUE A CONTA PODE TER GERADO UM OPERADOR A MAIS*/
     inverte (soma);
     return soma;
 }
