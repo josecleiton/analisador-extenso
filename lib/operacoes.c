@@ -16,7 +16,7 @@ char* fatorial (char a[]);
 int fatorial_multiplicador (int a, char fat[], int limit);
 int char2int (char a[]);
 int int2char (char a[], int tam);
-int inverte (char a[]); // strrev (apenas para Janelas OS)
+int inverte (char a[]); /* strrev (apenas para Janelas OS) */
 int maior (int a, int b);
 int menor (int a, int b);
 
@@ -78,11 +78,11 @@ int menor (int a, int b)
 
 char* soma (char a[], char b[])
 {
-    int ta = strlen (a), tb = strlen (b), ts = maior (ta, tb); //TAMANHO DAS STRINGS
+    int ta = strlen (a), tb = strlen (b), ts = maior (ta, tb);
     int i, k, resto;
-    char* soma = (char*) malloc (ts+1); //TS+1 PORQUE A SOMA PODE GERAR MAIS 1 DIGITO A ESQUERDA (999+99 = 1098)
+    char* soma = (char*) malloc (ts+1); /*TS+1 PORQUE A SOMA PODE GERAR MAIS 1 DIGITO A ESQUERDA (999+99 = 1098)*/
     for (i=0; i<ts; i++)
-        soma[i] = 0; //NÃO É PRECISO TRATAR O ARRAY SOMA COMO STRING, PORQUE SENÃO TERIA QUE CONVERTÊ-LO POSTERIORMENTE
+        soma[i] = 0; /*NÃO É PRECISO TRATAR O ARRAY SOMA COMO STRING, SENÃO TERIA QUE CONVERTÊ-LO POSTERIORMENTE*/
     inverte (a); inverte (b);
     char2int (a); char2int (b);
     for (i=0; i<menor(ta, tb); i++)
@@ -93,11 +93,10 @@ char* soma (char a[], char b[])
         if (soma[i] >= 10)
         {
             soma[i] %= 10;
-            resto = 1; //RESTO VAI SER OU UM OU ZERO!
+            resto = 1;
         }
     }
-    //printf("\ni = %d\n", i);
-    if (ta == tb) //SE OS OPERANDOS FOREM DE IGUAL TAMANHO, COLOQUE O QUE RESTOU DA CONTA NA ULTIMA POSIÇÃO DO VETOR
+    if (ta == tb) /*SE OS OPERANDOS FOREM DE IGUAL TAMANHO, COLOQUE O QUE RESTOU DA CONTA NA ULTIMA POSIÇÃO DO VETOR*/
         soma[i] = resto;
     else if (ta > tb)
     {
@@ -117,16 +116,13 @@ char* soma (char a[], char b[])
             i++;
         }
     }
-    //for (k=ts; k>=0; k--)
-    //    printf("%d\n", soma[k]);
-    //printf("%d\n", soma[i]);
-    int2char (soma, ts+1); //TS + 1 PORQUE A CONTA PODE TER GERADO UM OPERADOR A MAIS
+    int2char (soma, ts+1); /*TS + 1 PORQUE A CONTA PODE TER GERADO UM OPERADOR A MAIS*/
     if (soma[ts] == '0') soma[ts] = '\0';
     inverte (soma);
     return soma;
 }
 
-char* subtrair (char a[], char b[]) //em construção
+char* subtrair (char a[], char b[])
 {
     char *min, *subt, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
     int i, j, k = 0;

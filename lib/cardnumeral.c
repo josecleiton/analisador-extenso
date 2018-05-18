@@ -12,8 +12,53 @@
 #ifndef ERRO 
     #define ERRO exit (3141592)
 #endif
-char* convNumeral (char* extenso);
-char* convNumeral (char* extenso)
+#define TAM 26
+
+typedef struct node Node;
+struct node
 {
+    char info[30];
+    Node *prox;
+};
+char* analiSemantica (char* expressao, Ordem* ref);
+void stackPush (Node** topo, char s[]);
+char* convNumeral (char* extenso, Ordem* ref);
+
+char* analiSemantica (char* expressao, Ordem* ref)
+{
+    expressao = convNumeral (expressao, ref);
+}
+
+char* convNumeral (char* extenso, Ordem* ref)
+{
+    int cursor = 0, i = 0, k = 0;
+    char *aux = extenso, *resultado;
+    MALLOC (resultado, 15);
+    resultado[i++] = '0';
+    resultado[i++] = '\0';
+    
+    while (*aux != '\0')
+    {
+        while (aux[k] != '\0' && aux[k] != '-')
+            k++;
+        aux[k] = '\0';
+        while (i<TAM*2)
+        {
+            if (strstr (ref[i].nome, aux))
+                resultado = soma (ref[i].valor, resultado);
+            i++;
+        }
+        aux += k+1;
+    }
+    return resultado;
+}
+
+void stackPush (Node** topo, char s[])
+{
+    Node *no, *aux = *topo;
+    MALLOC (no, 30);
+    strcpy (no -> info, s);
+    no -> prox = *topo;
+    *topo = no;
 }
 

@@ -18,3 +18,13 @@
         ERRO; \
     } \
 }
+typedef struct ordem Ordem;
+#ifndef ORDEM
+    #define ORDEM
+    struct ordem
+    {
+        char* nome;
+        char* valor;
+    };
+#endif
+typedef short int Int2B;
