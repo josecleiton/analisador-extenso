@@ -67,7 +67,7 @@ void atomo (char resultado[]); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR E
 char* get_token (void); /* PEGA O PROX TOKEN */
 void getNumber (char resultado[]); /* PEGA TODO UM NUMERO POR EXTENSO */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
-void erroSintaxe (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
+void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
 void criaIndices (FILE* in, Int2B** out, int size);
 int compara (char* s1, char* s2); /* VERSÃO ADAPTADA DO strcmp */
 
@@ -110,10 +110,10 @@ void expParsingStart (char resultado[])
     getNumber (resultado);
     if (!*token)
     {
-        erroSintaxe(3);
+        erroSS(3);
         return;
     }
-    if (*token) erroSintaxe (0);
+    if (*token) erroSS (0);
 }
 
 void expResTermo (char resultado[])
@@ -169,7 +169,7 @@ void expResFatorial (char resultado[])
         getNumber (proxFator);
         if (*proxFator == '-')
         {
-            erroSintaxe (4);
+            erroSS (4);
             return;
         }
     }
@@ -200,7 +200,7 @@ void expResParenteses (char resultado[])
         getNumber (resultado);
         expResTermo (resultado);
         if (*token != ')')
-            erroSintaxe (1);
+            erroSS (1);
         getNumber (proxToken);
     }
     else atomo (resultado);
@@ -215,10 +215,10 @@ void atomo (char resultado[])
         *tk_tmp = '\0';
         return;
     }
-    erroSintaxe (0);
+    erroSS (0);
 }
 
-void erroSintaxe (int tipoErro)
+void erroSS (int tipoErro)
 {
     FILE* erroS;
     OPENFILE (erroS, ARQ_ERROS, "rb");
@@ -307,9 +307,9 @@ void getNumber (char resultado[])
         /*if (tipoToken != DELIMITADOR) strcat (token, temp);*/
         count++;
     }
-    if (!*token)
+    if (!*tk_tmp)
     {
-        erroSintaxe (5);
+        erroSS (5);
         return;
     }
     expResTermo (resultado);
@@ -351,7 +351,6 @@ char* get_token (void)
                 /* PROCURAR FUNÇÃO QUE POSICIONE O PONTEIRO TEMP APÓS A ULTIMA LETRA DE REF[I].NOME */
                 tipoToken = NUM;
                 flagNUM = 1; /*AQ*/
-                /*temp[strlen(ref[i].nome)] = '\0';*/
                 if (!*NUMERO) return temp;
                 return NUMERO;
             }
@@ -393,7 +392,7 @@ void ajustaDelim (int* k, char* temp) /* COLOCA UM HIFEN ENTRE OS DELIMITADORES 
         if (strcmp (&EXP[*k+1], (char*) "parentese"))
         {
             EXP[*k] = ' '; 
-            erroSintaxe(0);
+            erroSS(0);
             return;
         }
     }

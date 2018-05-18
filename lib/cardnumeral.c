@@ -27,25 +27,30 @@ char* convNumeral (char* extenso, Ordem* ref);
 char* analiSemantica (char* expressao, Ordem* ref)
 {
     expressao = convNumeral (expressao, ref);
+    return expressao;
 }
 
 char* convNumeral (char* extenso, Ordem* ref)
 {
     int cursor = 0, i = 0, k = 0;
     char *aux = extenso, *resultado;
-    MALLOC (resultado, 15);
+    MALLOC (resultado, 2);
     resultado[i++] = '0';
-    resultado[i++] = '\0';
-    
+    resultado[i] = '\0';
     while (*aux != '\0')
     {
+        k=0;
         while (aux[k] != '\0' && aux[k] != '-')
             k++;
         aux[k] = '\0';
+        i=0;
         while (i<TAM*2)
         {
-            if (strstr (ref[i].nome, aux))
+            if (*aux!='e' && strstr (ref[i].nome, aux))
+            {
                 resultado = soma (ref[i].valor, resultado);
+                break;
+            }
             i++;
         }
         aux += k+1;
