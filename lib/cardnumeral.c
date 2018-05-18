@@ -33,10 +33,13 @@ char* analiSemantica (char* expressao, Ordem* ref)
 char* convNumeral (char* extenso, Ordem* ref)
 {
     int cursor = 0, i = 0, k = 0;
-    char *aux = extenso, *resultado;
+    char *aux = extenso, *resultado, *classe;
     MALLOC (resultado, 2);
-    resultado[i++] = '0';
-    resultado[i] = '\0';
+    MALLOC (classe, 2);
+    resultado[0] = '0';
+    resultado[1] = '\0';
+    classe[0] = '0';
+    classe[1] = '\0';
     while (*aux != '\0')
     {
         k=0;
@@ -44,15 +47,26 @@ char* convNumeral (char* extenso, Ordem* ref)
             k++;
         aux[k] = '\0';
         i=0;
-        while (i<TAM*2)
+        while (i<37)
         {
             if (*aux == 'e') break;
             if (strstr (ref[i].nome, aux))
             {
-                resultado = soma (ref[i].valor, resultado);
+                classe = soma (ref[i].valor, classe);
                 break;
             }
             i++;
+        }
+        while (i>=37)
+        {
+           if (strstr (ref[i].nome, aux))
+           {
+               resultado = soma (multiplica (ref[i].valor, classe), resultado);
+               classe[0] = '0';
+               classe[1] = '\0';
+               break;
+           }
+           i++;
         }
         aux += k+1;
     }
