@@ -19,12 +19,19 @@
     } \
 }
 typedef struct ordem Ordem;
-#ifndef ORDEM
-    #define ORDEM
+typedef struct filanum FilaNum;
+#ifndef STRUCTS
+    #define STRUCTS
     struct ordem
     {
         char* nome;
         char* valor;
+    };
+    struct filanum
+    {
+        int classe;
+        Ordem *info;
+        FilaNum *prox;
     };
 #endif
 typedef short int Int2B;

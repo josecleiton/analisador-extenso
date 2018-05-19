@@ -17,7 +17,6 @@
     #define ERRO exit (3141592)
 #endif
 #include "lib/operacoes.c"
-#include "lib/cardnumeral.c"
 #define ARQ_ORDENS "lib/ordens.txt"
 #define ARQ_ENTRADA "lib/expressoes.txt"
 #define ARQ_SAIDA "lib/resultados.txt"
@@ -35,14 +34,15 @@ struct ordem
 enum tokens
 {
     NUM=1,
-    CONJUCAO,
     DELIMITADOR, /* 3 */
-    MILHAO = 38,
+    MIL = 37,
+    MILHAO,
     BILHAO,
     TRILHAO,
     QUATRILHAO,
     QUINTILHAO,
     SEXTILHAO, /*43*/
+    CONJUCAO
 };
 
 /* 
@@ -51,12 +51,14 @@ enum tokens
 *
 */
 Ordem* ref;
-char *EXP, *_TEXP, *NUMERO;
+char *EXP, *_TEXP, *NUMERO, expNum[300];
 char token[30], flagNUM, tk_tmp[60];
 char tipoToken;
 char strErro[300];
+FILE* dicionario;
+FilaNum* queue;
 
-Ordem* cria_dic (void); /* DICIONÁRIO UTILIZADO (CHECAR lib/ordens.txt) */
+//Ordem* cria_dic (void); /* DICIONÁRIO UTILIZADO (CHECAR lib/ordens.txt) */
 void expParsingStart (char* resposta); /* GATILHO DE PARTIDA */
 void expResTermo (char* resposta); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
 void expResFator (char* resposta); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
@@ -65,15 +67,23 @@ void expResParenteses (char* resposta); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DEN
 void expAvalSinal (char* resposta); /* AVALIA + OU - UNÁRIO */
 void atomo (char* resposta); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
 char* get_token (void); /* PEGA O PROX TOKEN */
+int resPlural (int i);
 void getNumber (char* resposta); /* PEGA TODO UM NUMERO POR EXTENSO */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
 void criaIndices (FILE* in, Int2B** out, int size);
 int compara (char* s1, char* s2); /* VERSÃO ADAPTADA DO strcmp */
 
+void filaInsere (int i, char* nome, char* valor);
+void filaLibera (void);
+
+int analiSemantica (void);
+char* toNumber (void);
+void initString (char** s);
+
 int main (void)
 {
-    MALLOC (EXP, TAM*10);
+    EXP = expNum;
     char* resultado;
     scanf("%[^\n]", EXP);
     MALLOC (resultado, strlen(EXP)*2);
@@ -81,7 +91,7 @@ int main (void)
     puts (resultado);
     return 0;
 }
-
+/*
 Ordem* cria_dic (void)
 {
     FILE* nomes;
@@ -91,18 +101,20 @@ Ordem* cria_dic (void)
     char i = 0;
     while (! feof(nomes))
     {
-        MALLOC (ref[i].nome, TAM);
-        MALLOC (ref[i].valor, TAM);
+        MALLOC (ref[i].nome, 22);
+        MALLOC (ref[i].valor, 22);
         if (fscanf (nomes, "%[^=]=%[^\n]%*c", ref[i].nome, ref[i].valor) >= sizeof(Ordem)) break;
         i++;
     }
     fclose (nomes);
     return ref;
 }
-
+*/
 void expParsingStart (char* resposta)
 {
-    ref = cria_dic ();
+    //ref = cria_dic ();
+    OPENFILE (dicionario, ARQ_ORDENS, "r");
+    MALLOC (ref, sizeof(Ordem));
     _TEXP = EXP;
     *token = '\0';
     NUMERO = token;
@@ -114,12 +126,14 @@ void expParsingStart (char* resposta)
         return;
     }
     if (*token) erroSS (0);
+    fclose (dicionario);
 }
 
 void expResTermo (char* resposta)
 {
     register char op = *NUMERO;
-    char segTermo[300];
+    //char segTermo[300];
+    char* segTermo;
     expResFator (resposta);
     while (op == '+' || op == '-')
     {
@@ -141,7 +155,8 @@ void expResTermo (char* resposta)
 void expResFator (char* resposta)
 {
     register char op = *NUMERO;
-    char segFator[300];
+    //char segFator[300];
+    char* segFator;
     expResFatorial (resposta);
     while (op == '*' || op == '/')
     {
@@ -162,7 +177,8 @@ void expResFator (char* resposta)
 
 void expResFatorial (char* resposta)
 {
-    char proxFator[300];
+    //char proxFator[300];
+    char* proxFator;
     expAvalSinal (resposta);
     if (*token == '!')
     {
@@ -178,7 +194,8 @@ void expResFatorial (char* resposta)
 void expAvalSinal (char* resposta)
 {
     register char op = 0;
-    char proxToken[300];
+    //char proxToken[300];
+    char* proxToken;
     char* tempPT;
     if ((tipoToken == DELIMITADOR) && *token=='+' || *token=='-')
     {
@@ -196,7 +213,7 @@ void expAvalSinal (char* resposta)
 
 void expResParenteses (char* resposta)
 {
-    char proxToken[300];
+    char* proxToken;
     if (*token == '(')
     {
         getNumber (resposta);
@@ -213,11 +230,58 @@ void atomo (char* resposta)
     char proxToken [300];
     if (flagNUM == 1)
     {
-        strcpy (resposta, analiSemantica (tk_tmp, ref));
-        *tk_tmp = '\0';
-        return;
+        if (analiSemantica ())
+        {
+            char* temp = toNumber();
+            strcpy (resposta, temp);
+            filaLibera ();
+            *tk_tmp = '\0';
+            return;
+        }
+        erroSS (3);
     }
     erroSS (0);
+}
+
+int analiSemantica (void)
+{
+    return 1;
+}
+
+char* toNumber (void)
+{
+    char *resultado = (char*) malloc (2), *guardaClasse = (char*) malloc (2);
+    if (!resultado || !guardaClasse) ERRO;
+    resultado[0] = guardaClasse[0] = '0';
+    resultado[1] = guardaClasse[1] = '\0';
+    while (queue)
+    {
+        int k = queue -> classe;
+        if (k!=CONJUCAO)
+        {
+            if (k<MIL)
+            {
+                guardaClasse = soma (queue->info->valor, guardaClasse);
+                while (*guardaClasse == '0') guardaClasse++;
+            }
+            else
+            {
+                char* temp = multiplica (queue->info->valor, guardaClasse);
+                while (*temp == '0') temp++;
+                resultado = soma (temp, resultado);
+                while (*resultado == '0') resultado++;
+                strcpy (guardaClasse, (char*) "0");
+            }
+        }
+        queue = queue -> prox;
+    }
+    return resultado;
+}
+
+void initString (char** s)
+{
+    if (!*s) *s = (char*) malloc (3);
+    strcpy (*s, (char*) "0");
 }
 
 void erroSS (int tipoErro)
@@ -321,7 +385,8 @@ void getNumber (char* resposta)
 char* get_token (void)
 {
     register char *temp;
-    int i;
+    int i=0;
+    rewind (dicionario);
     tipoToken = 0;
     if (!tipoToken || tipoToken == DELIMITADOR) /*QUER DIZER UM NOVO NUMERO */
     {
@@ -339,24 +404,25 @@ char* get_token (void)
     chEXP = EXP[k];
     EXP[k] = '\0';
     ajustaDelim (&k, &chEXP);
-    for (i=0; i<TAM*2; i++)
+    while (!feof (dicionario) && i<TAM*2)
     {
-        if (strstr (ref[i].nome, EXP)) /*SE ELE FOR UM NUMERO*/
+        MALLOC (ref->nome, 22);
+        MALLOC (ref->valor, 22)
+        fscanf (dicionario, "%[^=]=%[^\n]%*c", ref->nome, ref->valor);
+        if (! strcmp (ref->nome, EXP) || resPlural(i))
         {
-            int j = 0;
-            if (isdigit (ref[i].valor[0]))
+            if (isdigit (ref->valor[0]))
             {
                 strcat (temp, EXP);
-                NUMERO = temp + strlen (EXP); /* CURSOR FICA NO FIM DE TOKEN */
+                NUMERO = temp + strlen (EXP);
                 while (*EXP && (isalpha (*EXP))) EXP++;
                 *EXP = chEXP;
-                /* PROCURAR FUNÇÃO QUE POSICIONE O PONTEIRO TEMP APÓS A ULTIMA LETRA DE REF[I].NOME */
                 tipoToken = NUM;
-                flagNUM = 1; /*AQ*/
-                if (!*NUMERO) return temp;
-                return NUMERO;
+                flagNUM = 1;
+                filaInsere (i, ref->nome, ref->valor);
+                return temp;
             }
-            else if (strchr("()+-*/!e", ref[i].valor[0]))
+            else if (strchr ("+-/*!e", ref->valor[0]))
             {
                 tipoToken = CONJUCAO;
                 while (*EXP && (isalpha (*EXP) || isspace (*EXP) || *EXP == '-'))
@@ -364,14 +430,43 @@ char* get_token (void)
                     EXP++;
                 }
                 NUMERO = temp;
-                *temp++ = ref[i].valor[0];
+                *temp++ = ref->valor[0];
                 *temp = '\0';
-                *EXP = chEXP; /* RECOLOCANDO O NULO OU O ESPAÇO NO DEVIDO LUGAR */
+                *EXP = chEXP; /* RECOLOCANDO O NULO OU O ESPAÇO NO DEVIDO LUGAR*/
                 if (i!=CONJUCAO) tipoToken = DELIMITADOR;
+                else filaInsere(i, ref->nome, ref->valor);
                 return NUMERO;
             }
         }
+        free (ref->nome);
+        free (ref->valor);
+        i++;
+
     }
+}
+
+int resPlural (int i)
+{
+    if (! strchr ("mbtqs", ref->nome[0])) return 0;
+    int j=0;
+    char* del = strpbrk (ref->nome, (char*) ",");
+    char fl = 0;
+    if (!del) return 0;
+    int k = del - ref->nome;
+    ref->nome[k] = '\0';
+
+    if (! strcmp (ref->nome, EXP))
+    {
+        fl = 1;
+    }
+    else
+    {
+        ++del;
+        if (! strcmp (del, EXP)) fl = 1;
+    }
+    ref->nome[k] = ',';
+    if (fl) return 1;
+    return 0;
 }
 
 void ajustaDelim (int* k, char* temp) /* COLOCA UM HIFEN ENTRE OS DELIMITADORES COMPOSTOS */
@@ -400,3 +495,36 @@ void ajustaDelim (int* k, char* temp) /* COLOCA UM HIFEN ENTRE OS DELIMITADORES 
     }
 
 }
+
+void filaInsere (int i, char* nome, char* valor)
+{
+    FilaNum *no, *aux = queue;
+    MALLOC(no, sizeof (FilaNum));
+    no -> info = (Ordem*) malloc (sizeof(Ordem));
+    if (no->info == NULL) ERRO;
+    no->info->nome = nome;
+    no->info->valor = valor;
+    no -> classe = i;
+    no -> prox = NULL;
+    if (! queue)
+    {
+        queue = no;
+        return;
+    }
+    while (aux && aux->prox)
+        aux = aux -> prox;
+    aux -> prox = no;
+}
+
+void filaLibera (void)
+{
+    FilaNum *aux = queue, *aux2;
+    while (aux)
+    {
+        aux2 = aux;
+        aux = aux -> prox;
+        free (aux2);
+    }
+    queue = NULL;
+}
+
