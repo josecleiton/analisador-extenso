@@ -52,7 +52,9 @@ char* convNumeral (char* extenso, Ordem* ref)
             if (*aux == 'e') break;
             if (strstr (ref[i].nome, aux))
             {
+                char* tmp = classe;
                 classe = soma (ref[i].valor, classe);
+                free (tmp);
                 break;
             }
             i++;
@@ -61,9 +63,11 @@ char* convNumeral (char* extenso, Ordem* ref)
         {
            if (strstr (ref[i].nome, aux))
            {
+               char* tmp = resultado;
                resultado = soma (multiplica (ref[i].valor, classe), resultado);
                classe[0] = '0';
                classe[1] = '\0';
+               free (tmp);
                break;
            }
            i++;

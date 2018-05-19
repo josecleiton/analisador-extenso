@@ -84,7 +84,8 @@ char* soma (char a[], char b[])
 {
     int ta = strlen (a), tb = strlen (b), ts = maior (ta, tb);
     int i, k, resto;
-    char* soma = (char*) malloc (ts+1); /*TS+1 PORQUE A SOMA PODE GERAR MAIS 1 DIGITO A ESQUERDA (999+99 = 1098)*/
+    char* soma = malloc (ts+1); /*TS+1 PORQUE A SOMA PODE GERAR MAIS 1 DIGITO A ESQUERDA (999+99 = 1098)*/
+    if (!soma) ERRO;
     for (i=0; i<ts; i++)
         soma[i] = 0; /*NÃO É PRECISO TRATAR O ARRAY SOMA COMO STRING, SENÃO TERIA QUE CONVERTÊ-LO POSTERIORMENTE*/
     inverte (a); inverte (b);
@@ -246,10 +247,13 @@ char* multiplica (char a[],char b[])
     long soma = 0;
     ta=strlen(a)-1;
     tb=strlen(b)-1;
-    char *produto, *c, *temp;
+    char *produto, c[ta+tb+2], temp[ta+tb+2];
+    for (i=0; i<ta+tb+2; i++)
+    {
+        c[i] = 0;
+        temp[i] = 0;
+    }
     MALLOC (produto, ta+tb+2);
-    MALLOC (temp, ta+tb+2);
-    MALLOC (c, ta+tb+2);
     /* converte as strings a e b de digito para seu correspondente em inteiro */
     for (i=0; i<=ta; i++)
         a[i] -= '0';
@@ -287,7 +291,7 @@ char* multiplica (char a[],char b[])
     for(i=k-1; i>=0; i--)
         produto[j++]=c[i] + '0';
     produto[j]='\0';
-    if (*produto == '0') produto++;
+    while (*produto == '0') produto++;
     return produto;
 }
 
