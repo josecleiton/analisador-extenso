@@ -123,6 +123,7 @@ char* soma (char a[], char b[])
     }
     int2char (soma, ts+2); /*TS + 1 PORQUE A CONTA PODE TER GERADO UM OPERADOR A MAIS*/
     inverte (soma);
+    while (*soma=='0') soma++;
     return soma;
 }
 
