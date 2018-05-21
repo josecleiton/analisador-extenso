@@ -30,6 +30,19 @@ struct ordem
     char* nome;
     char* valor;
 };*/
+typedef struct ordem Ordem;
+typedef struct filanum FilaNum;
+struct ordem
+{
+    char* nome;
+    char* valor;
+};
+struct filanum
+{
+    int classe;
+    Ordem *info;
+    FilaNum *ant, *prox;
+};
 
 enum tokens
 {
@@ -53,7 +66,7 @@ enum tokens
 Ordem* ref;
 char *EXP, *_TEXP, *NUMERO, expNum[300];
 char token[30], flagNUM, tk_tmp[60];
-char tipoToken;
+char tipoToken, fimEXP;
 char strErro[300];
 FILE* dicionario;
 FilaNum* queue;
@@ -67,7 +80,7 @@ void expResParenteses (char* resposta); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DEN
 void expAvalSinal (char* resposta); /* AVALIA + OU - UNÁRIO */
 void atomo (char* resposta); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
 char* get_token (void); /* PEGA O PROX TOKEN */
-int resPlural (int i);
+int resPlural (int i, char** s); /* EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PLURAL QUANTO SINGULAR E ENFILA A FORMA INSERIDA */
 void getNumber (char* resposta); /* PEGA TODO UM NUMERO POR EXTENSO */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
@@ -120,12 +133,12 @@ void expParsingStart (char* resposta)
     NUMERO = token;
     /*get_token();*/
     getNumber (resposta);
-    if (!*token && !*resposta)
+    if (!*token && !*resposta && !fimEXP)
     {
         erroSS(3);
         return;
     }
-    if (*token) erroSS (0);
+    else if (*token && !fimEXP) erroSS (0);
     fclose (dicionario);
 }
 
@@ -137,17 +150,19 @@ void expResTermo (char* resposta)
     expResFator (resposta);
     while (op == '+' || op == '-')
     {
+        MALLOC (segTermo, strlen(EXP));
         getNumber (segTermo);
-        expResFator (segTermo);
+        //expResFator (segTermo);
         switch (op)
         {
             case '-':
-            subtrair (resposta, segTermo);
+            *resposta = subtrair (resposta, segTermo);
             break;
             case '+':
-            soma (resposta, segTermo);
+            resposta = soma (resposta, segTermo);
             break;
         }
+        free (segTermo);
         break; 
     }
 }
@@ -179,7 +194,7 @@ void expResFatorial (char* resposta)
 {
     //char proxFator[300];
     char* proxFator;
-    expAvalSinal (resposta);
+    expResParenteses (resposta);
     if (*token == '!')
     {
         getNumber (proxFator);
@@ -217,7 +232,7 @@ void expResParenteses (char* resposta)
     if (*token == '(')
     {
         getNumber (resposta);
-        expResTermo (resposta);
+        //expResTermo (resposta);
         if (*token != ')')
             erroSS (1);
         getNumber (proxToken);
@@ -250,10 +265,9 @@ int analiSemantica (void)
 
 char* toNumber (void)
 {
-    char *resultado = (char*) malloc (2), *guardaClasse = (char*) malloc (2);
-    if (!resultado || !guardaClasse) ERRO;
-    resultado[0] = guardaClasse[0] = '0';
-    resultado[1] = guardaClasse[1] = '\0';
+    char *resultado = NULL, *guardaClasse = NULL;
+    initString (&resultado);
+    initString (&guardaClasse);
     while (queue)
     {
         int k = queue -> classe;
@@ -261,7 +275,9 @@ char* toNumber (void)
         {
             if (k<MIL)
             {
+                char* temp = guardaClasse;
                 guardaClasse = soma (queue->info->valor, guardaClasse);
+                if (temp && *temp) free (temp);
                 while (*guardaClasse == '0') guardaClasse++;
             }
             else
@@ -269,19 +285,31 @@ char* toNumber (void)
                 char* temp = multiplica (queue->info->valor, guardaClasse);
                 while (*temp == '0') temp++;
                 resultado = soma (temp, resultado);
+                if (temp && *temp) free (temp);
                 while (*resultado == '0') resultado++;
-                strcpy (guardaClasse, (char*) "0");
+                initString (&guardaClasse);
             }
         }
         queue = queue -> prox;
     }
+    if (*resultado == '0')
+    {
+        free (resultado);
+        return guardaClasse;
+    }
+    *guardaClasse = '\0';
     return resultado;
 }
 
 void initString (char** s)
 {
-    if (!*s) *s = (char*) malloc (3);
-    strcpy (*s, (char*) "0");
+    if (!*s)
+    {
+        *s = (char*) malloc (2);
+        if (!*s) ERRO;
+    }
+    (*s)[0] = '0';
+    (*s)[1] = '\0';
 }
 
 void erroSS (int tipoErro)
@@ -373,12 +401,12 @@ void getNumber (char* resposta)
         /*if (tipoToken != DELIMITADOR) strcat (token, temp);*/
         count++;
     }
-    if (!*token && !*tk_tmp)
+    if (!*token && !*tk_tmp && !fimEXP)
     {
         erroSS (5);
         return;
     }
-    expResTermo (resposta);
+    else if (! fimEXP) expResTermo (resposta);
     flagNUM = 0;
 }
 
@@ -394,7 +422,11 @@ char* get_token (void)
         NUMERO = temp = token;
         tipoToken = 0;
     }
-    if (!*EXP) return NULL; /* SE FOR A EXPRESSÃO FOR VAZIA */
+    if (!*EXP)
+    {
+        if (ref->valor) fimEXP = 1;
+        return NULL; /* SE FOR A EXPRESSÃO FOR VAZIA */
+    }
     while (isspace (*EXP)) /* IGNORA OS ESPAÇOS */
         ++EXP;
     if (!*EXP) return NULL;
@@ -406,10 +438,10 @@ char* get_token (void)
     ajustaDelim (&k, &chEXP);
     while (!feof (dicionario) && i<TAM*2)
     {
-        MALLOC (ref->nome, 22);
-        MALLOC (ref->valor, 22)
+        MALLOC (ref->nome, TAM);
+        MALLOC (ref->valor, TAM)
         fscanf (dicionario, "%[^=]=%[^\n]%*c", ref->nome, ref->valor);
-        if (! strcmp (ref->nome, EXP) || resPlural(i))
+        if (! strcmp (ref->nome, EXP) || resPlural(i, &ref->nome))
         {
             if (isdigit (ref->valor[0]))
             {
@@ -422,7 +454,7 @@ char* get_token (void)
                 filaInsere (i, ref->nome, ref->valor);
                 return temp;
             }
-            else if (strchr ("+-/*!e", ref->valor[0]))
+            else if (strchr ("+-/*!e()", ref->valor[0]))
             {
                 tipoToken = CONJUCAO;
                 while (*EXP && (isalpha (*EXP) || isspace (*EXP) || *EXP == '-'))
@@ -443,28 +475,33 @@ char* get_token (void)
         i++;
 
     }
+    erroSS (0);
 }
 
-int resPlural (int i)
+int resPlural (int i, char** s)
 {
-    if (! strchr ("mbtqs", ref->nome[0])) return 0;
+    char *nome = *s;
+    if (! strchr ("mbtqs", nome[0])) return 0;
     int j=0;
-    char* del = strpbrk (ref->nome, (char*) ",");
+    char* del = strpbrk (nome, (char*) ",");
     char fl = 0;
     if (!del) return 0;
-    int k = del - ref->nome;
-    ref->nome[k] = '\0';
+    int k = del - nome;
+    nome[k] = '\0';
 
-    if (! strcmp (ref->nome, EXP))
+    if (! strcmp (nome, EXP))
     {
         fl = 1;
     }
     else
     {
         ++del;
-        if (! strcmp (del, EXP)) fl = 1;
+        if (! strcmp (del, EXP))
+        {
+            fl = 1;
+            *s = del;
+        }
     }
-    ref->nome[k] = ',';
     if (fl) return 1;
     return 0;
 }
@@ -509,11 +546,13 @@ void filaInsere (int i, char* nome, char* valor)
     if (! queue)
     {
         queue = no;
+        no -> ant = NULL;
         return;
     }
     while (aux && aux->prox)
         aux = aux -> prox;
     aux -> prox = no;
+    no -> ant = aux;
 }
 
 void filaLibera (void)
