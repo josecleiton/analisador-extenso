@@ -24,12 +24,7 @@
 
 #define TAM 26
 #define NUM_ERROS 5
-/*
-struct ordem
-{
-    char* nome;
-    char* valor;
-};*/
+
 typedef struct ordem Ordem;
 typedef struct filanum FilaNum;
 struct ordem
@@ -89,6 +84,7 @@ int compara (char* s1, char* s2); /* VERSÃO ADAPTADA DO strcmp */
 
 void filaInsere (int i, char* nome, char* valor);
 void filaLibera (void);
+int filaCount (void);
 
 int analiSemantica (void);
 char* toNumber (void);
@@ -104,25 +100,7 @@ int main (void)
     puts (resultado);
     return 0;
 }
-/*
-Ordem* cria_dic (void)
-{
-    FILE* nomes;
-    Ordem* ref;
-    OPENFILE (nomes, ARQ_ORDENS, "r");
-    MALLOC (ref, sizeof(Ordem)*TAM*2);
-    char i = 0;
-    while (! feof(nomes))
-    {
-        MALLOC (ref[i].nome, 22);
-        MALLOC (ref[i].valor, 22);
-        if (fscanf (nomes, "%[^=]=%[^\n]%*c", ref[i].nome, ref[i].valor) >= sizeof(Ordem)) break;
-        i++;
-    }
-    fclose (nomes);
-    return ref;
-}
-*/
+
 void expParsingStart (char* resposta)
 {
     //ref = cria_dic ();
@@ -156,10 +134,10 @@ void expResTermo (char* resposta)
         switch (op)
         {
             case '-':
-            *resposta = subtrair (resposta, segTermo);
+            strcpy (resposta, subtrair (resposta, segTermo));
             break;
             case '+':
-            resposta = soma (resposta, segTermo);
+            strcpy (resposta, soma (resposta, segTermo));
             break;
         }
         free (segTermo);
@@ -176,14 +154,14 @@ void expResFator (char* resposta)
     while (op == '*' || op == '/')
     {
         getNumber (segFator);
-        expResFatorial (segFator);
+        //expResFatorial (segFator);
         switch (op)
         {
             case '*':
-            multiplica (resposta, segFator);
+            strcpy (resposta, multiplica (resposta, segFator));
             break;
             case '/':
-            divide (resposta, segFator);
+            strcpy (resposta, divide (resposta, segFator));
             break;
         }
         break;
@@ -192,18 +170,24 @@ void expResFator (char* resposta)
 
 void expResFatorial (char* resposta)
 {
-    //char proxFator[300];
+    register char op = *NUMERO;
     char* proxFator;
-    expResParenteses (resposta);
-    if (*token == '!')
+    if (op == '!')
     {
+        MALLOC (proxFator, 300);
         getNumber (proxFator);
+        strcpy (resposta, fatorial (proxFator));
+        if (!*resposta)
+            erroSS (7);
+        free (proxFator);
         if (*proxFator == '-')
         {
             erroSS (4);
             return;
         }
+        return;
     }
+    expResParenteses (resposta);
 }
 
 void expAvalSinal (char* resposta)
@@ -295,9 +279,13 @@ char* toNumber (void)
     if (*resultado == '0')
     {
         free (resultado);
-        return guardaClasse;
+        resultado = guardaClasse;
     }
-    *guardaClasse = '\0';
+    else if (*guardaClasse != '0')
+    {
+        resultado = soma (resultado, guardaClasse);
+        *guardaClasse = '\0';
+    }
     return resultado;
 }
 
@@ -406,7 +394,7 @@ void getNumber (char* resposta)
         erroSS (5);
         return;
     }
-    else if (! fimEXP) expResTermo (resposta);
+    else if (filaCount() == 1 || !fimEXP || tipoToken == DELIMITADOR) expResTermo (resposta);
     flagNUM = 0;
 }
 
@@ -523,7 +511,7 @@ void ajustaDelim (int* k, char* temp) /* COLOCA UM HIFEN ENTRE OS DELIMITADORES 
         while (isalpha(EXP[i]) || EXP[i] == '-') i++;
         *temp = EXP[i];
         EXP[i] = '\0';
-        if (strcmp (&EXP[*k+1], (char*) "parentese"))
+        if (strcmp (&EXP[*k+1], (char*) "parentese") && strcmp (&EXP[*k+1], (char*) "de") && strcmp (&EXP[*k+1], (char*) "por"))
         {
             EXP[*k] = ' '; 
             erroSS(0);
@@ -567,3 +555,10 @@ void filaLibera (void)
     queue = NULL;
 }
 
+int filaCount (void)
+{
+    FilaNum* aux;
+    int n;
+    for (n = 0, aux = queue; aux; aux = aux -> prox, n++);
+    return n;
+}
