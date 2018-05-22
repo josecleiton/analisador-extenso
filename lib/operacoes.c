@@ -84,6 +84,10 @@ int menor (int a, int b)
 char* soma (char a[], char b[])
 {
     int ta = strlen (a), tb = strlen (b), ts = maior (ta, tb);
+    if (! ta)
+        return b;
+    else if (! tb)
+        return a;
     int i, k, resto;
     char* soma = malloc (ts+1); /*TS+1 PORQUE A SOMA PODE GERAR MAIS 1 DIGITO A ESQUERDA (999+99 = 1098)*/
     if (!soma) ERRO;
@@ -181,7 +185,7 @@ char* subtrair (char a[], char b[])
         }  
     }
     int2char (diferenca, tamMinuendo);
-    for (i=0; diferenca[i] != '0'; i++);
+    for (i=0;diferenca[i] != '\0' && diferenca[i] != '0'; i++);
     diferenca[i] = '\0';
  /*   if (flagMenor)
     {
