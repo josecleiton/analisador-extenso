@@ -11,6 +11,11 @@
     #################################################
 */
 
+/* 
+RESOLVER:
+abre parentese treze mais cinco vezes abre parentese cinco menos um mais quatro fecha parentese mais/menos quatro fecha parentese
+*/
+
 #ifndef INCLUSOS
     #define INCLUSOS
     #include "lib/preproc.h"
@@ -41,16 +46,7 @@ struct filanum
 
 enum tokens
 {
-    NUM=1,
-    DELIMITADOR, /* 3 */
-    MIL = 37,
-    MILHAO,
-    BILHAO,
-    TRILHAO,
-    QUATRILHAO,
-    QUINTILHAO,
-    SEXTILHAO, /*43*/
-    CONJUCAO
+    ZERO, UM, DOIS, TRES, QUATRO, CINCO, SEIS, SETE, OITO, NOVE, DEZ, ONZE, DOZE, TREZE, CATORZE, QUINZE, DEZESSEIS, DEZESSETE, DEZOITO, DEZENOVE, VINTE, TRINTA, QUARENTA, CINQUENTA,SESSENTA, SETENTA, OITENTA, NOVENTA, CEM, DUZENTOS, TREZENTOS, QUATROCENTOS, QUINHENTOS, SEISCENTOS, SETECENTOS, OITOCENTOS, NOVECENTOS, MIL, MILHAO, BILHAO, TRILHAO, QUATRILHAO, QUINTILHAO, SEXTILHAO, CONJUCAO, NUM, DELIMITADOR
 };
 
 /* 
@@ -95,7 +91,7 @@ int main (void)
     EXP = expNum;
     char* resultado;
     scanf("%[^\n]", EXP);
-    MALLOC (resultado, strlen(EXP)*2);
+    MALLOC (resultado, 1024);
     expParsingStart (resultado);
     puts (resultado);
     return 0;
@@ -150,22 +146,23 @@ void expResFator (char* resposta)
     register char op = *NUMERO;
     //char segFator[300];
     char* segFator;
-    expResFatorial (resposta);
     while (op == '*' || op == '/')
     {
+        MALLOC (segFator, strlen(EXP));
         getNumber (segFator);
         //expResFatorial (segFator);
         switch (op)
         {
             case '*':
             strcpy (resposta, multiplica (resposta, segFator));
-            break;
+            return;
             case '/':
             strcpy (resposta, divide (resposta, segFator));
-            break;
+            return;
         }
         break;
     }
+    expResFatorial (resposta);
 }
 
 void expResFatorial (char* resposta)
@@ -219,6 +216,7 @@ void expResParenteses (char* resposta)
         //expResTermo (resposta);
         if (*token != ')')
             erroSS (1);
+        MALLOC (proxToken, strlen(EXP));
         getNumber (proxToken);
     }
     else atomo (resposta);
@@ -261,7 +259,6 @@ char* toNumber (void)
             {
                 char* temp = guardaClasse;
                 guardaClasse = soma (queue->info->valor, guardaClasse);
-                if (temp && *temp) free (temp);
                 while (*guardaClasse == '0') guardaClasse++;
             }
             else
