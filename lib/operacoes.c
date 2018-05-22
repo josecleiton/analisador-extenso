@@ -29,14 +29,15 @@ int main()
     //printf("Digite o primeiro numero: ");
     scanf("%s",a);
     //printf("Digite o segundo numero: ");
-    scanf("%s",b);
+    //scanf("%s",b);
     //printf("Soma dos dois numeros: ");
-    c = multiplica (a, b);
+    c = fatorial (a);
    // c = subtrair (a, b);
     puts (c);
     return 0;
 }
 */
+
 int inverte (char a[])
 {
     int i, tam = strlen (a);
@@ -308,7 +309,7 @@ char* fatorial (char in[])
     if (!a || !fat) ERRO;
     strcpy (a, in);
     int i=0,k=1,j,resto=0, tamA = strlen (a);
-    if (tamA > 5) return (char*) "Numero excede o limite do fatorial! (O comportamento do fatorial acima de 15000 eh indefinido)";
+    if (tamA > 2) return (char*) "";
     while (i<30)
     {
         if (! isdigit(a[i]))
@@ -327,7 +328,7 @@ char* fatorial (char in[])
         num += (int) a[i] * pow (10, i);
         i++;
     }
-    if (num > 15000) return (char*) "Numero excede o limite do fatorial! (O comportamento do fatorial acima de 15000 eh indefinido)";
+    if (num > 24) return (char*) "";
     for (i=2; i<=num; i++)
         k = fatorial_multiplicador (i, fat, k);
     int2char (fat, k);
