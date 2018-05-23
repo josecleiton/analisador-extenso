@@ -118,7 +118,7 @@ void expParsingStart (char* resposta)
 
 void expResTermo (char* resposta)
 {
-    register char op = *NUMERO;
+    register char op = *token;
     //char segTermo[300];
     char* segTermo;
     expResFator (resposta);
@@ -144,7 +144,7 @@ void expResTermo (char* resposta)
 
 void expResFator (char* resposta)
 {
-    register char op = *NUMERO;
+    register char op = *token;
     //char segFator[300];
     char* segFator;
     expResFatorial (resposta);
@@ -169,7 +169,7 @@ void expResFator (char* resposta)
 
 void expResFatorial (char* resposta)
 {
-    register char op = *NUMERO;
+    register char op = *token;
     char* proxFator;
     if (op == '!')
     {
@@ -315,8 +315,11 @@ void erroSS (int tipoErro)
     FILE* erroS;
     OPENFILE (erroS, ARQ_ERROS, "rb");
     int temp, i = 0, tamErro;
-    if (! tipoErro)
+    Int2B *idc = NULL;
+    criaIndices (erroS, &idc, NUM_ERROS);
+    if (tipoErro%2 || ! tipoErro)
     {
+        fseek (erroS, idc[tipoErro], SEEK_SET);
         fscanf (erroS, "%[^\n]%c", strErro);
         strcat (strErro, "\n\t");
         strcat (strErro, _TEXP);
@@ -331,37 +334,17 @@ void erroSS (int tipoErro)
         strErro[tamErro+i] = '^';
         strErro[tamErro+i+1] = '\n';
     }
-    else
-    {
-        Int2B *idc = NULL;
-        criaIndices (erroS, &idc, NUM_ERROS);
-        if (tipoErro%2)
-        {
-            fseek (erroS, idc[tipoErro-1], SEEK_SET);
-            fscanf (erroS, "%[^\n]%c", strErro);
-            strcat (strErro, "\n\t");
-            strcat (strErro, _TEXP);
-            strcat (strErro, "\n\t");
-            temp = EXP - _TEXP;
-            tamErro = strlen (strErro);
-            while (i < temp)
-            {
-                strErro[tamErro+i] = ' ';
-                i++;
-            } 
-            strErro[tamErro+i] = '^';
-            strErro[tamErro+i+1] = '\n';
-        }
-    }
     puts (strErro);
+    free (idc);
     fclose (erroS);
     ERRO;
 }
 
 void criaIndices (FILE* in, Int2B** out, int size)
 {
-    Int2B *ind, i=0;
-    MALLOC(ind, sizeof(Int2B)*size);
+    Int2B *ind, i=1;
+    MALLOC(ind, sizeof(Int2B)*++size);
+    *ind = 0;
     char ch = getc (in);
     while (ch != EOF)
     {
@@ -383,7 +366,7 @@ void getNumber (char* resposta)
     if (!tipoToken || tipoToken == DELIMITADOR) /*QUER DIZER UM NOVO NUMERO */
     {
         *token = '\0';
-        NUMERO = temp = token;
+        temp = token;
         tipoToken = 0;
     }
     while (tipoToken != DELIMITADOR)
