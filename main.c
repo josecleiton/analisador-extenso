@@ -71,6 +71,8 @@ void expResParenteses (char* resposta); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DEN
 void expAvalSinal (char* resposta); /* AVALIA + OU - UNÁRIO */
 void atomo (char* resposta); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
 char* get_token (void); /* PEGA O PROX TOKEN */
+void pega_token (void);
+int verificaProxToken (void);
 int resPlural (int i, char** s); /* EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PLURAL QUANTO SINGULAR E ENFILA A FORMA INSERIDA */
 void getNumber (char* resposta); /* PEGA TODO UM NUMERO POR EXTENSO */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
@@ -103,90 +105,102 @@ void expParsingStart (char* resposta)
     OPENFILE (dicionario, ARQ_ORDENS, "r");
     MALLOC (ref, sizeof(Ordem));
     _TEXP = EXP;
-    *token = '\0';
     NUMERO = token;
     /*get_token();*/
-    getNumber (resposta);
-    if (!*token && !*resposta && !fimEXP)
+    pega_token ();
+    if (!*token)
     {
         erroSS(3);
         return;
     }
-    else if (*token && !fimEXP) erroSS (0);
+    expResTermo (resposta);
+    if (*token) erroSS (0);
     fclose (dicionario);
 }
 
 void expResTermo (char* resposta)
 {
-    register char op = *token;
+    register char op;
     //char segTermo[300];
     char* segTermo;
     expResFator (resposta);
-    while (op == '+' || op == '-' || *token == '+' || *token == '-')
+    while ((op = *token) == '+' || op == '-')
     {
-        if (op != '+' || op != '-') op = *token;
+        pega_token ();
         MALLOC (segTermo, strlen(EXP));
-        getNumber (segTermo);
+        expResFator (segTermo);
         //expResFator (segTermo);
         switch (op)
         {
             case '-':
             strcpy (resposta, subtrair (resposta, segTermo));
+            free (segTermo);
             break;
             case '+':
             strcpy (resposta, soma (resposta, segTermo));
+            free (segTermo);
             break;
         }
-        free (segTermo);
-        break; 
+        /*free (segTermo);*/
+        /*break; */
     }
 }
 
 void expResFator (char* resposta)
 {
-    register char op = *token;
+    register char op/* = *token*/;
     //char segFator[300];
     char* segFator;
     expResFatorial (resposta);
-    while (op == '*' || op == '/' || *token == '*' || *token == '/')
+    while ((op=*token) == '*' || op == '/'/* || *token == '*' || *token == '/'*/)
     {
-        if (op!='*' || op != '/') op = *token;
+        pega_token ();
+        /*if (op!='*' || op != '/') op = *token;*/
         MALLOC (segFator, strlen(EXP));
-        getNumber (segFator);
+        expResFatorial (segFator);
+        /*getNumber (segFator);*/
         //expResFatorial (segFator);
         switch (op)
         {
             case '*':
             strcpy (resposta, multiplica (resposta, segFator));
-            return;
+            free (segFator);
+            /*return;*/
+            break;
             case '/':
             strcpy (resposta, divide (resposta, segFator));
-            return;
+            free (segFator);
+            /*return;*/
+            break;
         }
-        break;
+        /*break;*/
     }
 }
 
 void expResFatorial (char* resposta)
 {
-    register char op = *token;
+    /*register char op = *token*/;
     char* proxFator;
-    if (op == '!')
+    expResParenteses (resposta);
+    if (*token == '!')
     {
+        pega_token ();
         MALLOC (proxFator, 300);
-        getNumber (proxFator);
+        /*getNumber (proxFator);*/
+        expResParenteses (proxFator);
         strcpy (resposta, fatorial (proxFator));
+        free (proxFator);
         if (!*resposta)
             erroSS (7);
-        free (proxFator);
+        /*    
         if (*proxFator == '-')
         {
             erroSS (4);
             return;
         }
-        return;
+        return;*/
     }
-    expResParenteses (resposta);
+    /*expResParenteses (resposta);*/
 }
 
 void expAvalSinal (char* resposta)
@@ -211,15 +225,16 @@ void expAvalSinal (char* resposta)
 
 void expResParenteses (char* resposta)
 {
-    char* proxToken;
+    /*char* proxToken;*/
     if (*token == '(')
     {
-        getNumber (resposta);
+        pega_token ();
         //expResTermo (resposta);
+        expResTermo (resposta);
         if (*token != ')')
             erroSS (1);
-        MALLOC (proxToken, strlen(EXP));
-        get_token ();
+        /*MALLOC (proxToken, strlen(EXP));*/
+        pega_token ();
     }
     else atomo (resposta);
 }
@@ -234,22 +249,26 @@ void atomo (char* resposta)
             char* temp = toNumber();
             strcpy (resposta, temp);
             filaLibera ();
-            *tk_tmp = '\0';
+            //*tk_tmp = '\0';
+            flagNUM = 0;
+            pega_token ();
             return;
         }
         erroSS (3);
     }
+    /*
     else 
     {
-        if (strchr ("*/", *token))
+        if (strchr ("/*", *token))
         {
             *resposta = '1'; /*neutro da multiplicação*/
-            *(resposta+1) = '\0';
+            /**(resposta+1) = '\0';
             /* verifique aqui se for o inicio da expressão */
-            return;
+            /*return;
         }
         else if (strchr ("+-", *token)) return;
     }
+    */
     erroSS (0);
 }
 
@@ -389,6 +408,98 @@ void getNumber (char* resposta)
     }
     else if (filaCount() == 1 || !fimEXP || tipoToken == DELIMITADOR) expResTermo (resposta);
     flagNUM = 0;
+}
+
+void pega_token (void)
+{
+    rewind (dicionario);
+    register char *temp;
+    int i = 0, k = 0;
+    char trade;
+    temp = token;
+    *temp = '\0';
+    tipoToken = 0;
+    if (!*EXP) return;
+    while (isspace(*EXP)) ++EXP;
+    while (EXP[k] && isalpha(EXP[k])) k++;
+    trade = EXP[k];
+    EXP[k] = '\0';
+    ajustaDelim (&k, &trade);
+    while (!feof (dicionario) && i < TAM*2)
+    {
+        MALLOC (ref->nome, TAM);
+        MALLOC (ref->valor, TAM)
+        fscanf (dicionario, "%[^=]=%[^\n]%*c", ref->nome, ref->valor);
+        if (! strcmp (ref->nome, EXP) || resPlural(i, &ref->nome))
+        {
+            if (isdigit (ref->valor[0]))
+            {
+                strcat (temp, EXP);
+                NUMERO = temp + strlen (EXP);
+                while (*EXP && (isalpha (*EXP)) || *EXP == ' ') EXP++;
+                *EXP = trade;
+                tipoToken = NUM;
+                flagNUM = 1;
+                filaInsere (i, ref->nome, ref->valor);
+                rewind (dicionario);
+                i=0;
+                if (verificaProxToken ()) return;
+            }
+            else if (strchr ("+-/*!e()", ref->valor[0]))
+            {
+                tipoToken = CONJUCAO;
+                while (*EXP && (isalpha (*EXP) || *EXP == ' ' || *EXP == '-')) EXP++;
+                NUMERO = temp;
+                *temp++ = ref->valor[0];
+                *temp = '\0';
+                *EXP = trade;
+                if (i != CONJUCAO)
+                {
+                    tipoToken = DELIMITADOR;
+                    free (ref->nome);
+                    free (ref->valor);
+                    return;
+                }
+                else filaInsere(i, ref->nome, ref->valor);
+            }
+        }
+        if (! flagNUM)
+        {
+            free (ref->nome);
+            free (ref->valor);
+        }
+        i++;
+    }
+    erroSS (0);
+}
+
+int verificaProxToken (void)
+{
+    while (*EXP && *EXP == ' ') EXP++;
+    char* temp = strpbrk (EXP, (char*) " ");
+    int k = temp - EXP;
+    int i=0;
+    char** dicT = (char**) malloc (sizeof (char*)*7);
+    dicT[0] = (char*) "mais";
+    dicT[1] = (char*) "menos";
+    dicT[2] = (char*) "vezes";
+    dicT[3] = (char*) "dividido";
+    dicT[4] = (char*) "abre";
+    dicT[5] = (char*) "fecha";
+    dicT[6] = (char*) "fatorial";
+    EXP[k] = '\0';
+    for (i=0; i < 7; i++)
+    {
+        if (!strcmp (dicT[i], EXP))
+        {
+            free (dicT);
+            EXP[k] = ' ';
+            return 1;
+        }
+    }
+    EXP[k] = ' ';
+    free (dicT);
+    return 0;
 }
 
 char* get_token (void)
