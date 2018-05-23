@@ -71,6 +71,7 @@ void expResParenteses (char* resposta); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DEN
 void expAvalSinal (char* resposta); /* AVALIA + OU - UNÁRIO */
 void atomo (char* resposta); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
 void pega_token (void);
+void ajustaEXP (void);
 int verificaProxToken (void);
 int resPlural (int i, char** s); /* EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PLURAL QUANTO SINGULAR E ENFILA A FORMA INSERIDA */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
@@ -99,12 +100,10 @@ int main (void)
 
 void expParsingStart (char* resposta)
 {
-    //ref = cria_dic ();
     OPENFILE (dicionario, ARQ_ORDENS, "r");
     MALLOC (ref, sizeof(Ordem));
     _TEXP = EXP;
     NUMERO = token;
-    /*get_token();*/
     pega_token ();
     if (!*token)
     {
@@ -119,7 +118,6 @@ void expParsingStart (char* resposta)
 void expResTermo (char* resposta)
 {
     register char op;
-    //char segTermo[300];
     char* segTermo;
     expResFator (resposta);
     while ((op = *token) == '+' || op == '-')
@@ -127,7 +125,6 @@ void expResTermo (char* resposta)
         pega_token ();
         MALLOC (segTermo, strlen(EXP));
         expResFator (segTermo);
-        //expResFator (segTermo);
         switch (op)
         {
             case '-':
@@ -139,72 +136,52 @@ void expResTermo (char* resposta)
             free (segTermo);
             break;
         }
-        /*free (segTermo);*/
-        /*break; */
     }
 }
 
 void expResFator (char* resposta)
 {
-    register char op/* = *token*/;
-    //char segFator[300];
+    register char op;
     char* segFator;
     expResFatorial (resposta);
-    while ((op=*token) == '*' || op == '/'/* || *token == '*' || *token == '/'*/)
+    while ((op=*token) == '*' || op == '/')
     {
         pega_token ();
-        /*if (op!='*' || op != '/') op = *token;*/
         MALLOC (segFator, strlen(EXP));
         expResFatorial (segFator);
-        /*getNumber (segFator);*/
-        //expResFatorial (segFator);
         switch (op)
         {
             case '*':
             strcpy (resposta, multiplica (resposta, segFator));
             free (segFator);
-            /*return;*/
             break;
             case '/':
             strcpy (resposta, divide (resposta, segFator));
             free (segFator);
-            /*return;*/
             break;
         }
-        /*break;*/
     }
 }
 
 void expResFatorial (char* resposta)
 {
-    /*register char op = *token*/;
     char* proxFator;
     expResParenteses (resposta);
     if (*token == '!')
     {
         pega_token ();
         MALLOC (proxFator, 300);
-        /*getNumber (proxFator);*/
         expResParenteses (proxFator);
         strcpy (resposta, fatorial (proxFator));
         free (proxFator);
         if (!*resposta)
             erroSS (7);
-        /*    
-        if (*proxFator == '-')
-        {
-            erroSS (4);
-            return;
-        }
-        return;*/
     }
-    /*expResParenteses (resposta);*/
 }
-
+/*
 void expAvalSinal (char* resposta)
 {
     register char op = 0;
-    //char proxToken[300];
     char* proxToken;
     char* tempPT;
     if ((tipoToken == DELIMITADOR) && *token=='+' || *token=='-')
@@ -220,18 +197,16 @@ void expAvalSinal (char* resposta)
         strcpy (resposta, tempPT);
     }
 }
+*/
 
 void expResParenteses (char* resposta)
 {
-    /*char* proxToken;*/
     if (*token == '(')
     {
         pega_token ();
-        //expResTermo (resposta);
         expResTermo (resposta);
         if (*token != ')')
             erroSS (1);
-        /*MALLOC (proxToken, strlen(EXP));*/
         pega_token ();
     }
     else atomo (resposta);
@@ -239,7 +214,6 @@ void expResParenteses (char* resposta)
 
 void atomo (char* resposta)
 {
-    /*char proxToken [300];*/
     if (flagNUM == 1)
     {
         if (analiSemantica ())
@@ -247,26 +221,12 @@ void atomo (char* resposta)
             char* temp = toNumber();
             strcpy (resposta, temp);
             filaLibera ();
-            //*tk_tmp = '\0';
             flagNUM = 0;
             pega_token ();
             return;
         }
         erroSS (3);
     }
-    /*
-    else 
-    {
-        if (strchr ("/*", *token))
-        {
-            *resposta = '1'; /*neutro da multiplicação*/
-            /**(resposta+1) = '\0';
-            /* verifique aqui se for o inicio da expressão */
-            /*return;
-        }
-        else if (strchr ("+-", *token)) return;
-    }
-    */
     erroSS (0);
 }
 
@@ -408,7 +368,7 @@ void pega_token (void)
                 flagNUM = 1;
                 filaInsere (i, ref->nome, ref->valor);
                 rewind (dicionario);
-                i=0;
+                i=-1;
                 if (verificaProxToken ()) return;
             }
             else if (strchr ("+-/*!e()", ref->valor[0]))
@@ -422,11 +382,17 @@ void pega_token (void)
                 if (i != CONJUCAO)
                 {
                     tipoToken = DELIMITADOR;
+                    flagNUM = 0;
                     free (ref->nome);
                     free (ref->valor);
                     return;
                 }
-                else filaInsere(i, ref->nome, ref->valor);
+                else 
+                {
+                    filaInsere(i, ref->nome, ref->valor);
+                    i=-1;
+                    rewind (dicionario);
+                }
             }
         }
         if (! flagNUM)
@@ -434,15 +400,24 @@ void pega_token (void)
             free (ref->nome);
             free (ref->valor);
         }
+        else ajustaEXP();
         i++;
     }
     erroSS (0);
+}
+
+void ajustaEXP (void)
+{
+    while (*EXP && *EXP == ' ') EXP++;
+    int k = strcspn (EXP, (char*) " ");
+    EXP[k] = '\0';
 }
 
 int verificaProxToken (void)
 {
     while (*EXP && *EXP == ' ') EXP++;
     char* temp = strpbrk (EXP, (char*) " ");
+    if (! temp) return 1;
     int k = temp - EXP;
     int i=0;
     char** dicT = (char**) malloc (sizeof (char*)*7);
