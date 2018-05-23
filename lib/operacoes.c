@@ -137,6 +137,10 @@ char* subtrair (char a[], char b[])
     char *min, *subt, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
     int i, j, k = 0;
     int tamMinuendo = strlen(a), tamSubtraendo = strlen(b);
+    if (! tamMinuendo)
+        return b;
+    else if (! tamSubtraendo)
+        return a;
     if (tamMinuendo != tamSubtraendo)
     {
         subt = completaMenor (a, b, &flagMenor);
@@ -184,6 +188,8 @@ char* subtrair (char a[], char b[])
             diferenca[i] += 10;
         }  
     }
+    //inverte (diferenca);
+    if (tamMinuendo == 1) tamMinuendo++;
     int2char (diferenca, tamMinuendo);
     for (i=0;diferenca[i] != '\0' && diferenca[i] != '0'; i++);
     diferenca[i] = '\0';
@@ -247,13 +253,18 @@ char* completaMenor (char a[], char b[], char* menor)
 
 char* multiplica (char a[],char b[])
 {
-    int ta,tb;
+    int ta=strlen(a)-1, tb=strlen(b)-1;
+    if (ta == -1 || tb == -1) return (char*) "";
+    if (! ta && *a == '1')
+        return b;
+    else if (! tb && *b == '1')
+        return a;
     int i,j,k=0,x=0,y;
     long int r=0;
     long soma = 0;
-    ta=strlen(a)-1;
-    tb=strlen(b)-1;
-    char *produto, c[ta+tb+2], temp[ta+tb+2];
+    char *produto, *c, *temp;
+    MALLOC (c, ta+tb+2);
+    MALLOC (temp, ta+tb+2);
     for (i=0; i<ta+tb+2; i++)
     {
         c[i] = 0;
@@ -298,6 +309,8 @@ char* multiplica (char a[],char b[])
         produto[j++]=c[i] + '0';
     produto[j]='\0';
     while (*produto == '0') produto++;
+    free (c);
+    free (temp);
     return produto;
 }
 

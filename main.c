@@ -122,8 +122,9 @@ void expResTermo (char* resposta)
     //char segTermo[300];
     char* segTermo;
     expResFator (resposta);
-    while (op == '+' || op == '-')
+    while (op == '+' || op == '-' || *token == '+' || *token == '-')
     {
+        if (op != '+' || op != '-') op = *token;
         MALLOC (segTermo, strlen(EXP));
         getNumber (segTermo);
         //expResFator (segTermo);
@@ -146,8 +147,10 @@ void expResFator (char* resposta)
     register char op = *NUMERO;
     //char segFator[300];
     char* segFator;
-    while (op == '*' || op == '/')
+    expResFatorial (resposta);
+    while (op == '*' || op == '/' || *token == '*' || *token == '/')
     {
+        if (op!='*' || op != '/') op = *token;
         MALLOC (segFator, strlen(EXP));
         getNumber (segFator);
         //expResFatorial (segFator);
@@ -162,7 +165,6 @@ void expResFator (char* resposta)
         }
         break;
     }
-    expResFatorial (resposta);
 }
 
 void expResFatorial (char* resposta)
@@ -217,7 +219,7 @@ void expResParenteses (char* resposta)
         if (*token != ')')
             erroSS (1);
         MALLOC (proxToken, strlen(EXP));
-        getNumber (proxToken);
+        get_token ();
     }
     else atomo (resposta);
 }
@@ -236,6 +238,17 @@ void atomo (char* resposta)
             return;
         }
         erroSS (3);
+    }
+    else 
+    {
+        if (strchr ("*/", *token))
+        {
+            *resposta = '1'; /*neutro da multiplicação*/
+            *(resposta+1) = '\0';
+            /* verifique aqui se for o inicio da expressão */
+            return;
+        }
+        else if (strchr ("+-", *token)) return;
     }
     erroSS (0);
 }
