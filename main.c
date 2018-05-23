@@ -226,7 +226,7 @@ void expResParenteses (char* resposta)
 
 void atomo (char* resposta)
 {
-    char proxToken [300];
+    /*char proxToken [300];*/
     if (flagNUM == 1)
     {
         if (analiSemantica ())
