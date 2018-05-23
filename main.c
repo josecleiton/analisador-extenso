@@ -70,11 +70,9 @@ void expResFatorial (char* resposta); /* ROTINA QUE RESOLVE O FATORIAL DE UM FAT
 void expResParenteses (char* resposta); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DENTRO DE PARENTESES */
 void expAvalSinal (char* resposta); /* AVALIA + OU - UNÁRIO */
 void atomo (char* resposta); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
-char* get_token (void); /* PEGA O PROX TOKEN */
 void pega_token (void);
 int verificaProxToken (void);
 int resPlural (int i, char** s); /* EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PLURAL QUANTO SINGULAR E ENFILA A FORMA INSERIDA */
-void getNumber (char* resposta); /* PEGA TODO UM NUMERO POR EXTENSO */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
 void criaIndices (FILE* in, Int2B** out, int size);
@@ -377,38 +375,6 @@ void criaIndices (FILE* in, Int2B** out, int size)
     *out = ind;
 }
 
-void getNumber (char* resposta)
-{
-    register char *temp;
-    char* ptr = tk_tmp;
-    int count = 0;
-    if (!tipoToken || tipoToken == DELIMITADOR) /*QUER DIZER UM NOVO NUMERO */
-    {
-        *token = '\0';
-        temp = token;
-        tipoToken = 0;
-    }
-    while (tipoToken != DELIMITADOR)
-    {
-        if (count)
-        { 
-            strcat (tk_tmp, token);
-            strcat (tk_tmp, (char*) "-");
-            temp = get_token ();
-        }
-        else get_token ();
-        if (!tipoToken) break;
-        /*if (tipoToken != DELIMITADOR) strcat (token, temp);*/
-        count++;
-    }
-    if (!*token && !*tk_tmp && !fimEXP)
-    {
-        erroSS (5);
-        return;
-    }
-    else if (filaCount() == 1 || !fimEXP || tipoToken == DELIMITADOR) expResTermo (resposta);
-    flagNUM = 0;
-}
 
 void pega_token (void)
 {
@@ -500,74 +466,6 @@ int verificaProxToken (void)
     EXP[k] = ' ';
     free (dicT);
     return 0;
-}
-
-char* get_token (void)
-{
-    register char *temp;
-    int i=0;
-    rewind (dicionario);
-    tipoToken = 0;
-    if (!tipoToken || tipoToken == DELIMITADOR) /*QUER DIZER UM NOVO NUMERO */
-    {
-        *token = '\0';
-        NUMERO = temp = token;
-        tipoToken = 0;
-    }
-    if (!*EXP)
-    {
-        if (ref->valor) fimEXP = 1;
-        return NULL; /* SE FOR A EXPRESSÃO FOR VAZIA */
-    }
-    while (isspace (*EXP)) /* IGNORA OS ESPAÇOS */
-        ++EXP;
-    if (!*EXP) return NULL;
-    int k = 0;
-    char chEXP;
-    while (EXP[k] && isalpha (EXP[k])) k++;
-    chEXP = EXP[k];
-    EXP[k] = '\0';
-    ajustaDelim (&k, &chEXP);
-    while (!feof (dicionario) && i<TAM*2)
-    {
-        MALLOC (ref->nome, TAM);
-        MALLOC (ref->valor, TAM)
-        fscanf (dicionario, "%[^=]=%[^\n]%*c", ref->nome, ref->valor);
-        if (! strcmp (ref->nome, EXP) || resPlural(i, &ref->nome))
-        {
-            if (isdigit (ref->valor[0]))
-            {
-                strcat (temp, EXP);
-                NUMERO = temp + strlen (EXP);
-                while (*EXP && (isalpha (*EXP))) EXP++;
-                *EXP = chEXP;
-                tipoToken = NUM;
-                flagNUM = 1;
-                filaInsere (i, ref->nome, ref->valor);
-                return temp;
-            }
-            else if (strchr ("+-/*!e()", ref->valor[0]))
-            {
-                tipoToken = CONJUCAO;
-                while (*EXP && (isalpha (*EXP) || isspace (*EXP) || *EXP == '-'))
-                {
-                    EXP++;
-                }
-                NUMERO = temp;
-                *temp++ = ref->valor[0];
-                *temp = '\0';
-                *EXP = chEXP; /* RECOLOCANDO O NULO OU O ESPAÇO NO DEVIDO LUGAR*/
-                if (i!=CONJUCAO) tipoToken = DELIMITADOR;
-                else filaInsere(i, ref->nome, ref->valor);
-                return NUMERO;
-            }
-        }
-        free (ref->nome);
-        free (ref->valor);
-        i++;
-
-    }
-    erroSS (0);
 }
 
 int resPlural (int i, char** s)
