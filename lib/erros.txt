@@ -5,4 +5,5 @@ erro: o analisador espera uma expressao.
 erro: fatorial de numero negativo nao existe.
 erro
 erro de sintaxe: falta termo ou termo apos delimitador.
-erro: ultrapassa o limite de sextilhoes
+erro: ultrapassa o limite de decilhoes
+erro: fatorial acima de quatrocentos tem saida indefinida, por restricao de memoria

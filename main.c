@@ -112,6 +112,9 @@ void expParsingStart (char* resposta)
     }
     expResTermo (resposta);
     if (*token) erroSS (0);
+    free (ref -> nome);
+    free (ref -> valor);
+    free (ref);
     fclose (dicionario);
 }
 
@@ -172,6 +175,7 @@ void expResFatorial (char* resposta)
         MALLOC (proxFator, 300);
         expResParenteses (proxFator);
         char* temp = fatorial (proxFator);
+        if (! temp) erroSS (8);
         strcpy (resposta, temp);
         free (proxFator);
         free (temp);
@@ -297,7 +301,7 @@ void erroSS (int tipoErro)
     int temp, i = 0, tamErro;
     Int2B *idc = NULL;
     criaIndices (erroS, &idc, NUM_ERROS);
-    if (tipoErro%2 || ! tipoErro)
+    if (tipoErro%2 || ! tipoErro || tipoErro == 8)
     {
         fseek (erroS, idc[tipoErro], SEEK_SET);
         fscanf (erroS, "%[^\n]%c", strErro);
@@ -336,6 +340,7 @@ void criaIndices (FILE* in, Int2B** out, int size)
         ch = getc (in);
     }
     *out = ind;
+    rewind (in);
 }
 
 
@@ -420,7 +425,11 @@ int verificaProxToken (void)
 {
     while (*EXP && *EXP == ' ') EXP++;
     char* temp = strpbrk (EXP, (char*) " ");
-    if (! temp) return 1;
+    if (! temp)
+    {
+        if (*EXP) return 0;
+        return 1;
+    }
     int k = temp - EXP;
     int i=0;
     char** dicT = (char**) malloc (sizeof (char*)*7);
@@ -449,7 +458,7 @@ int verificaProxToken (void)
 int resPlural (int i, char** s)
 {
     char *nome = *s;
-    if (! strchr ("mbtqsc", nome[0])) return 0;
+    if (! strchr ("mbtqscond", nome[0])) return 0;
     int j=0;
     char* del = strpbrk (nome, (char*) ",");
     char fl = 0;
