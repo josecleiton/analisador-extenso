@@ -277,6 +277,7 @@ int semUnidade (FilaNum** inicio)
         }
         else if (fila -> classe >= CEM && fila -> classe <= NOVECENTOS)
         {
+            if (!strcmp (fila -> info -> nome, (char*) "cem") && (fila -> prox && fila -> prox -> classe == CONJUCAO)
             if (fila -> prox && (fila -> prox -> classe < MIL || fila -> prox -> classe == CONJUCAO))
             {
                 if (fila -> prox -> classe != CONJUCAO) erroSS (9);
