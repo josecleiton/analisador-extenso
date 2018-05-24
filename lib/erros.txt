@@ -10,3 +10,4 @@ erro: fatorial acima de quatrocentos tem saida indefinida, por restricao de memo
 erro semantico: falta a conjucao 'e' apos a CENTENA ou DEZENA.
 erro semantico: falta numero apos a conjucao 'e'.
 erro semantico: conjucao 'e' apos UNIDADE.
+erro semantico: singular/plural mal utilizado.
