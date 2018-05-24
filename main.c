@@ -27,7 +27,7 @@ abre parentese treze mais cinco vezes abre parentese cinco menos um mais quatro 
 #define ARQ_SAIDA "lib/resultados.txt"
 #define ARQ_ERROS "lib/erros.txt"
 
-#define TAM 26
+#define TAM 28
 #define NUM_ERROS 5
 
 typedef struct ordem Ordem;
@@ -46,7 +46,7 @@ struct filanum
 
 enum tokens
 {
-    ZERO, UM, DOIS, TRES, QUATRO, CINCO, SEIS, SETE, OITO, NOVE, DEZ, ONZE, DOZE, TREZE, CATORZE, QUINZE, DEZESSEIS, DEZESSETE, DEZOITO, DEZENOVE, VINTE, TRINTA, QUARENTA, CINQUENTA,SESSENTA, SETENTA, OITENTA, NOVENTA, CEM, DUZENTOS, TREZENTOS, QUATROCENTOS, QUINHENTOS, SEISCENTOS, SETECENTOS, OITOCENTOS, NOVECENTOS, MIL, MILHAO, BILHAO, TRILHAO, QUATRILHAO, QUINTILHAO, SEXTILHAO, CONJUCAO, NUM, DELIMITADOR
+    ZERO, UM, DOIS, TRES, QUATRO, CINCO, SEIS, SETE, OITO, NOVE, DEZ, ONZE, DOZE, TREZE, CATORZE, QUINZE, DEZESSEIS, DEZESSETE, DEZOITO, DEZENOVE, VINTE, TRINTA, QUARENTA, CINQUENTA,SESSENTA, SETENTA, OITENTA, NOVENTA, CEM, DUZENTOS, TREZENTOS, QUATROCENTOS, QUINHENTOS, SEISCENTOS, SETECENTOS, OITOCENTOS, NOVECENTOS, MIL, MILHAO, BILHAO, TRILHAO, QUATRILHAO, QUINTILHAO, SEXTILHAO, SETILHAO, OCTILHAO, NONILHAO, DECILHAO, CONJUCAO, NUM, DELIMITADOR
 };
 
 /* 
@@ -449,7 +449,7 @@ int verificaProxToken (void)
 int resPlural (int i, char** s)
 {
     char *nome = *s;
-    if (! strchr ("mbtqs", nome[0])) return 0;
+    if (! strchr ("mbtqsc", nome[0])) return 0;
     int j=0;
     char* del = strpbrk (nome, (char*) ",");
     char fl = 0;
@@ -470,8 +470,7 @@ int resPlural (int i, char** s)
             *s = del;
         }
     }
-    if (fl) return 1;
-    return 0;
+    return fl;
 }
 
 void ajustaDelim (int* k, char* temp) /* COLOCA UM HIFEN ENTRE OS DELIMITADORES COMPOSTOS */
