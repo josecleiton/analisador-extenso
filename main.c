@@ -11,9 +11,7 @@
     #################################################
 */
 
-/* 
-PROX PASSO: ERRO SEMANTICO EM "CEM E TRES" OU "DOIS MILHAO" OU "UM MILHOES" ETC
-*/
+/* PROX PASSO: CONVERSÃO DO RESULTADO PARA EXTENSO */
 
 #ifndef INCLUSOS
     #define INCLUSOS
@@ -27,7 +25,7 @@ PROX PASSO: ERRO SEMANTICO EM "CEM E TRES" OU "DOIS MILHAO" OU "UM MILHOES" ETC
 #define ARQ_ERROS "lib/erros.txt"
 
 #define TAM 28
-#define NUM_ERROS 5
+#define NUM_ERROS 12
 
 typedef struct ordem Ordem;
 typedef struct filanum FilaNum;
@@ -57,7 +55,6 @@ Ordem* ref;
 char *EXP, *_TEXP, *NUMERO, expNum[300];
 char token[30], flagNUM, tk_tmp[60];
 char tipoToken, fimEXP;
-char strErro[300];
 FILE* dicionario;
 FilaNum* queue;
 
@@ -77,16 +74,15 @@ int resPlural (int i, char** s); /* EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PL
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
 void criaIndices (FILE* in, Int2B** out, int size);
-
-void filaInsere (int i, char* nome, char* valor);
-void filaLibera (void);
-int filaCount (void);
-
 int analiSemantica (void);
 int semUnidade (FilaNum** inicio);
+void pluralOrdem (FilaNum* inicio);
 int pegaOrdem (FilaNum* inicio);
 char* toNumber (void);
 void initString (char** s);
+void filaInsere (int i, char* nome, char* valor);
+void filaLibera (void);
+int filaCount (void);
 
 int main (void)
 {
@@ -244,6 +240,7 @@ int analiSemantica (void)
     char ord[2], i = 0;
     while (queueSem)
     {
+        pluralOrdem(queueSem);
         semUnidade (&queueSem);
         ord[i%2] = pegaOrdem (queueSem);
         if (i%2 && ord[0] <= ord[1]) erroSS (2);
@@ -251,6 +248,19 @@ int analiSemantica (void)
         if (queueSem) queueSem = queueSem -> prox;
     }
     return 1;
+}
+
+void pluralOrdem (FilaNum* inicio)
+{
+    FilaNum* aux = inicio;
+    char flag = 0;
+    while (aux && (aux -> classe < MILHAO || aux -> classe == CONJUCAO)) aux = aux -> prox;
+    if (aux && strstr (aux -> info -> nome, (char*) "oes"))
+    {
+        if (inicio -> classe != UM || inicio -> classe == CONJUCAO) return;
+    }
+    else if (!aux || inicio -> classe == UM || inicio -> classe == CONJUCAO) return;
+    erroSS (12);
 }
 
 int semUnidade (FilaNum** inicio)
@@ -277,7 +287,7 @@ int semUnidade (FilaNum** inicio)
         }
         else if (fila -> classe >= CEM && fila -> classe <= NOVECENTOS)
         {
-            if (!strcmp (fila -> info -> nome, (char*) "cem") && (fila -> prox && fila -> prox -> classe == CONJUCAO)
+            if (!strcmp (fila -> info -> nome, (char*) "cem") && (fila -> prox && fila -> prox -> classe == CONJUCAO)) erroSS (12);
             if (fila -> prox && (fila -> prox -> classe < MIL || fila -> prox -> classe == CONJUCAO))
             {
                 if (fila -> prox -> classe != CONJUCAO) erroSS (9);
@@ -355,13 +365,14 @@ void erroSS (int tipoErro)
 {
     FILE* erroS;
     OPENFILE (erroS, ARQ_ERROS, "rb");
+    char strErro[512];
     int temp, i = 0, tamErro;
     Int2B *idc = NULL;
     criaIndices (erroS, &idc, NUM_ERROS);
-    if (tipoErro%2 || ! tipoErro || tipoErro == 8 || tipoErro == 10 || tipoErro == 2)
+    if (tipoErro%2 || ! tipoErro || tipoErro == 8 || tipoErro == 10 || tipoErro == 2 || tipoErro == 12)
     {
         fseek (erroS, idc[tipoErro], SEEK_SET);
-        fscanf (erroS, "%[^\n]%c", strErro);
+        fgets (strErro, 512, erroS);
         strcat (strErro, "\n\t");
         strcat (strErro, _TEXP);
         strcat (strErro, "\n\t");
@@ -384,7 +395,7 @@ void erroSS (int tipoErro)
 void criaIndices (FILE* in, Int2B** out, int size)
 {
     Int2B *ind, i=1;
-    MALLOC(ind, sizeof(Int2B)*++size);
+    MALLOC(ind, sizeof(Int2B)*(size+2));
     *ind = 0;
     char ch = getc (in);
     while (ch != EOF)
