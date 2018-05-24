@@ -62,13 +62,14 @@ char strErro[300];
 FILE* dicionario;
 FilaNum* queue;
 
-//Ordem* cria_dic (void); /* DICIONÁRIO UTILIZADO (CHECAR lib/ordens.txt) */
 void expParsingStart (char* resposta); /* GATILHO DE PARTIDA */
 void expResTermo (char* resposta); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
 void expResFator (char* resposta); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
 void expResFatorial (char* resposta); /* ROTINA QUE RESOLVE O FATORIAL DE UM FATOR */
 void expResParenteses (char* resposta); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DENTRO DE PARENTESES */
-void expAvalSinal (char* resposta); /* AVALIA + OU - UNÁRIO */
+/* EM CONSTRUÇÃO */
+void expAvalSinal (char* resposta); /* AVALIA + OU - UNÁRIO */ 
+/* */
 void atomo (char* resposta); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
 void pega_token (void);
 void ajustaEXP (void);
@@ -77,7 +78,6 @@ int resPlural (int i, char** s); /* EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PL
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
 void criaIndices (FILE* in, Int2B** out, int size);
-int compara (char* s1, char* s2); /* VERSÃO ADAPTADA DO strcmp */
 
 void filaInsere (int i, char* nome, char* valor);
 void filaLibera (void);
@@ -166,17 +166,20 @@ void expResFator (char* resposta)
 void expResFatorial (char* resposta)
 {
     char* proxFator;
-    expResParenteses (resposta);
     if (*token == '!')
     {
         pega_token ();
         MALLOC (proxFator, 300);
         expResParenteses (proxFator);
-        strcpy (resposta, fatorial (proxFator));
+        char* temp = fatorial (proxFator);
+        strcpy (resposta, temp);
         free (proxFator);
+        free (temp);
         if (!*resposta)
             erroSS (7);
+        return;
     }
+    expResParenteses (resposta);
 }
 /*
 void expAvalSinal (char* resposta)

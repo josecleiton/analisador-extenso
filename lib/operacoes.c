@@ -316,7 +316,7 @@ char* multiplica (char a[],char b[])
 
 char* divide (char a[], char b[])
 {
-
+    ERRO;
 }
 
 char* fatorial (char in[])
@@ -348,8 +348,9 @@ char* fatorial (char in[])
     if (num > 24) return (char*) "";
     for (i=2; i<=num; i++)
         k = fatorial_multiplicador (i, fat, k);
-    int2char (fat, k);
+    int2char (fat, k+1);
     inverte (fat);
+    while (*fat == '0') fat++;
     return fat;
 }
 
