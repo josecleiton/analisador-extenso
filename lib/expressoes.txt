@@ -1,2 +1,1 @@
-abre parentese treze mais cinco vezes abre parentese cinco menos um mais quatro fecha parentese vezes quatro fecha parentese
-abre parentese treze mais cinco vezes abre parentese cinco menos abre parentese um mais sete fecha parentese fecha parentese vezes quatro fecha parentese
+abre parentese treze mais cinco vezes abre parentese cinco menos abre parentese um mais sete fecha parentese fecha parentese vezes quatro fecha parentese mais um decilhao vezes trinta e um mais um sextilhao vezes fatorial de cinco

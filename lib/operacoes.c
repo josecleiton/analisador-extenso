@@ -321,13 +321,13 @@ char* divide (char a[], char b[])
 
 char* fatorial (char in[])
 {
-    char* a = (char*) malloc(strlen(in));
-    register char* fat = (char*) malloc(500);
+    char* a = (char*) malloc(strlen(in)+1);
+    register char* fat = (char*) malloc(900);
     if (!a || !fat) ERRO;
     strcpy (a, in);
     int i=0,k=1,j,resto=0, tamA = strlen (a);
-    if (tamA > 2) return (char*) "";
-    while (i<30)
+    if (tamA > 3) return NULL;
+    while (i<tamA)
     {
         if (! isdigit(a[i]))
         {
@@ -345,7 +345,7 @@ char* fatorial (char in[])
         num += (int) a[i] * pow (10, i);
         i++;
     }
-    if (num > 24) return (char*) "";
+    if (num > 400) return NULL;
     for (i=2; i<=num; i++)
         k = fatorial_multiplicador (i, fat, k);
     int2char (fat, k+1);
