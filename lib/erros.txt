@@ -1,9 +1,12 @@
 erro de sintaxe: palavra nao faz parte de uma expressao numerica valida.
 erro de sintaxe: falta parentese.
-erro de semantico: token nao respeita a precedencia de ordens numericas.
-erro: o analisador espera uma expressao.
+erro semantico: token nao respeita a precedencia de ordens numericas.
+erro de sintaxe: o analisador espera uma expressao.
 erro: fatorial de numero negativo nao existe.
 erro
 erro de sintaxe: falta termo ou termo apos delimitador.
-erro: ultrapassa o limite de decilhoes
-erro: fatorial acima de quatrocentos tem saida indefinida, por restricao de memoria
+erro: ultrapassa o limite de decilhoes.
+erro: fatorial acima de quatrocentos tem saida indefinida, por restricao de memoria.
+erro semantico: falta a conjucao 'e' apos a CENTENA ou DEZENA.
+erro semantico: falta numero apos a conjucao 'e'.
+erro semantico: conjucao 'e' apos UNIDADE.

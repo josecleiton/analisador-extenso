@@ -12,8 +12,7 @@
 */
 
 /* 
-RESOLVER:
-abre parentese treze mais cinco vezes abre parentese cinco menos um mais quatro fecha parentese mais/menos quatro fecha parentese
+PROX PASSO: ERRO SEMANTICO EM "CEM E TRES" OU "DOIS MILHAO" OU "UM MILHOES" ETC
 */
 
 #ifndef INCLUSOS
@@ -84,6 +83,8 @@ void filaLibera (void);
 int filaCount (void);
 
 int analiSemantica (void);
+int semUnidade (FilaNum** inicio);
+int pegaOrdem (FilaNum* inicio);
 char* toNumber (void);
 void initString (char** s);
 
@@ -112,8 +113,6 @@ void expParsingStart (char* resposta)
     }
     expResTermo (resposta);
     if (*token) erroSS (0);
-    free (ref -> nome);
-    free (ref -> valor);
     free (ref);
     fclose (dicionario);
 }
@@ -239,7 +238,64 @@ void atomo (char* resposta)
 
 int analiSemantica (void)
 {
+    FilaNum* queueSem = queue;
+    if (! queueSem) erroSS (3);
+    if (pegaOrdem(queueSem) > DECILHAO || filaCount() > 43) erroSS (7); /* LIMITE DE DECILHÕES */
+    char ord[2], i = 0;
+    while (queueSem)
+    {
+        semUnidade (&queueSem);
+        ord[i%2] = pegaOrdem (queueSem);
+        if (i%2 && ord[0] <= ord[1]) erroSS (2);
+        i++;
+        if (queueSem) queueSem = queueSem -> prox;
+    }
     return 1;
+}
+
+int semUnidade (FilaNum** inicio)
+{
+    FilaNum *fila = *inicio;
+    while (fila && (fila -> classe < MIL || fila -> classe == CONJUCAO))
+    {
+        if (fila -> classe < VINTE && fila -> classe != DEZ)
+        {
+            if (fila -> prox)
+            {
+                if (fila -> prox -> classe == CONJUCAO) erroSS (11);
+                if (fila -> prox -> classe < MIL) erroSS (2);
+            }
+        }
+        else if (fila -> classe == DEZ || fila -> classe >= VINTE && fila -> classe <= NOVENTA)
+        {
+            if (fila -> prox && (fila -> prox -> classe < MIL || fila -> prox -> classe == CONJUCAO))
+            {
+                if (fila -> prox -> classe != CONJUCAO) erroSS (9);
+                else if (fila -> prox -> prox == NULL) erroSS (10);
+                else if (fila -> prox -> prox -> classe > NOVE) erroSS (2);
+            }
+        }
+        else if (fila -> classe >= CEM && fila -> classe <= NOVECENTOS)
+        {
+            if (fila -> prox && (fila -> prox -> classe < MIL || fila -> prox -> classe == CONJUCAO))
+            {
+                if (fila -> prox -> classe != CONJUCAO) erroSS (9);
+                else if (fila -> prox -> prox == NULL) erroSS (10);
+                else if (fila -> prox -> prox -> classe > NOVENTA) erroSS (2);
+            }
+        }
+        fila = fila -> prox;
+    }
+    *inicio = fila;
+    return 1;
+}
+
+int pegaOrdem (FilaNum* inicio)
+{
+    FilaNum* aux = inicio;
+    while (aux && (aux -> classe < MIL || aux -> classe == CONJUCAO)) aux = aux -> prox;
+    if (! aux) return ZERO;
+    return aux -> classe;
 }
 
 char* toNumber (void)
@@ -263,7 +319,7 @@ char* toNumber (void)
                 char* temp = multiplica (queue->info->valor, guardaClasse);
                 while (*temp == '0') temp++;
                 resultado = soma (temp, resultado);
-                if (temp && *temp) free (temp);
+                //if (temp && *temp) free (temp);
                 while (*resultado == '0') resultado++;
                 initString (&guardaClasse);
             }
@@ -301,7 +357,7 @@ void erroSS (int tipoErro)
     int temp, i = 0, tamErro;
     Int2B *idc = NULL;
     criaIndices (erroS, &idc, NUM_ERROS);
-    if (tipoErro%2 || ! tipoErro || tipoErro == 8)
+    if (tipoErro%2 || ! tipoErro || tipoErro == 8 || tipoErro == 10 || tipoErro == 2)
     {
         fseek (erroS, idc[tipoErro], SEEK_SET);
         fscanf (erroS, "%[^\n]%c", strErro);
@@ -538,6 +594,7 @@ void filaLibera (void)
     {
         aux2 = aux;
         aux = aux -> prox;
+        if (aux2 -> info) free (aux2 -> info);
         free (aux2);
     }
     queue = NULL;

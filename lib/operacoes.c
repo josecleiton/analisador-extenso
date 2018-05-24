@@ -88,11 +88,14 @@ char* soma (char a[], char b[])
         return b;
     else if (! tb)
         return a;
-    int i, k, resto;
-    char* soma = malloc (ts+1); /*TS+1 PORQUE A SOMA PODE GERAR MAIS 1 DIGITO A ESQUERDA (999+99 = 1098)*/
+    int i=0, k, resto;
+    char* soma = (char*) malloc (ts+1); /*TS+1 PORQUE A SOMA PODE GERAR MAIS 1 DIGITO A ESQUERDA (999+99 = 1098)*/
     if (!soma) ERRO;
-    for (i=0; i<ts; i++)
-        soma[i] = 0; /*NÃO É PRECISO TRATAR O ARRAY SOMA COMO STRING, SENÃO TERIA QUE CONVERTÊ-LO POSTERIORMENTE*/
+    while (i<ts+1)
+    {
+        soma[i] = 0;
+        i++;
+    }
     inverte (a); inverte (b);
     char2int (a); char2int (b);
     for (i=0; i<menor(ta, tb); i++)
