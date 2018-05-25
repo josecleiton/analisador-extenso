@@ -253,7 +253,6 @@ int analiSemantica (void)
 void pluralOrdem (FilaNum* inicio)
 {
     FilaNum* aux = inicio;
-    char flag = 0;
     while (aux && (aux -> classe < MILHAO || aux -> classe == CONJUCAO)) aux = aux -> prox;
     if (aux && strstr (aux -> info -> nome, (char*) "oes"))
     {
@@ -276,7 +275,7 @@ int semUnidade (FilaNum** inicio)
                 if (fila -> prox -> classe < MIL) erroSS (2);
             }
         }
-        else if (fila -> classe == DEZ || fila -> classe >= VINTE && fila -> classe <= NOVENTA)
+        else if (fila -> classe == DEZ || (fila -> classe >= VINTE && fila -> classe <= NOVENTA))
         {
             if (fila -> prox && (fila -> prox -> classe < MIL || fila -> prox -> classe == CONJUCAO))
             {
@@ -321,7 +320,6 @@ char* toNumber (void)
         {
             if (k<MIL)
             {
-                char* temp = guardaClasse;
                 guardaClasse = soma (queue->info->valor, guardaClasse);
                 while (*guardaClasse == '0') guardaClasse++;
             }
@@ -438,7 +436,7 @@ void pega_token (void)
             {
                 strcat (temp, EXP);
                 NUMERO = temp + strlen (EXP);
-                while (*EXP && (isalpha (*EXP)) || *EXP == ' ') EXP++;
+                while ((*EXP && isalpha (*EXP)) || *EXP == ' ') EXP++;
                 *EXP = trade;
                 tipoToken = NUM;
                 flagNUM = 1;
@@ -527,7 +525,6 @@ int resPlural (int i, char** s)
 {
     char *nome = *s;
     if (! strchr ("mbtqscond", nome[0])) return 0;
-    int j=0;
     char* del = strpbrk (nome, (char*) ",");
     char fl = 0;
     if (!del) return 0;

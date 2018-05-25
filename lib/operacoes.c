@@ -88,7 +88,7 @@ char* soma (char a[], char b[])
         return b;
     else if (! tb)
         return a;
-    int i=0, k, resto;
+    int i=0, resto;
     char* soma = (char*) malloc (ts+1); /*TS+1 PORQUE A SOMA PODE GERAR MAIS 1 DIGITO A ESQUERDA (999+99 = 1098)*/
     if (!soma) ERRO;
     while (i<ts+1)
@@ -138,7 +138,7 @@ char* soma (char a[], char b[])
 char* subtrair (char a[], char b[])
 {
     char *min, *subt, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
-    int i, j, k = 0;
+    int i;
     int tamMinuendo = strlen(a), tamSubtraendo = strlen(b);
     if (! tamMinuendo)
         return b;
@@ -328,7 +328,7 @@ char* fatorial (char in[])
     register char* fat = (char*) malloc(900);
     if (!a || !fat) ERRO;
     strcpy (a, in);
-    int i=0,k=1,j,resto=0, tamA = strlen (a);
+    int i=0,k=1, tamA = strlen (a);
     if (tamA > 3) return NULL;
     while (i<tamA)
     {

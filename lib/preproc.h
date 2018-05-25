@@ -7,7 +7,7 @@
 #define OPENFILE(ptr_file, file_name, type) { \
     ptr_file = fopen (file_name, type); \
     if (! ptr_file) { \
-        fprintf (stderr, "arquivo nao encontrado\n"); \
+        fprintf (stderr, "Arquivo nao encontrado.\n"); \
         exit (2718); \
     } \
 }
