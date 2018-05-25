@@ -84,18 +84,19 @@ int menor (int a, int b)
 char* soma (char a[], char b[])
 {
     int ta = strlen (a), tb = strlen (b), ts = maior (ta, tb);
-    if (! ta)
+    if (! ta || *a == 0)
         return b;
-    else if (! tb)
+    else if (! tb || *b == 0)
         return a;
     int i=0, resto;
-    char* soma = (char*) malloc (ts+1); /*TS+1 PORQUE A SOMA PODE GERAR MAIS 1 DIGITO A ESQUERDA (999+99 = 1098)*/
-    if (!soma) ERRO;
-    while (i<ts+1)
+    char* soma;
+    MALLOC (soma, ts+1);
+    /*while (i<ts+1)
     {
         soma[i] = 0;
         i++;
-    }
+    }*/
+    memset (soma, 0, sizeof(char)*(ts+1));
     inverte (a); inverte (b);
     char2int (a); char2int (b);
     for (i=0; i<menor(ta, tb); i++)
@@ -268,11 +269,15 @@ char* multiplica (char a[],char b[])
     char *produto, *c, *temp;
     MALLOC (c, ta+tb+2);
     MALLOC (temp, ta+tb+2);
+/*
     for (i=0; i<ta+tb+2; i++)
     {
         c[i] = 0;
         temp[i] = 0;
     }
+*/
+    memset (c, 0, sizeof(char)*(ta+tb+2));
+    memset (temp, 0, sizeof(char)*(ta+tb+2));
     MALLOC (produto, ta+tb+2);
     /* converte as strings a e b de digito para seu correspondente em inteiro */
     for (i=0; i<=ta; i++)

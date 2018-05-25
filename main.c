@@ -43,7 +43,12 @@ struct filanum
 
 enum tokens
 {
-    ZERO, UM, DOIS, TRES, QUATRO, CINCO, SEIS, SETE, OITO, NOVE, DEZ, ONZE, DOZE, TREZE, CATORZE, QUINZE, DEZESSEIS, DEZESSETE, DEZOITO, DEZENOVE, VINTE, TRINTA, QUARENTA, CINQUENTA,SESSENTA, SETENTA, OITENTA, NOVENTA, CEM, DUZENTOS, TREZENTOS, QUATROCENTOS, QUINHENTOS, SEISCENTOS, SETECENTOS, OITOCENTOS, NOVECENTOS, MIL, MILHAO, BILHAO, TRILHAO, QUATRILHAO, QUINTILHAO, SEXTILHAO, SETILHAO, OCTILHAO, NONILHAO, DECILHAO, CONJUCAO, NUM, DELIMITADOR
+    ZERO, UM, DOIS, TRES, QUATRO, CINCO, SEIS, SETE, OITO, NOVE, DEZ, ONZE, DOZE,
+    TREZE, CATORZE, QUINZE, DEZESSEIS, DEZESSETE, DEZOITO, DEZENOVE, VINTE, TRINTA,
+    QUARENTA, CINQUENTA,SESSENTA, SETENTA, OITENTA, NOVENTA, CEM, DUZENTOS,TREZENTOS,
+    QUATROCENTOS, QUINHENTOS, SEISCENTOS, SETECENTOS, OITOCENTOS, NOVECENTOS, MIL,
+    MILHAO, BILHAO, TRILHAO, QUATRILHAO, QUINTILHAO, SEXTILHAO, SETILHAO, OCTILHAO,
+    NONILHAO, DECILHAO, CONJUCAO, NUM, DELIMITADOR
 };
 
 /* 
@@ -318,18 +323,12 @@ char* toNumber (void)
         int k = queue -> classe;
         if (k!=CONJUCAO)
         {
-            if (k<MIL)
-            {
-                guardaClasse = soma (queue->info->valor, guardaClasse);
-                while (*guardaClasse == '0') guardaClasse++;
-            }
+            if (k<MIL) guardaClasse = soma (queue->info->valor, guardaClasse);
             else
             {
                 char* temp = multiplica (queue->info->valor, guardaClasse);
-                while (*temp == '0') temp++;
                 resultado = soma (temp, resultado);
                 //if (temp && *temp) free (temp);
-                while (*resultado == '0') resultado++;
                 initString (&guardaClasse);
             }
         }
