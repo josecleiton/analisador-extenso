@@ -45,31 +45,32 @@ enum tokens
 {
     ZERO, UM, DOIS, TRES, QUATRO, CINCO, SEIS, SETE, OITO, NOVE, DEZ, ONZE, DOZE,
     TREZE, CATORZE, QUINZE, DEZESSEIS, DEZESSETE, DEZOITO, DEZENOVE, VINTE, TRINTA,
-    QUARENTA, CINQUENTA,SESSENTA, SETENTA, OITENTA, NOVENTA, CEM, DUZENTOS,TREZENTOS,
+    QUARENTA, CINQUENTA, SESSENTA, SETENTA, OITENTA, NOVENTA, CEM, DUZENTOS,TREZENTOS,
     QUATROCENTOS, QUINHENTOS, SEISCENTOS, SETECENTOS, OITOCENTOS, NOVECENTOS, MIL,
     MILHAO, BILHAO, TRILHAO, QUATRILHAO, QUINTILHAO, SEXTILHAO, SETILHAO, OCTILHAO,
     NONILHAO, DECILHAO, CONJUCAO, NUM, DELIMITADOR
 };
 
-/* 
+/*
 *
-*       VARIAVEIS GLOBAIS 
+*       VARIAVEIS GLOBAIS
 *
 */
 Ordem* ref;
 char *EXP, *_TEXP, *NUMERO, expNum[300];
 char token[30], flagNUM, tk_tmp[60];
 char tipoToken, fimEXP;
+Int2B* ind;
 FILE* dicionario;
 FilaNum* queue;
 
-void expParsingStart (char* resposta); /* GATILHO DE PARTIDA */
+char* expParsingStart (void); /* GATILHO DE PARTIDA */
 void expResTermo (char* resposta); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
 void expResFator (char* resposta); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
 void expResFatorial (char* resposta); /* ROTINA QUE RESOLVE O FATORIAL DE UM FATOR */
 void expResParenteses (char* resposta); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DENTRO DE PARENTESES */
 /* EM CONSTRUÇÃO */
-void expAvalSinal (char* resposta); /* AVALIA + OU - UNÁRIO */ 
+void expAvalSinal (char* resposta); /* AVALIA + OU - UNÁRIO */
 /* */
 void atomo (char* resposta); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
 void pega_token (void);
@@ -84,6 +85,8 @@ int semUnidade (FilaNum** inicio);
 void pluralOrdem (FilaNum* inicio);
 int pegaOrdem (FilaNum* inicio);
 char* toNumber (void);
+void toName (char** resposta);
+int resMenorOrd (char** str, char* resultado, int* size);
 void initString (char** s);
 void filaInsere (int i, char* nome, char* valor);
 void filaLibera (void);
@@ -94,14 +97,15 @@ int main (void)
     EXP = expNum;
     char* resultado;
     scanf("%[^\n]", EXP);
-    MALLOC (resultado, 1024);
-    expParsingStart (resultado);
+    resultado = expParsingStart ();
     puts (resultado);
     return 0;
 }
 
-void expParsingStart (char* resposta)
+char* expParsingStart (void)
 {
+    char *resposta;
+    MALLOC (resposta, 1024);
     OPENFILE (dicionario, ARQ_ORDENS, "r");
     MALLOC (ref, sizeof(Ordem));
     _TEXP = EXP;
@@ -110,12 +114,14 @@ void expParsingStart (char* resposta)
     if (!*token)
     {
         erroSS(3);
-        return;
+        return NULL;
     }
     expResTermo (resposta);
     if (*token) erroSS (0);
+    toName (&resposta);
     free (ref);
     fclose (dicionario);
+    return resposta;
 }
 
 void expResTermo (char* resposta)
@@ -315,15 +321,19 @@ int pegaOrdem (FilaNum* inicio)
 
 char* toNumber (void)
 {
-    char *resultado = NULL, *guardaClasse = NULL;
+    char *resultado = NULL, *guardaClasse = NULL, *aux;
     initString (&resultado);
     initString (&guardaClasse);
+    aux = guardaClasse;
     while (queue)
     {
         int k = queue -> classe;
         if (k!=CONJUCAO)
         {
-            if (k<MIL) guardaClasse = soma (queue->info->valor, guardaClasse);
+            if (k<MIL)
+            {
+                guardaClasse = soma (queue->info->valor, guardaClasse);
+            }
             else
             {
                 char* temp = multiplica (queue->info->valor, guardaClasse);
@@ -344,6 +354,7 @@ char* toNumber (void)
         resultado = soma (resultado, guardaClasse);
         *guardaClasse = '\0';
     }
+    free (aux);
     return resultado;
 }
 
@@ -379,7 +390,7 @@ void erroSS (int tipoErro)
         {
             strErro[tamErro+i] = ' ';
             i++;
-        } 
+        }
         strErro[tamErro+i] = '^';
         strErro[tamErro+i+1] = '\n';
     }
@@ -395,7 +406,7 @@ void criaIndices (FILE* in, Int2B** out, int size)
     MALLOC(ind, sizeof(Int2B)*(size+2));
     *ind = 0;
     char ch = getc (in);
-    while (ch != EOF)
+    while (ch != EOF && i <= size)
     {
         if (ch == '\n')
         {
@@ -444,7 +455,7 @@ void pega_token (void)
                 i=-1;
                 if (verificaProxToken ()) return;
             }
-            else if (strchr ("+-/*!e()", ref->valor[0]))
+            else if (strchr ("+/-*!e()", ref->valor[0]))
             {
                 tipoToken = CONJUCAO;
                 while (*EXP && (isalpha (*EXP) || *EXP == ' ' || *EXP == '-')) EXP++;
@@ -460,7 +471,7 @@ void pega_token (void)
                     free (ref->valor);
                     return;
                 }
-                else 
+                else
                 {
                     filaInsere(i, ref->nome, ref->valor);
                     i=-1;
@@ -565,7 +576,7 @@ void ajustaDelim (int* k, char* temp) /* COLOCA UM HIFEN ENTRE OS DELIMITADORES 
         EXP[i] = '\0';
         if (strcmp (&EXP[*k+1], (char*) "parentese") && strcmp (&EXP[*k+1], (char*) "de") && strcmp (&EXP[*k+1], (char*) "por"))
         {
-            EXP[*k] = ' '; 
+            EXP[*k] = ' ';
             erroSS(0);
             return;
         }
@@ -573,6 +584,127 @@ void ajustaDelim (int* k, char* temp) /* COLOCA UM HIFEN ENTRE OS DELIMITADORES 
 
 }
 
+void toName (char** resposta)
+{
+    int tam = strlen (*resposta);
+    if (tam > DECILHAO-10) return;
+    char *resultado, *aux;
+    Int2B ord, k=0, i;
+    MALLOC (resultado, tam*200);
+    criaIndices (dicionario, &ind, (TAM-4)*2);
+    while (tam > 0)
+    { //strcat (resultado, (char*) " e ");
+        ord = (tam - 1)/3;
+        resMenorOrd (resposta, resultado, &tam);
+        fseek (dicionario, ind[ord-1+MIL], SEEK_SET);
+        if (ord == 1)
+        {
+            MALLOC (aux, 5);
+            fscanf (dicionario, "%[^=]", ++aux);
+            *--aux = ' ';
+            strcat (resultado, aux);
+            free (aux);
+        }
+        if (**resposta) strcat (resultado, (char*) " e ");
+    }
+    strcpy (*resposta, resultado);
+    free (resultado);
+    free (ind);
+}
+
+int resMenorOrd (char** str, char* resultado, int* size)
+{
+    int tam = *size;
+    int cond = tam%3;
+    char label=0, *tmp, *s = *str, i = 3;
+    STATE: while (*s && *s == '0' && i>0)
+    {
+        s++;
+        cond = (cond-1)%3;
+        i--;
+    }
+    if (cond<0) cond+=3;
+    if (*s && *s != '0')
+    {
+        switch (cond)
+        {
+            case 0: flagNUM = CEM; tam-=3; cond = 3; break;
+            case 2: flagNUM = VINTE; label--; tam-=2; break;
+            case 1: flagNUM = UM; tam-=1; break;
+        }
+        while (cond)
+        {
+            label += *s - '0';
+            if (cond == 2 && *s == '1')
+            {
+                label = 10;
+                s++;
+                label += *s - '0';
+                cond = 1;
+                flagNUM = UM;
+            }
+            fseek (dicionario, ind[label-1+flagNUM], SEEK_SET);
+            MALLOC (tmp, 12);
+            fscanf (dicionario, "%[^=]", tmp);
+            if (strstr (tmp, (char*) "cem"))
+            {
+                strcpy (tmp, (char*) "cento");
+                if (s[1] == '0' && s[2] == '0')
+                {
+                    strcpy (tmp, (char*) "cem");
+                    s += 2;
+                    cond = 1;
+                }
+            }
+            strcat (resultado, tmp);
+            if (cond != 1 && ((cond==3 && s[1] + s[2] != '0'+'0') || (cond==2 && s[1] != '0')))
+                strcat (resultado, (char*) " e ");
+            free (tmp);
+            s++;
+            if (cond != 1)
+            {
+                cond = (cond-1)%3;
+                label = 0;
+                i--;
+                if (i<=0) break;
+                if (tam<0) tam+=3;
+                goto STATE;
+            }
+            break;
+        }
+    }
+    while (*size - tam != 3) tam--;
+    *str = s;
+    *size = tam;
+    return (tam-1)/3;
+    //resDezena(s, resultado, strlen(s), cursor);
+}
+
+void resDezena (char* s, char* resultado, Int2B* size, Int2B* cursor)
+{
+    flagNUM = DEZ;
+    char label, *tmp;
+
+}
+
+void resUnit (char* s, char* resultado, Int2B* size, Int2B* cursor)
+{
+
+}
+
+/*
+void resUnit (char* s, char* res, Int2B k, Int2B j)
+{
+    char digit = s[k-1] - '0';
+    char w[12];
+    memset (w, 0, 12);
+    fseek (dicionario, ind[digit], SEEK_SET);
+    fscanf (dicionario, "%[^=,]", w);
+    strcat (res, w);
+    res[strlen(res)] = ' ';
+    s++;
+}
+*/
 void filaInsere (int i, char* nome, char* valor)
 {
     FilaNum *no, *aux = queue;
