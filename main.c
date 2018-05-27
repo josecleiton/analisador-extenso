@@ -592,7 +592,7 @@ void toName (char** resposta)
     MALLOC (resultado, tam*200);
     criaIndices (dicionario, &ind, (TAM-4)*2);
     while (tam > 0)
-    { //strcat (resultado, (char*) " e ");
+    {
         ord = (tam - 1)/3;
         flag = toNameMenOrd (resposta, resultado, &tam, &plural);
         fseek (dicionario, ind[ord-1+MIL], SEEK_SET);
@@ -627,14 +627,17 @@ void toName (char** resposta)
                 strcat (resultado, (char*) " e ");
                 flagNUM = 0;
             }
-            if (ord==1 && flagNUM)
-            {
-                char AC = 0, c = 0;
-                while ((*resposta)[c]) AC += (*resposta)[c++] - '0';
-                if (AC) strcat (resultado, (char*) " e ");
-            }
+            strcat (resultado, " ");
+        }
+        if (ord==1 && flagNUM)
+        {
+            char AC = 0, c = 0;
+            while ((*resposta)[c]) AC += (*resposta)[c++] - '0';
+            if (AC) strcat (resultado, (char*) " e ");
         }
     }
+    aux = strrchr (resultado, 'e');
+    if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ')) *aux = '\0';
     strcpy (*resposta, resultado);
     free (resultado);
     free (ind);
@@ -666,7 +669,7 @@ char toNameMenOrd (char** str, char* resultado, int* size, char* flagPlural)
             {
                 label = 10;
                 s++;
-                flagNUM = NUM;
+                flagNUM = UM;
                 count--;
             }
             label += *s - '0';
@@ -686,7 +689,6 @@ char toNameMenOrd (char** str, char* resultado, int* size, char* flagPlural)
             strcat (resultado, tmp);
             if (count != 1 && ((count==3 && s[1] + s[2] != '0'+'0') || (count==2 && s[1] != '0')))
                 strcat (resultado, (char*) " e ");
-            tam--;
             count--;
             s++;
             free (tmp);
@@ -696,6 +698,7 @@ char toNameMenOrd (char** str, char* resultado, int* size, char* flagPlural)
     *flagPlural = 1;
     if (*size == tam+1 && *(s-1)=='1')  *flagPlural = 0;
     if (!*s) tam = 0;
+    tam -= cnt;
     *str = s;
     *size = tam;
     count = cnt;
