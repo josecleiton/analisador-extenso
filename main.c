@@ -368,6 +368,13 @@ void initString (char** s)
     (*s)[1] = '\0';
 }
 
+char* paraNum (void)
+{
+    char* resultado = NULL;
+    MALLOC (resultado, pegaOrdem(queue));
+    
+}
+
 void erroSS (int tipoErro)
 {
     FILE* erroS;
@@ -627,7 +634,7 @@ void toName (char** resposta)
                 strcat (resultado, (char*) " e ");
                 flagNUM = 0;
             }
-            strcat (resultado, " ");
+            strcat (resultado, ", ");
         }
         if (ord==1 && flagNUM)
         {
@@ -637,6 +644,8 @@ void toName (char** resposta)
         }
     }
     aux = strrchr (resultado, 'e');
+    if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ')) *aux = '\0';
+    aux = strrchr (resultado, ',');
     if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ')) *aux = '\0';
     strcpy (*resposta, resultado);
     free (resultado);
