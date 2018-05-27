@@ -6,12 +6,11 @@
     #################################################
     | AVALIADOR DE EXPRESSÕES NUMERICAS POR EXTENSO |
     | Entrada: expressão numérica por extenso       |
-    | Saída ideal: expressão resolvida por extenso  |
-    | Saída realística: expressão númerica          |
+    | Saída: expressão resolvida por extenso        |
     #################################################
 */
 
-/* PROX PASSO: CONVERSÃO DO RESULTADO PARA EXTENSO */
+/* PROX PASSO: REFAZER CONVERSOR DE EXTENSO PARA NUMERO */
 
 #ifndef INCLUSOS
     #define INCLUSOS
@@ -86,7 +85,7 @@ void pluralOrdem (FilaNum* inicio);
 int pegaOrdem (FilaNum* inicio);
 char* toNumber (void);
 void toName (char** resposta);
-char resMenorOrd (char** str, char* resultado, int* size);
+char toNameMenOrd (char** str, char* resultado, int* size, char* flagPlural);
 void initString (char** s);
 void filaInsere (int i, char* nome, char* valor);
 void filaLibera (void);
@@ -588,51 +587,65 @@ void toName (char** resposta)
 {
     int tam = strlen (*resposta);
     if (tam > DECILHAO-10) return;
-    char *resultado, *aux, plural;
+    char *resultado, *aux, plural, flag;
     Int2B ord;
     MALLOC (resultado, tam*200);
     criaIndices (dicionario, &ind, (TAM-4)*2);
     while (tam > 0)
     { //strcat (resultado, (char*) " e ");
         ord = (tam - 1)/3;
-        plural = resMenorOrd (resposta, resultado, &tam);
+        flag = toNameMenOrd (resposta, resultado, &tam, &plural);
         fseek (dicionario, ind[ord-1+MIL], SEEK_SET);
-        if (ord == 1)
+        if (flag)
         {
-            MALLOC (aux, 5);
-            fscanf (dicionario, "%[^=]", ++aux);
-            *--aux = ' ';
-            strcat (resultado, aux);
-            free (aux);
-        }
-        else if (ord)
-        {
-            MALLOC (aux, 36);
-            char* tmp = aux;
-            fscanf (dicionario, "%[^=]", ++aux);
-            char* del = strpbrk (aux, (char*) ",");
-            aux[del - aux] = '\0';
-            if (plural)
+            if (ord == 1)
             {
-                *--del = '\0';
-                aux = del+2;
+                MALLOC (aux, 5);
+                fscanf (dicionario, "%[^=]", ++aux);
+                *--aux = ' ';
+                strcat (resultado, aux);
+                free (aux);
             }
-            *--aux = ' ';
-            strcat (resultado, aux);
-            free (tmp);
+            else if (ord)
+            {
+                MALLOC (aux, 36);
+                char* tmp = aux;
+                fscanf (dicionario, "%[^=]", ++aux);
+                char* del = strpbrk (aux, (char*) ",");
+                aux[del - aux] = '\0';
+                if (plural)
+                {
+                    *--del = '\0';
+                    aux = del+2;
+                }
+                *--aux = ' ';
+                strcat (resultado, aux);
+                free (tmp);
+            }
+            if ((**resposta) && !((tam - 1)/3))
+            {
+                strcat (resultado, (char*) " e ");
+                flagNUM = 0;
+            }
+            if (ord==1 && flagNUM)
+            {
+                char AC = 0, c = 0;
+                while ((*resposta)[c]) AC += (*resposta)[c++] - '0';
+                if (AC) strcat (resultado, (char*) " e ");
+            }
         }
-        if ((**resposta) && !((tam - 1)/3)) strcat (resultado, (char*) " e ");
     }
     strcpy (*resposta, resultado);
     free (resultado);
     free (ind);
 }
 
-char resMenorOrd (char** str, char* resultado, int* size)
+char toNameMenOrd (char** str, char* resultado, int* size, char* flagPlural)
 {
     char *s = *str, label, *tmp;
     Int2B tam = *size, count = tam%3;
     if (! count) count += 3;
+    const Int2B cnt = count;
     while (count)
     {
         label = 0;
@@ -680,12 +693,19 @@ char resMenorOrd (char** str, char* resultado, int* size)
         }
         else if (*s) tam = strlen (s);
     }
-    count = 1;
-    if (*size == tam+1 && *(s-1)=='1')  count = 0;
+    *flagPlural = 1;
+    if (*size == tam+1 && *(s-1)=='1')  *flagPlural = 0;
     if (!*s) tam = 0;
     *str = s;
     *size = tam;
-    return (char) count;
+    count = cnt;
+    tam = 0;
+    while (count)
+    {
+        tam += *(s-count) - '0';
+        count--;
+    }
+    return (*s && tam);
 }
 
 void filaInsere (int i, char* nome, char* valor)
