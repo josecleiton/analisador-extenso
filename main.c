@@ -86,7 +86,7 @@ void pluralOrdem (FilaNum* inicio);
 int pegaOrdem (FilaNum* inicio);
 char* toNumber (void);
 void toName (char** resposta);
-int resMenorOrd (char** str, char* resultado, int* size);
+char resMenorOrd (char** str, char* resultado, int* size);
 void initString (char** s);
 void filaInsere (int i, char* nome, char* valor);
 void filaLibera (void);
@@ -534,7 +534,7 @@ int verificaProxToken (void)
 int resPlural (int i, char** s)
 {
     char *nome = *s;
-    if (! strchr ("mbtqscond", nome[0])) return 0;
+    if (! strchr ("mbtqdscount", nome[0])) return 0;
     char* del = strpbrk (nome, (char*) ",");
     char fl = 0;
     if (!del) return 0;
@@ -588,14 +588,14 @@ void toName (char** resposta)
 {
     int tam = strlen (*resposta);
     if (tam > DECILHAO-10) return;
-    char *resultado, *aux;
-    Int2B ord, k=0, i;
+    char *resultado, *aux, plural;
+    Int2B ord;
     MALLOC (resultado, tam*200);
     criaIndices (dicionario, &ind, (TAM-4)*2);
     while (tam > 0)
     { //strcat (resultado, (char*) " e ");
         ord = (tam - 1)/3;
-        resMenorOrd (resposta, resultado, &tam);
+        plural = resMenorOrd (resposta, resultado, &tam);
         fseek (dicionario, ind[ord-1+MIL], SEEK_SET);
         if (ord == 1)
         {
@@ -605,44 +605,58 @@ void toName (char** resposta)
             strcat (resultado, aux);
             free (aux);
         }
-        if (**resposta) strcat (resultado, (char*) " e ");
+        else if (ord)
+        {
+            MALLOC (aux, 36);
+            char* tmp = aux;
+            fscanf (dicionario, "%[^=]", ++aux);
+            char* del = strpbrk (aux, (char*) ",");
+            aux[del - aux] = '\0';
+            if (plural)
+            {
+                *--del = '\0';
+                aux = del+2;
+            }
+            *--aux = ' ';
+            strcat (resultado, aux);
+            free (tmp);
+        }
+        if ((**resposta) && !((tam - 1)/3)) strcat (resultado, (char*) " e ");
     }
     strcpy (*resposta, resultado);
     free (resultado);
     free (ind);
 }
 
-int resMenorOrd (char** str, char* resultado, int* size)
+char resMenorOrd (char** str, char* resultado, int* size)
 {
-    int tam = *size;
-    int cond = tam%3;
-    char label=0, *tmp, *s = *str, i = 3;
-    STATE: while (*s && *s == '0' && i>0)
+    char *s = *str, label, *tmp;
+    Int2B tam = *size, count = tam%3;
+    if (! count) count += 3;
+    while (count)
     {
-        s++;
-        cond = (cond-1)%3;
-        i--;
-    }
-    if (cond<0) cond+=3;
-    if (*s && *s != '0')
-    {
-        switch (cond)
+        label = 0;
+        while (count && *s == '0')
         {
-            case 0: flagNUM = CEM; tam-=3; cond = 3; break;
-            case 2: flagNUM = VINTE; label--; tam-=2; break;
-            case 1: flagNUM = UM; tam-=1; break;
+            count--;
+            s++;
         }
-        while (cond)
+        if (count)
         {
-            label += *s - '0';
-            if (cond == 2 && *s == '1')
+            switch (count)
+            {
+                case 1: flagNUM = UM; break;
+                case 2: flagNUM = VINTE; label--; break;
+                case 3: flagNUM = CEM; break;
+            }
+            if (count == 2 && *s == '1')
             {
                 label = 10;
                 s++;
-                label += *s - '0';
-                cond = 1;
-                flagNUM = UM;
+                flagNUM = NUM;
+                count--;
             }
+            label += *s - '0';
             fseek (dicionario, ind[label-1+flagNUM], SEEK_SET);
             MALLOC (tmp, 12);
             fscanf (dicionario, "%[^=]", tmp);
@@ -653,58 +667,27 @@ int resMenorOrd (char** str, char* resultado, int* size)
                 {
                     strcpy (tmp, (char*) "cem");
                     s += 2;
-                    cond = 1;
+                    count = 1;
                 }
             }
             strcat (resultado, tmp);
-            if (cond != 1 && ((cond==3 && s[1] + s[2] != '0'+'0') || (cond==2 && s[1] != '0')))
+            if (count != 1 && ((count==3 && s[1] + s[2] != '0'+'0') || (count==2 && s[1] != '0')))
                 strcat (resultado, (char*) " e ");
-            free (tmp);
+            tam--;
+            count--;
             s++;
-            if (cond != 1)
-            {
-                cond = (cond-1)%3;
-                label = 0;
-                i--;
-                if (i<=0) break;
-                if (tam<0) tam+=3;
-                goto STATE;
-            }
-            break;
+            free (tmp);
         }
+        else if (*s) tam = strlen (s);
     }
-    while (*size - tam != 3) tam--;
+    count = 1;
+    if (*size == tam+1 && *(s-1)=='1')  count = 0;
+    if (!*s) tam = 0;
     *str = s;
     *size = tam;
-    return (tam-1)/3;
-    //resDezena(s, resultado, strlen(s), cursor);
+    return (char) count;
 }
 
-void resDezena (char* s, char* resultado, Int2B* size, Int2B* cursor)
-{
-    flagNUM = DEZ;
-    char label, *tmp;
-
-}
-
-void resUnit (char* s, char* resultado, Int2B* size, Int2B* cursor)
-{
-
-}
-
-/*
-void resUnit (char* s, char* res, Int2B k, Int2B j)
-{
-    char digit = s[k-1] - '0';
-    char w[12];
-    memset (w, 0, 12);
-    fseek (dicionario, ind[digit], SEEK_SET);
-    fscanf (dicionario, "%[^=,]", w);
-    strcat (res, w);
-    res[strlen(res)] = ' ';
-    s++;
-}
-*/
 void filaInsere (int i, char* nome, char* valor)
 {
     FilaNum *no, *aux = queue;
