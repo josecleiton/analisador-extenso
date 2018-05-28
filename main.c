@@ -232,7 +232,7 @@ void atomo (char* resposta)
     {
         if (analiSemantica ())
         {
-            char* temp = paraNum();
+            char* temp = toNum();
             strcpy (resposta, temp);
             filaLibera ();
             flagNUM = 0;
