@@ -57,7 +57,8 @@ enum tokens
 */
 Ordem* ref;
 char *EXP, *_TEXP, *NUMERO, expNum[300];
-char token[30], flagNUM, tk_tmp[60];
+char token[30], tk_tmp[60];
+int flagNUM;
 char tipoToken, fimEXP;
 Int2B* ind;
 FILE* dicionario;
@@ -86,11 +87,11 @@ int pegaOrdem (FilaNum* inicio);
 char* toNum (void);
 char* toNumber (void);
 void toName (char** resposta);
-char toNameMenOrd (char** str, char* resultado, int* size, char* flagPlural);
+int toNameMenOrd (char** str, char* resultado, Int2B* size, Int2B* flagPlural);
 void initString (char** s);
 void filaInsere (int i, char* nome, char* valor);
 FilaNum* getLastNumber (FilaNum* inicio);
-char getNextNumberClass (FilaNum* inicio);
+int getNextNumberClass (FilaNum* inicio);
 void filaLibera (void);
 int filaCount (void);
 
@@ -374,11 +375,11 @@ void initString (char** s)
 char* toNum (void)
 {
     FilaNum* inicio = queue;
-    char *resultado = NULL, *aux, ordem, flare = 0;
-    char flag, count = filaCount(), cursor = 0, limit = pegaOrdem(queue);
+    char *resultado = NULL, *aux;
+    Int2B flag, count = filaCount(), cursor = 0, limit = pegaOrdem(queue), ordem, flare = 0;
     if (limit) limit = (limit + 1 - MIL)*3+3;
     else limit+=3;
-    const char saveLimit = limit;
+    const Int2B saveLimit = limit;
     MALLOC (resultado, limit);
     memset (resultado, 0, limit);
     aux = resultado;
@@ -394,7 +395,7 @@ char* toNum (void)
         if (queue -> ant && (ordem+1-MIL)*3+3 != saveLimit)
         {
             FilaNum *temp = queue -> ant;
-            char prevClass = temp -> classe, prevOrd = pegaOrdem (temp);
+            int prevClass = temp -> classe, prevOrd = pegaOrdem (temp);
             if (prevOrd != ordem)
             {
                 if (prevClass >= CEM && prevClass <= NOVECENTOS)
@@ -424,8 +425,16 @@ char* toNum (void)
         count--;
         queue = queue -> prox;
     }
-    if (inicio -> classe >= DEZ)
-        while (cursor < saveLimit - 1) resultado[cursor++] = '0';
+    flag = inicio -> classe;
+    if (flag >= DEZ)
+    {
+        if (inicio -> prox)
+            while (cursor < saveLimit - 1) resultado[cursor++] = '0';
+        else if (flag >= CEM)
+            cursor += 2;
+        else cursor++;
+    }
+        
     resultado[cursor] = '\0';
     limit = cursor;
     cursor = 0;
@@ -662,10 +671,11 @@ void ajustaDelim (int* k, char* temp) /* COLOCA UM HIFEN ENTRE OS DELIMITADORES 
 
 void toName (char** resposta)
 {
-    int tam = strlen (*resposta);
+    Int2B tam = strlen (*resposta);
     if (tam > DECILHAO-10) return;
-    char *resultado, *aux, plural, flag;
-    Int2B ord;
+    char *resultado, *aux;
+    Int2B ord, plural;
+    int flag;
     MALLOC (resultado, tam*200);
     memset (resultado, 0, tam*200);
     criaIndices (dicionario, &ind, (TAM-4)*2);
@@ -711,7 +721,7 @@ void toName (char** resposta)
         }
         if (ord==1 && flagNUM)
         {
-            char AC = 0, c = 0;
+            Int2B AC = 0, c = 0;
             while ((*resposta)[c]) AC += (*resposta)[c++] - '0';
             if (AC) strcat (resultado, (char*) " e ");
         }
@@ -723,7 +733,7 @@ void toName (char** resposta)
     free (ind);
 }
 
-char toNameMenOrd (char** str, char* resultado, int* size, char* flagPlural)
+int toNameMenOrd (char** str, char* resultado, Int2B* size, Int2B* flagPlural)
 {
     char *s = *str, label, *tmp;
     Int2B tam = *size, count = tam%3;
@@ -818,9 +828,9 @@ void filaInsere (int i, char* nome, char* valor)
     aux -> prox = no;
 }
 
-char getNextNumberClass (FilaNum* inicio)
+int getNextNumberClass (FilaNum* inicio)
 {
-    char classe;
+    int classe;
     if (! inicio) return ZERO;
     while (inicio -> classe >= MIL) inicio = inicio -> prox;
     classe = inicio -> classe;
