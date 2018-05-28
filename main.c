@@ -691,7 +691,7 @@ void toName (char** resposta)
                 strcat (resultado, (char*) " e ");
                 flagNUM = 0;
             }
-            strcat (resultado, ", ");
+            strcat (resultado, " ");
         }
         if (ord==1 && flagNUM)
         {
@@ -702,8 +702,6 @@ void toName (char** resposta)
     }
     aux = strrchr (resultado, 'e');
     if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ')) *aux = '\0';
-    aux = strrchr (resultado, ',');
-    if (aux && (*(aux+1) == ' ' && (*(aux+2) == ' ' || *(aux+2) == '\0'))) *aux = '\0';
     strcpy (*resposta, resultado);
     free (resultado);
     free (ind);
