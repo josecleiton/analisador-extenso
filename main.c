@@ -83,11 +83,13 @@ int analiSemantica (void);
 int semUnidade (FilaNum** inicio);
 void pluralOrdem (FilaNum* inicio);
 int pegaOrdem (FilaNum* inicio);
+char* toNum (void);
 char* toNumber (void);
 void toName (char** resposta);
 char toNameMenOrd (char** str, char* resultado, int* size, char* flagPlural);
 void initString (char** s);
 void filaInsere (int i, char* nome, char* valor);
+FilaNum* getLastNumber (FilaNum* inicio);
 void filaLibera (void);
 int filaCount (void);
 
@@ -230,7 +232,7 @@ void atomo (char* resposta)
     {
         if (analiSemantica ())
         {
-            char* temp = toNumber();
+            char* temp = paraNum();
             strcpy (resposta, temp);
             filaLibera ();
             flagNUM = 0;
@@ -368,11 +370,65 @@ void initString (char** s)
     (*s)[1] = '\0';
 }
 
-char* paraNum (void)
+char* toNum (void)
 {
-    char* resultado = NULL;
-    MALLOC (resultado, pegaOrdem(queue));
-    
+    unsigned char *resultado = NULL, *aux;
+    unsigned char flag, count = filaCount(), cursor = 0, limit = pegaOrdem(queue);
+    if (limit) limit = (limit + 1 - MIL)*3+3;
+    else limit+=3;
+    const unsigned char saveLimit = limit;
+    MALLOC (resultado, limit);
+    aux = resultado;
+    for (;;)
+    {
+        if (queue && queue -> prox)
+        {
+            flag = queue -> classe;
+            while (pegaOrdem (queue) && (pegaOrdem (queue)+1-MIL)*3+3 < limit - 3)
+            {
+                *aux++ = '0';
+                limit--;
+                cursor++;
+            }
+            if (isdigit (queue -> info -> valor[0]) && flag < MIL)
+            {
+                strcpy ((char*) aux, queue -> info -> valor);
+                aux++; cursor++;
+            }
+            count--;
+            queue = queue -> prox;
+        }
+        else
+        {
+            flag = cursor;
+            while (flag <= saveLimit - 3) resultado[flag++] = '0';
+            if (!resultado[count+cursor-1]) resultado[count+cursor-1] = '0';
+            if (queue -> ant && queue -> ant -> classe >= MIL) aux += strlen (queue -> ant -> info -> valor);
+            if (count && queue -> classe < MIL)
+            {
+                if (queue -> ant) count = queue -> ant -> classe;
+                else count = 0;
+                if (count >= MIL)
+                {
+                    flag = strlen (queue -> info -> valor);
+                    aux += flag;
+                }
+                else if (count >= CEM && queue -> classe <= DEZ) aux++;
+                strcpy ((char*) aux, queue -> info -> valor);
+                queue = queue -> prox;
+                if (count)
+                {
+                    cursor = aux - resultado - 1;
+                    while (cursor && !resultado[cursor]) 
+                        resultado[cursor--] = '0';
+                    if (!*resultado) resultado++;
+                }
+            }
+            break;
+        }
+    }
+    while (*resultado == '0') resultado++;
+    return (char*) resultado;
 }
 
 void erroSS (int tipoErro)
@@ -602,6 +658,7 @@ void toName (char** resposta)
     {
         ord = (tam - 1)/3;
         flag = toNameMenOrd (resposta, resultado, &tam, &plural);
+        tam = strlen (*resposta);
         fseek (dicionario, ind[ord-1+MIL], SEEK_SET);
         if (flag)
         {
@@ -646,7 +703,7 @@ void toName (char** resposta)
     aux = strrchr (resultado, 'e');
     if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ')) *aux = '\0';
     aux = strrchr (resultado, ',');
-    if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ')) *aux = '\0';
+    if (aux && (*(aux+1) == ' ' && (*(aux+2) == ' ' || *(aux+2) == '\0'))) *aux = '\0';
     strcpy (*resposta, resultado);
     free (resultado);
     free (ind);
@@ -707,9 +764,12 @@ char toNameMenOrd (char** str, char* resultado, int* size, char* flagPlural)
     *flagPlural = 1;
     if (*size == tam+1 && *(s-1)=='1')  *flagPlural = 0;
     if (!*s) tam = 0;
-    tam -= cnt;
     *str = s;
-    *size = tam;
+    if (strcmp (s, (char*) "000"))
+    {
+        tam -= cnt;
+        *size = tam;
+    }
     count = cnt;
     tam = 0;
     while (count)
@@ -738,8 +798,21 @@ void filaInsere (int i, char* nome, char* valor)
     }
     while (aux && aux->prox)
         aux = aux -> prox;
+    if (no -> classe < MIL)
+        no -> ant = getLastNumber (queue);
+    else no -> ant = NULL;
     aux -> prox = no;
-    no -> ant = aux;
+}
+
+FilaNum* getLastNumber (FilaNum* inicio)
+{
+    FilaNum* aux;
+    while (inicio)
+    {
+        if (inicio -> classe < MIL) aux = inicio;
+        inicio = inicio -> prox;
+    }
+    return aux;
 }
 
 void filaLibera (void)
