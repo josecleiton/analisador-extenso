@@ -120,7 +120,7 @@ char* expParsingStart (void)
     }
     expResTermo (resposta);
     if (*token) erroSS (0);
-    //toName (&resposta);
+    toName (&resposta);
     free (ref);
     fclose (dicionario);
     return resposta;
@@ -373,6 +373,7 @@ void initString (char** s)
 
 char* toNum (void)
 {
+    FilaNum* inicio = queue;
     unsigned char *resultado = NULL, *aux, ordem, flare = 0;
     unsigned char flag, count = filaCount(), cursor = 0, limit = pegaOrdem(queue);
     if (limit) limit = (limit + 1 - MIL)*3+3;
@@ -421,6 +422,10 @@ char* toNum (void)
         }
         count--;
         queue = queue -> prox;
+    }
+    if (inicio -> classe >= DEZ)
+    {
+        while (cursor < saveLimit - 1) resultado[cursor++] = '0';
     }
     cursor = 0;
     while (flare && cursor < limit)
