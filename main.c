@@ -90,6 +90,7 @@ char toNameMenOrd (char** str, char* resultado, int* size, char* flagPlural);
 void initString (char** s);
 void filaInsere (int i, char* nome, char* valor);
 FilaNum* getLastNumber (FilaNum* inicio);
+char getNextNumberClass (FilaNum* inicio);
 void filaLibera (void);
 int filaCount (void);
 
@@ -119,7 +120,7 @@ char* expParsingStart (void)
     }
     expResTermo (resposta);
     if (*token) erroSS (0);
-    toName (&resposta);
+    //toName (&resposta);
     free (ref);
     fclose (dicionario);
     return resposta;
@@ -372,33 +373,65 @@ void initString (char** s)
 
 char* toNum (void)
 {
-    unsigned char *resultado = NULL, *aux;
+    unsigned char *resultado = NULL, *aux, ordem, flare = 0;
     unsigned char flag, count = filaCount(), cursor = 0, limit = pegaOrdem(queue);
     if (limit) limit = (limit + 1 - MIL)*3+3;
     else limit+=3;
     const unsigned char saveLimit = limit;
     MALLOC (resultado, limit);
     aux = resultado;
-    for (;;)
-    {
-        if (queue && queue -> prox)
+    /*for (;;)
+    {*/
+        while (queue /*&& queue -> prox*/)
         {
             flag = queue -> classe;
-            while (pegaOrdem (queue) && (pegaOrdem (queue)+1-MIL)*3+3 < limit - 3)
+            ordem = pegaOrdem (queue);
+            while (ordem && (ordem+1-MIL)*3+3 < limit - 3)
             {
                 *aux++ = '0';
                 limit--;
-                cursor++;
+            }
+            if (queue -> ant && (ordem+1-MIL)*3+3 != saveLimit)
+            {
+                FilaNum *temp = queue -> ant;
+                unsigned char prevClass = temp -> classe, prevOrd = pegaOrdem (temp);
+                if (prevOrd != ordem)
+                {
+                    if (prevClass >= CEM && prevClass <= NOVECENTOS)
+                        aux += 2;
+                    else if (prevClass >= DEZ && prevClass <= NOVENTA)
+                        aux++;
+                }
+            }
+            if (queue -> prox == NULL || (queue -> prox && !pegaOrdem(queue -> prox)))
+            {
+                cursor = aux - resultado + 1;
+                char tmp = getNextNumberClass (queue -> prox);
+                if (tmp && tmp >= VINTE && tmp < CEM) cursor++;
+                else if (tmp && tmp >= CEM && tmp < MIL) cursor += 2;
+                while (cursor <= saveLimit - 3)
+                {
+                    resultado[cursor++] = '0';
+                    aux++;
+                    flare = 1;
+                }
             }
             if (isdigit (queue -> info -> valor[0]) && flag < MIL)
             {
                 strcpy ((char*) aux, queue -> info -> valor);
-                aux++; cursor++;
+                aux++;
             }
             count--;
             queue = queue -> prox;
         }
-        else
+        cursor = 0;
+        while (flare && cursor < limit)
+        {
+            if (cursor && !resultado[cursor])
+                resultado[cursor] = '0';
+            cursor++;
+        }
+        /*else
         {
             flag = cursor;
             while (flag <= saveLimit - 3) resultado[flag++] = '0';
@@ -426,7 +459,7 @@ char* toNum (void)
             }
             break;
         }
-    }
+    }*/
     while (*resultado == '0') resultado++;
     return (char*) resultado;
 }
@@ -800,6 +833,15 @@ void filaInsere (int i, char* nome, char* valor)
         no -> ant = getLastNumber (queue);
     else no -> ant = NULL;
     aux -> prox = no;
+}
+
+char getNextNumberClass (FilaNum* inicio)
+{
+    char classe;
+    if (! inicio) return ZERO;
+    while (inicio -> classe >= MIL) inicio = inicio -> prox;
+    classe = inicio -> classe;
+    return classe;
 }
 
 FilaNum* getLastNumber (FilaNum* inicio)
