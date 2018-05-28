@@ -374,12 +374,13 @@ void initString (char** s)
 char* toNum (void)
 {
     FilaNum* inicio = queue;
-    unsigned char *resultado = NULL, *aux, ordem, flare = 0;
-    unsigned char flag, count = filaCount(), cursor = 0, limit = pegaOrdem(queue);
+    char *resultado = NULL, *aux, ordem, flare = 0;
+    char flag, count = filaCount(), cursor = 0, limit = pegaOrdem(queue);
     if (limit) limit = (limit + 1 - MIL)*3+3;
     else limit+=3;
-    const unsigned char saveLimit = limit;
+    const char saveLimit = limit;
     MALLOC (resultado, limit);
+    memset (resultado, 0, limit);
     aux = resultado;
     while (queue)
     {
@@ -393,7 +394,7 @@ char* toNum (void)
         if (queue -> ant && (ordem+1-MIL)*3+3 != saveLimit)
         {
             FilaNum *temp = queue -> ant;
-            unsigned char prevClass = temp -> classe, prevOrd = pegaOrdem (temp);
+            char prevClass = temp -> classe, prevOrd = pegaOrdem (temp);
             if (prevOrd != ordem)
             {
                 if (prevClass >= CEM && prevClass <= NOVECENTOS)
@@ -424,9 +425,9 @@ char* toNum (void)
         queue = queue -> prox;
     }
     if (inicio -> classe >= DEZ)
-    {
         while (cursor < saveLimit - 1) resultado[cursor++] = '0';
-    }
+    resultado[cursor] = '\0';
+    limit = cursor;
     cursor = 0;
     while (flare && cursor < limit)
     {
@@ -434,6 +435,12 @@ char* toNum (void)
             resultado[cursor] = '0';
         cursor++;
     }
+    cursor = 0;
+    /*
+    while (resultado[cursor] && isdigit(resultado[cursor]))
+        cursor++;
+    resultado[cursor] = '\0';
+    */
     while (*resultado == '0') resultado++;
     return (char*) resultado;
 }
@@ -660,6 +667,7 @@ void toName (char** resposta)
     char *resultado, *aux, plural, flag;
     Int2B ord;
     MALLOC (resultado, tam*200);
+    memset (resultado, 0, tam*200);
     criaIndices (dicionario, &ind, (TAM-4)*2);
     while (tam > 0)
     {
@@ -680,6 +688,7 @@ void toName (char** resposta)
             else if (ord)
             {
                 MALLOC (aux, 36);
+                memset (aux, 0, 36);
                 char* tmp = aux;
                 fscanf (dicionario, "%[^=]", ++aux);
                 char* del = strpbrk (aux, (char*) ",");
