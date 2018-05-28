@@ -377,11 +377,11 @@ char* toNum (void)
     FilaNum* inicio = queue;
     char *resultado = NULL, *aux;
     Int2B flag, count = filaCount(), cursor = 0, limit = pegaOrdem(queue), ordem, flare = 0;
-    if (limit) limit = (limit + 1 - MIL)*3+3;
+    if (limit) limit = (limit+1-MIL)*3+3;
     else limit+=3;
     const Int2B saveLimit = limit;
-    MALLOC (resultado, limit);
-    memset (resultado, 0, limit);
+    MALLOC (resultado, limit+3);
+    memset (resultado, 0, limit+3);
     aux = resultado;
     while (queue)
     {
@@ -428,30 +428,21 @@ char* toNum (void)
     flag = inicio -> classe;
     if (flag >= DEZ)
     {
-        if (inicio -> prox)
+        if (inicio -> prox && pegaOrdem (inicio -> prox))
             while (cursor < saveLimit - 1) resultado[cursor++] = '0';
-        else if (flag >= CEM)
-            cursor += 2;
-        else cursor++;
     }
-        
-    resultado[cursor] = '\0';
     limit = cursor;
-    cursor = 0;
-    while (flare && cursor < limit)
-    {
-        if (cursor && !resultado[cursor])
-            resultado[cursor] = '0';
-        cursor++;
-    }
-    cursor = 0;
-    /*
-    while (resultado[cursor] && isdigit(resultado[cursor]))
-        cursor++;
+    while (cursor < saveLimit) cursor++;
     resultado[cursor] = '\0';
-    */
-    while (*resultado == '0') resultado++;
-    return (char*) resultado;
+    flag = 0;
+    while (flare && flag < limit)
+    {
+        if (flag && !resultado[flag])
+            resultado[flag] = '0';
+        flag++;
+    }
+    if (flare) resultado[flag] = '\0';
+    return resultado;
 }
 
 void erroSS (int tipoErro)
