@@ -380,86 +380,55 @@ char* toNum (void)
     const unsigned char saveLimit = limit;
     MALLOC (resultado, limit);
     aux = resultado;
-    /*for (;;)
-    {*/
-        while (queue /*&& queue -> prox*/)
+    while (queue)
+    {
+        flag = queue -> classe;
+        ordem = pegaOrdem (queue);
+        while (ordem && (ordem+1-MIL)*3+3 < limit - 3)
         {
-            flag = queue -> classe;
-            ordem = pegaOrdem (queue);
-            while (ordem && (ordem+1-MIL)*3+3 < limit - 3)
+            *aux++ = '0';
+            limit--;
+        }
+        if (queue -> ant && (ordem+1-MIL)*3+3 != saveLimit)
+        {
+            FilaNum *temp = queue -> ant;
+            unsigned char prevClass = temp -> classe, prevOrd = pegaOrdem (temp);
+            if (prevOrd != ordem)
             {
-                *aux++ = '0';
-                limit--;
-            }
-            if (queue -> ant && (ordem+1-MIL)*3+3 != saveLimit)
-            {
-                FilaNum *temp = queue -> ant;
-                unsigned char prevClass = temp -> classe, prevOrd = pegaOrdem (temp);
-                if (prevOrd != ordem)
-                {
-                    if (prevClass >= CEM && prevClass <= NOVECENTOS)
-                        aux += 2;
-                    else if (prevClass >= DEZ && prevClass <= NOVENTA)
-                        aux++;
-                }
-            }
-            if (queue -> prox == NULL || (queue -> prox && !pegaOrdem(queue -> prox)))
-            {
-                cursor = aux - resultado + 1;
-                char tmp = getNextNumberClass (queue -> prox);
-                if (tmp && tmp >= VINTE && tmp < CEM) cursor++;
-                else if (tmp && tmp >= CEM && tmp < MIL) cursor += 2;
-                while (cursor <= saveLimit - 3)
-                {
-                    resultado[cursor++] = '0';
+                if (prevClass >= CEM && prevClass <= NOVECENTOS)
+                    aux += 2;
+                else if (prevClass >= DEZ && prevClass <= NOVENTA)
                     aux++;
-                    flare = 1;
-                }
             }
-            if (isdigit (queue -> info -> valor[0]) && flag < MIL)
+        }
+        if (queue -> prox == NULL || (queue -> prox && !pegaOrdem(queue -> prox)))
+        {
+            cursor = aux - resultado + 1;
+            char tmp = getNextNumberClass (queue -> prox);
+            if (tmp && tmp >= VINTE && tmp < CEM) cursor++;
+            else if (tmp && tmp >= CEM && tmp < MIL) cursor += 2;
+            while (cursor <= saveLimit - 3)
             {
-                strcpy ((char*) aux, queue -> info -> valor);
+                resultado[cursor++] = '0';
                 aux++;
+                flare = 1;
             }
-            count--;
-            queue = queue -> prox;
         }
-        cursor = 0;
-        while (flare && cursor < limit)
+        if (isdigit (queue -> info -> valor[0]) && flag < MIL)
         {
-            if (cursor && !resultado[cursor])
-                resultado[cursor] = '0';
-            cursor++;
+            strcpy ((char*) aux, queue -> info -> valor);
+            aux++;
         }
-        /*else
-        {
-            flag = cursor;
-            while (flag <= saveLimit - 3) resultado[flag++] = '0';
-            if (!resultado[count+cursor-1]) resultado[count+cursor-1] = '0';
-            if (queue -> ant && queue -> ant -> classe >= MIL) aux += strlen (queue -> ant -> info -> valor);
-            if (count && queue -> classe < MIL)
-            {
-                if (queue -> ant) count = queue -> ant -> classe;
-                else count = 0;
-                if (count >= MIL)
-                {
-                    flag = strlen (queue -> info -> valor);
-                    aux += flag;
-                }
-                else if (count >= CEM && queue -> classe <= DEZ) aux++;
-                strcpy ((char*) aux, queue -> info -> valor);
-                queue = queue -> prox;
-                if (count)
-                {
-                    cursor = aux - resultado - 1;
-                    while (cursor && !resultado[cursor]) 
-                        resultado[cursor--] = '0';
-                    if (!*resultado) resultado++;
-                }
-            }
-            break;
-        }
-    }*/
+        count--;
+        queue = queue -> prox;
+    }
+    cursor = 0;
+    while (flare && cursor < limit)
+    {
+        if (cursor && !resultado[cursor])
+            resultado[cursor] = '0';
+        cursor++;
+    }
     while (*resultado == '0') resultado++;
     return (char*) resultado;
 }
