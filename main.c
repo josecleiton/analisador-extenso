@@ -10,7 +10,7 @@
     #################################################
 */
 
-/* PROX PASSO: CORRIGIR PLURAL DO CONVERSOR DE NUMERO PARA EXTENSO */
+/* PROX PASSO: CORRIGIR CONVERSOR DE EXTENSO PARA NUMERO */
 
 #ifndef INCLUSOS
     #define INCLUSOS
