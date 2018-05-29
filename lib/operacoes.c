@@ -267,18 +267,11 @@ char* multiplica (char a[],char b[])
     long int r=0;
     long soma = 0;
     char *produto, *c, *temp;
-    MALLOC (c, ta+tb+2);
-    MALLOC (temp, ta+tb+2);
-/*
-    for (i=0; i<ta+tb+2; i++)
-    {
-        c[i] = 0;
-        temp[i] = 0;
-    }
-*/
-    memset (c, 0, sizeof(char)*(ta+tb+2));
-    memset (temp, 0, sizeof(char)*(ta+tb+2));
-    MALLOC (produto, ta+tb+2);
+    MALLOC (c, ta+tb+4);
+    MALLOC (temp, ta+tb+4);
+    memset (c, 0, ta+tb+4);
+    memset (temp, 0, ta+tb+4);
+    MALLOC (produto, ta+tb+4);
     /* converte as strings a e b de digito para seu correspondente em inteiro */
     for (i=0; i<=ta; i++)
         a[i] -= '0';
