@@ -34,7 +34,7 @@ struct ordem
 };
 struct filanum
 {
-    int classe;
+    Int2B classe;
     Ordem *info;
     FilaNum *ant, *prox;
 };
@@ -55,7 +55,7 @@ enum tokens
 *
 */
 Ordem* ref;
-char *EXP, *_TEXP, *NUMERO, expNum[300];
+char *EXP, *_TEXP, expNum[300];
 char token[50], tk_tmp[100];
 int flagNUM;
 char tipoToken, fimEXP;
@@ -85,8 +85,8 @@ char* toNum (void);
 char* toNumber (void);
 void toName (char** resposta);
 int toNameMenOrd (char** str, char* resultado, Int2B* size, Int2B* flagPlural);
-void initString (char** s);
-void filaInsere (int i, char* nome, char* valor);
+void strInit (char** s);
+void filaInsere (Int2B i, char* nome, char* valor);
 FilaNum* getLastNumber (FilaNum* inicio);
 int getNextNumberClass (FilaNum* inicio);
 void filaLibera (void);
@@ -109,7 +109,6 @@ char* expParsingStart (void)
     OPENFILE (dicionario, ARQ_ORDENS, "r");
     MALLOC (ref, sizeof(Ordem));
     _TEXP = EXP;
-    NUMERO = token;
     pega_token ();
     if (!*token)
     {
@@ -247,15 +246,14 @@ int analiSemantica (void)
 {
     FilaNum* queueSem = queue;
     if (! queueSem) erroSS (3);
-    if (pegaOrdem(queueSem) > DECILHAO || filaCount() > 43) erroSS (7); /* LIMITE DE DECILHÕES */
-    char ord[2], i = 0;
+    if (filaCount() > 43) erroSS (7); /* LIMITE DE DECILHÕES */
+    Int2B ord[2], i = 0;
     while (queueSem)
     {
         pluralOrdem(queueSem);
         semUnidade (&queueSem);
         ord[i%2] = pegaOrdem (queueSem);
-        if (i%2 && ord[0] <= ord[1]) erroSS (2);
-        i++;
+        if (i++%2 && ord[0] <= ord[1]) erroSS (2);
         if (queueSem) queueSem = queueSem -> prox;
     }
     return 1;
@@ -322,8 +320,8 @@ int pegaOrdem (FilaNum* inicio)
 char* toNumber (void)
 {
     char *resultado = NULL, *guardaClasse = NULL, *aux;
-    initString (&resultado);
-    initString (&guardaClasse);
+    strInit (&resultado);
+    strInit (&guardaClasse);
     aux = guardaClasse;
     while (queue)
     {
@@ -339,7 +337,7 @@ char* toNumber (void)
                 char* temp = multiplica (queue->info->valor, guardaClasse);
                 resultado = soma (temp, resultado);
                 //if (temp && *temp) free (temp);
-                initString (&guardaClasse);
+                strInit (&guardaClasse);
             }
         }
         queue = queue -> prox;
@@ -358,7 +356,7 @@ char* toNumber (void)
     return resultado;
 }
 
-void initString (char** s)
+void strInit (char** s)
 {
     if (!*s)
     {
@@ -377,8 +375,8 @@ char* toNum (void)
     if (limit) limit = (limit+1-MIL)*3+3;
     else limit+=3;
     const Int2B saveLimit = limit;
-    MALLOC (resultado, limit+3);
-    memset (resultado, 0, limit+3);
+    MALLOC (resultado, limit*2+1);
+    memset (resultado, 0, limit*2+1);
     aux = resultado;
     while (queue)
     {
@@ -498,7 +496,8 @@ void pega_token (void)
 {
     rewind (dicionario);
     register char *temp;
-    int i = 0, k = 0;
+    Int2B i = 0;
+    int k = 0;
     char trade;
     temp = token;
     *temp = '\0';
@@ -519,7 +518,6 @@ void pega_token (void)
             if (isdigit (ref->valor[0]))
             {
                 strcat (temp, EXP);
-                NUMERO = temp + strlen (EXP);
                 while ((*EXP && isalpha (*EXP)) || *EXP == ' ') EXP++;
                 *EXP = trade;
                 tipoToken = NUM;
@@ -533,7 +531,6 @@ void pega_token (void)
             {
                 tipoToken = CONJUCAO;
                 while (*EXP && (isalpha (*EXP) || *EXP == ' ' || *EXP == '-')) EXP++;
-                NUMERO = temp;
                 *temp++ = ref->valor[0];
                 *temp = '\0';
                 *EXP = trade;
@@ -665,8 +662,8 @@ void toName (char** resposta)
     char *resultado, *aux;
     Int2B ord, plural;
     int flag;
-    MALLOC (resultado, tam*200);
-    memset (resultado, 0, tam*200);
+    MALLOC (resultado, tam*20);
+    memset (resultado, 0, tam*20);
     criaIndices (dicionario, &ind, (TAM-4)*2);
     while (tam > 0)
     {
@@ -793,7 +790,7 @@ int toNameMenOrd (char** str, char* resultado, Int2B* size, Int2B* flagPlural)
     return (*s && tam);
 }
 
-void filaInsere (int i, char* nome, char* valor)
+void filaInsere (Int2B i, char* nome, char* valor)
 {
     FilaNum *no, *aux = queue;
     MALLOC(no, sizeof (FilaNum));
@@ -819,7 +816,7 @@ void filaInsere (int i, char* nome, char* valor)
 
 int getNextNumberClass (FilaNum* inicio)
 {
-    int classe;
+    Int2B classe;
     if (! inicio) return ZERO;
     while (inicio -> classe >= MIL) inicio = inicio -> prox;
     classe = inicio -> classe;
