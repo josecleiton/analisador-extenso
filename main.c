@@ -10,12 +10,11 @@
     #################################################
 */
 
-/* PROX PASSO: CORRIGIR CONVERSOR DE NUMERO PARA EXTENSO */
+/* PROX PASSO: CORRIGIR PLURAL DO CONVERSOR DE NUMERO PARA EXTENSO */
 
 #ifndef INCLUSOS
     #define INCLUSOS
     #include "lib/preproc.h"
-    #define ERRO exit (3141592)
 #endif
 #include "lib/operacoes.c"
 #define ARQ_ORDENS "lib/ordens.txt"
@@ -69,9 +68,7 @@ void expResTermo (char* resposta); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
 void expResFator (char* resposta); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
 void expResFatorial (char* resposta); /* ROTINA QUE RESOLVE O FATORIAL DE UM FATOR */
 void expResParenteses (char* resposta); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DENTRO DE PARENTESES */
-/* EM CONSTRUÇÃO */
-void expAvalSinal (char* resposta); /* AVALIA + OU - UNÁRIO */
-/* */
+/* EM CONSTRUÇÃO void expAvalSinal (char* resposta);  AVALIA + OU - UNÁRIO */
 void atomo (char* resposta); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
 void pega_token (void);
 void ajustaEXP (void);
@@ -428,8 +425,9 @@ char* toNum (void)
     flag = inicio -> classe;
     if (flag >= DEZ)
     {
+        const Int2B boo = (flag <= DEZ && flag < CEM);
         if (inicio -> prox && pegaOrdem (inicio -> prox))
-            while (cursor < saveLimit - 1) resultado[cursor++] = '0';
+            while (cursor < saveLimit - boo) resultado[cursor++] = '0';
     }
     limit = cursor;
     while (cursor < saveLimit) cursor++;

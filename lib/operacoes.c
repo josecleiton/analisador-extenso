@@ -2,9 +2,6 @@
     #define INCLUSOS
     #include "preproc.h"
 #endif
-#ifndef ERRO
-    #define ERRO exit (3141592)
-#endif
 #define MAX 10000
 
 char* soma (char a[], char b[]);
