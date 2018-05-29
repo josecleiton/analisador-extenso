@@ -16,11 +16,13 @@
     #define INCLUSOS
     #include "lib/preproc.h"
 #endif
+#include <time.h>
 #include "lib/operacoes.c"
 #define ARQ_ORDENS "lib/ordens.txt"
 #define ARQ_ENTRADA "lib/expressoes.txt"
 #define ARQ_SAIDA "lib/resultados.txt"
 #define ARQ_ERROS "lib/erros.txt"
+#define ARQ_LOG "log.txt"
 
 #define TAM 28
 #define NUM_ERROS 12
@@ -76,6 +78,7 @@ int verificaProxToken (void);
 int resPlural (int i, char** s); /* EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PLURAL QUANTO SINGULAR E ENFILA A FORMA INSERIDA */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
+void textcolor(int attr, int fg, int bg);
 void criaIndices (FILE* in, Int2B** out, int size);
 int analiSemantica (void);
 int semUnidade (FilaNum** inicio);
@@ -465,11 +468,52 @@ void erroSS (int tipoErro)
         }
         strErro[tamErro+i] = '^';
         strErro[tamErro+i+1] = '\n';
+        strErro[tamErro+i+2] = '\0';
+        char* toFile;
+        Int2B size_toFile = strlen(strErro)+50;
+        time_t now;
+        struct tm * timeinfo;
+        time (&now);
+        timeinfo = localtime (&now);
+        MALLOC (toFile, size_toFile);
+        *toFile = '\0';
+        strcpy (toFile, asctime(timeinfo));
+        char* needle = strchr (toFile, '\n');
+        *needle++ = ' ';
+        *needle++ = '=';
+        *needle++ = ' ';
+        *needle++ = '\0';
+        strcat (toFile, strErro);
+        needle = strrchr (toFile, '\n');
+        *++needle = '\0';
+        FILE* logs;
+        OPENFILE (logs, ARQ_LOG, "ab");
+        fputs (toFile, logs);
+        fclose (logs);
+        free (toFile);
+        char* strColor = &strErro[tamErro+i];
+        sprintf (strColor, "%c[%d;%d;%dm", 0x1B, 0, 36, 40);
+        strColor+=10;
+        i+=10;
+        *strColor++ = '^';
+        Int2B tamEXP;
+        for (tamEXP = strlen (_TEXP); tamEXP-temp; tamEXP--)
+            *strColor++ = '~';
+        *strColor++ = '\n';
+        *strColor = '\0';
     }
     puts (strErro);
     free (idc);
     fclose (erroS);
     ERRO;
+}
+
+void textcolor(int attr, int fg, int bg)
+{	char command[13];
+
+	/* Command is the control command to the terminal */
+	sprintf(command, "%c[%d;%d;%dm", 0x1B, attr, fg + 30, bg + 40);
+	printf("%s", command);
 }
 
 void criaIndices (FILE* in, Int2B** out, int size)
