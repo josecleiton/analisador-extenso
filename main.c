@@ -513,8 +513,8 @@ void pega_token (void)
     ajustaDelim (&k, &trade);
     while (!feof (dicionario) && i < TAM*2)
     {
-        MALLOC (ref->nome, TAM);
-        MALLOC (ref->valor, TAM)
+        MALLOC (ref->nome, TAM+DOZE);
+        MALLOC (ref->valor, TAM+DOZE)
         fscanf (dicionario, "%[^=]=%[^\n]%*c", ref->nome, ref->valor);
         if (! strcmp (ref->nome, EXP) || resPlural(i, &ref->nome))
         {
