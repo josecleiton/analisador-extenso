@@ -500,6 +500,8 @@ void erroSS (int tipoErro)
         for (tamEXP = strlen (_TEXP); tamEXP-temp; tamEXP--)
             *strColor++ = '~';
         *strColor++ = '\n';
+        sprintf (strColor, "%c[%d;%d;%dm", 0x1B, 0, 0, 0);
+        strColor+=8;
         *strColor = '\0';
     }
     puts (strErro);
