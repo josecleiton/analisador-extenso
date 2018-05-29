@@ -78,7 +78,6 @@ int verificaProxToken (void);
 int resPlural (int i, char** s); /* EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PLURAL QUANTO SINGULAR E ENFILA A FORMA INSERIDA */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
-void textcolor(int attr, int fg, int bg);
 void criaIndices (FILE* in, Int2B** out, int size);
 int analiSemantica (void);
 int semUnidade (FilaNum** inicio);
@@ -510,14 +509,6 @@ void erroSS (int tipoErro)
     ERRO;
 }
 
-void textcolor(int attr, int fg, int bg)
-{	char command[13];
-
-	/* Command is the control command to the terminal */
-	sprintf(command, "%c[%d;%d;%dm", 0x1B, attr, fg + 30, bg + 40);
-	printf("%s", command);
-}
-
 void criaIndices (FILE* in, Int2B** out, int size)
 {
     Int2B *ind, i=1;
@@ -818,7 +809,7 @@ int toNameMenOrd (char** str, char* resultado, Int2B* size, Int2B* flagPlural)
         else if (*s) tam = strlen (s);
     }
     *flagPlural = 1;
-    if (*size == tam+1 && *(s-1)=='1')  *flagPlural = 0;
+    if (*size == tam && *(s-1)=='1')  *flagPlural = 0;
     if (!*s) tam = 0;
     *str = s;
     if (strcmp (s, (char*) "000"))
