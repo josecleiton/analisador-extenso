@@ -57,7 +57,7 @@ enum tokens
 */
 Ordem* ref;
 char *EXP, *_TEXP, *NUMERO, expNum[300];
-char token[30], tk_tmp[60];
+char token[50], tk_tmp[100];
 int flagNUM;
 char tipoToken, fimEXP;
 Int2B* ind;
