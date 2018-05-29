@@ -18,5 +18,6 @@
         ERRO; \
     } \
 }
+#define ERRO exit (3141592)
 typedef short int Int2B;
 
