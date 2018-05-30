@@ -1,9 +1,8 @@
 /*    ARQUIVO QUE CARREGA TODAS AS BIBLIOTECAS USADAS */
-#include <string.h>
-#include <ctype.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #define OPENFILE(ptr_file, file_name, type) { \
     ptr_file = fopen (file_name, type); \
     if (! ptr_file) { \

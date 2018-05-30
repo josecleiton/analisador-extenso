@@ -2,6 +2,7 @@
     #define INCLUSOS
     #include "preproc.h"
 #endif
+#include <math.h>
 #define MAX 10000
 
 char* soma (char a[], char b[]);
