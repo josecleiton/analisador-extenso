@@ -255,61 +255,30 @@ char* completaMenor (char a[], char b[], char* menor)
 
 char* multiplica (char a[],char b[])
 {
-    int ta=strlen(a)-1, tb=strlen(b)-1;
-    if (ta == -1 || tb == -1) return (char*) "";
-    if (! ta && *a == '1')
-        return b;
-    else if (! tb && *b == '1')
-        return a;
-    int i,j,k=0,x=0,y;
-    long int r=0;
-    long soma = 0;
-    char *produto, *c, *temp;
-    MALLOC (c, ta+tb+4);
-    MALLOC (temp, ta+tb+4);
-    memset (c, 0, ta+tb+4);
-    memset (temp, 0, ta+tb+4);
-    MALLOC (produto, ta+tb+4);
-    /* converte as strings a e b de digito para seu correspondente em inteiro */
-    for (i=0; i<=ta; i++)
-        a[i] -= '0';
-    for (i=0; i<=tb; i++)
-        b[i] -= '0';
-    for(i=tb; i>=0; i--){
-         r=0;
-         for(j=ta; j>=0; j--)
-         {
-            temp[k++] = (b[i] * a[j] + r) % 10;
-            r = (b[i] * a[j] + r) / 10;
-         }
-         temp[k++] = r;
-         x++;
-         for(y = 0; y < x; y++)
-            temp[k++] = 0;
-    }
-    k=0;
-    r=0;
-    for(i=0; i<ta+tb+2; i++)
+    char* produto;
+    Int2B ta = strlen (a);
+    Int2B tb = strlen (b);
+    MALLOC (produto, ta+tb+10);
+    *produto = '\0';
+    int ls = 0, i, j, cursor = 0;
+    for (i = tb-2; i >= 0; i--)
     {
-        soma = 0;
-        y = 0;
-        for(j=1; j<=tb+1; j++)
+        int resto = 0, k = ls;
+        for (j = ta-2; j >= 0; j--)
         {
-            if(i <= ta+j)
-                soma += temp[y+i];
-            y += j + ta + 1;
+            int temp = (a[j] - '0') * (b[i] - '0') + resto;
+            if (produto[k])
+                temp += produto[k] - '0';
+            produto[k++] = temp%10 + '0';
+            resto = temp/10;
         }
-        c[k++] = (soma + r) % 10;
-        r = (soma + r) / 10;
+        if (resto > 0)
+            produto[k] = resto + '0';
+        ls++;
+        cursor=k;
     }
-    c[k] = r;
-    j = 0;
-    for(i=k-1; i>=0; i--)
-        produto[j++]=c[i] + '0';
-    produto[j]='\0';
-    while (*produto == '0') produto++;
-    free (c);
-    free (temp);
+    produto[++cursor] = '\0';
+    inverte (produto);
     return produto;
 }
 
