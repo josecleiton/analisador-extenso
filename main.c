@@ -57,7 +57,7 @@ enum tokens
 *
 */
 Ordem* ref;
-char *EXP, *_TEXP, expNum[300];
+char *EXP, *_TEXP, expNum[300], op;
 char token[50], tk_tmp[100];
 int flagNUM;
 char tipoToken, fimEXP;
@@ -96,9 +96,30 @@ int main (void)
 {
     EXP = expNum;
     char* resultado;
-    scanf("%[^\n]", EXP);
-    resultado = expParsingStart ();
-    puts (resultado);
+    printf ("\n\t\tANALISADOR DE EXPRESSOES NUMERICAS POR EXTENSO\n");
+    for (;;)
+    {
+        printf ("\n\tEntrada:\n\t a= Arquivo\n\t t= Teclado\n\t e= Sair\n\nopcao = ");
+        scanf (" %c", &op);
+        switch (op)
+        {
+            case 'a':
+                break;
+            case 't':
+                scanf ("%*c");
+                scanf ("%[^\n]", EXP);
+                resultado = expParsingStart ();
+                putchar ('\n');
+                puts (resultado);
+                getchar (); scanf ("%*c");
+                break;
+            case 'e': return 0;
+            default: 
+                printf ("Opcao invalida.\n");
+                getchar (); scanf ("%*c");
+
+        }
+    }
     return 0;
 }
 
@@ -120,7 +141,7 @@ char* expParsingStart (void)
     toName (&resposta);
     free (ref);
     fclose (dicionario);
-    return resposta;
+    if (op == 't') return resposta;
 }
 
 void expResTermo (char* resposta)
@@ -131,7 +152,7 @@ void expResTermo (char* resposta)
     while ((op = *token) == '+' || op == '-')
     {
         pega_token ();
-        MALLOC (segTermo, strlen(EXP));
+        MALLOC (segTermo, 300);
         expResFator (segTermo);
         switch (op)
         {
@@ -155,7 +176,7 @@ void expResFator (char* resposta)
     while ((op=*token) == '*' || op == '/')
     {
         pega_token ();
-        MALLOC (segFator, strlen(EXP));
+        MALLOC (segFator, 300);
         expResFatorial (segFator);
         switch (op)
         {
@@ -662,7 +683,12 @@ void toName (char** resposta)
     char *resultado, *aux;
     Int2B ord, plural;
     int flag;
-    MALLOC (resultado, tam*20);
+    resultado = (char*) malloc (tam*20);
+    if (! resultado)
+    {
+        fprintf (stderr, "Memoria insuficiente.\n");
+        ERRO;
+    }
     memset (resultado, 0, tam*20);
     criaIndices (dicionario, &ind, (TAM-4)*2);
     while (tam > 0)
