@@ -259,7 +259,7 @@ char* multiplica (char a[],char b[])
     Int2B ta = strlen (a);
     Int2B tb = strlen (b);
     MALLOC (produto, ta+tb+10);
-    *produto = '\0';
+    memset (produto, 0, ta+tb+10);
     int ls = 0, i, j, cursor = 0;
     for (i = tb-2; i >= 0; i--)
     {

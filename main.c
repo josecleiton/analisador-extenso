@@ -57,7 +57,7 @@ enum tokens
 *
 */
 Ordem* ref;
-char *EXP, *_TEXP, expNum[300], op;
+char *EXP, *_TEXP, expNum[300];
 char token[50], tk_tmp[100];
 int flagNUM;
 char tipoToken, fimEXP;
@@ -65,6 +65,7 @@ Int2B* ind;
 FILE* dicionario;
 FilaNum* queue;
 
+void fileParsingInit (void);
 char* expParsingStart (void); /* GATILHO DE PARTIDA */
 void expResTermo (char* resposta); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
 void expResFator (char* resposta); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
@@ -78,7 +79,7 @@ int verificaProxToken (void);
 int resPlural (int i, char** s); /* EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PLURAL QUANTO SINGULAR E ENFILA A FORMA INSERIDA */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
-void criaIndices (FILE* in, Int2B** out, int size);
+void criaIndices (FILE* in, Int2B** out, int size, int del);
 int analiSemantica (void);
 int semUnidade (FilaNum** inicio);
 void pluralOrdem (FilaNum* inicio);
@@ -91,11 +92,12 @@ FilaNum* pegaProxNum (FilaNum* inicio);
 Int2B pegaProxClasse (FilaNum* inicio);
 void filaLibera (void);
 int filaCount (void);
+int fstrcount (FILE* in);
 
 int main (void)
 {
     EXP = expNum;
-    char* resultado;
+    char* resultado, op;
     printf ("\n\t\tANALISADOR DE EXPRESSOES NUMERICAS POR EXTENSO\n");
     for (;;)
     {
@@ -104,9 +106,11 @@ int main (void)
         switch (op)
         {
             case 'a':
+                fileParsingInit ();
                 break;
             case 't':
                 scanf ("%*c");
+                printf ("Digite uma expressao numerica: ");
                 scanf ("%[^\n]", EXP);
                 resultado = expParsingStart ();
                 putchar ('\n');
@@ -121,6 +125,22 @@ int main (void)
         }
     }
     return 0;
+}
+
+void fileParsingInit (void)
+{
+    FILE* entrada;
+    OPENFILE (entrada, ARQ_ENTRADA, "rb");
+    int count = fstrcount (entrada), i = 0;
+    Int2B* indices;
+    criaIndices (entrada, &indices, count, '\n');
+    while (count > 0)
+    {
+        fseek (entrada, indices[i++], SEEK_SET);
+        fgets (EXP, 300, entrada);
+        expParsingStart ();
+        count--;
+    }
 }
 
 char* expParsingStart (void)
@@ -141,7 +161,7 @@ char* expParsingStart (void)
     toName (&resposta);
     free (ref);
     fclose (dicionario);
-    if (op == 't') return resposta;
+    return resposta;
 }
 
 void expResTermo (char* resposta)
@@ -294,6 +314,7 @@ void pluralOrdem (FilaNum* inicio)
 int semUnidade (FilaNum** inicio)
 {
     FilaNum *fila = *inicio;
+    int flag = 0;
     while (fila && (fila -> classe < MIL || fila -> classe == CONJUCAO))
     {
         if (fila -> classe < VINTE && fila -> classe != DEZ)
@@ -324,8 +345,10 @@ int semUnidade (FilaNum** inicio)
             }
         }
         fila = fila -> prox;
+        flag++;
     }
     *inicio = fila;
+    if (! flag) erroSS (5);
     return 1;
 }
 
@@ -440,7 +463,7 @@ void erroSS (int tipoErro)
     char strErro[512];
     int temp, i = 0, tamErro;
     Int2B *idc = NULL;
-    criaIndices (erroS, &idc, NUM_ERROS);
+    criaIndices (erroS, &idc, NUM_ERROS, '\n');
     fseek (erroS, idc[tipoErro], SEEK_SET);
     fgets (strErro, 512, erroS);
     strcat (strErro, "\n\t");
@@ -493,20 +516,22 @@ void erroSS (int tipoErro)
     ERRO;
 }
 
-void criaIndices (FILE* in, Int2B** out, int size)
+void criaIndices (FILE* in, Int2B** out, int size, int del)
 {
-    Int2B *ind, i=1;
+    rewind (in);
+    Int2B *ind, i = 1, k = 1;
     MALLOC(ind, sizeof(Int2B)*(size+2));
     *ind = 0;
     char ch = getc (in);
     while (ch != EOF && i <= size)
     {
-        if (ch == '\n')
+        if (ch == del)
         {
-            ind[i] = (Int2B) ftell (in);
+            ind[i] = k;
             i++;
         }
         ch = getc (in);
+        k++;
     }
     *out = ind;
     rewind (in);
@@ -680,17 +705,12 @@ void toName (char** resposta)
 {
     Int2B tam = strlen (*resposta);
     if (tam > DECILHAO-10) return;
-    char *resultado, *aux;
+    char *resultado, *aux = NULL;
     Int2B ord, plural;
     int flag;
-    resultado = (char*) malloc (tam*20);
-    if (! resultado)
-    {
-        fprintf (stderr, "Memoria insuficiente.\n");
-        ERRO;
-    }
+    MALLOC (resultado, tam*20);
     memset (resultado, 0, tam*20);
-    criaIndices (dicionario, &ind, (TAM-4)*2);
+    criaIndices (dicionario, &ind, (TAM-4)*2, '\n');
     while (tam > 0)
     {
         ord = (tam - 1)/3;
@@ -879,4 +899,18 @@ int filaCount (void)
     int n;
     for (n = 0, aux = queue; aux; aux = aux -> prox, n++);
     return n;
+}
+
+int fstrcount (FILE* in)
+{
+    rewind (in);
+    int i = 1;
+    char ch = getc (in);
+    while (ch != EOF)
+    {
+        if (ch == '\n') i++;
+        ch = getc (in);
+    }
+    return i;
+    rewind (in);
 }
