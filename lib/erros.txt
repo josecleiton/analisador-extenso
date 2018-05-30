@@ -3,7 +3,7 @@ erro de sintaxe: falta parentese.
 erro semantico: token nao respeita a precedencia de ordens numericas.
 erro de sintaxe: o analisador espera uma expressao.
 erro: fatorial de numero negativo nao existe.
-erro
+erro fatal: termino inesperado de analise.
 erro de sintaxe: falta termo ou termo apos delimitador.
 erro: ultrapassa o limite de decilhoes.
 erro: fatorial acima de quatrocentos tem saida indefinida, por restricao de memoria.

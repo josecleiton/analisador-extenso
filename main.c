@@ -420,55 +420,52 @@ void erroSS (int tipoErro)
     int temp, i = 0, tamErro;
     Int2B *idc = NULL;
     criaIndices (erroS, &idc, NUM_ERROS);
-    if (tipoErro%2 || ! tipoErro || tipoErro == 8 || tipoErro == 10 || tipoErro == 2 || tipoErro == 12)
+    fseek (erroS, idc[tipoErro], SEEK_SET);
+    fgets (strErro, 512, erroS);
+    strcat (strErro, "\n\t");
+    strcat (strErro, _TEXP);
+    strcat (strErro, "\n\t");
+    temp = EXP - _TEXP;
+    tamErro = strlen (strErro);
+    while (i < temp)
     {
-        fseek (erroS, idc[tipoErro], SEEK_SET);
-        fgets (strErro, 512, erroS);
-        strcat (strErro, "\n\t");
-        strcat (strErro, _TEXP);
-        strcat (strErro, "\n\t");
-        temp = EXP - _TEXP;
-        tamErro = strlen (strErro);
-        while (i < temp)
-        {
-            strErro[tamErro+i] = ' ';
-            i++;
-        }
-        strErro[tamErro+i] = '^';
-        strErro[tamErro+i+1] = '\n';
-        strErro[tamErro+i+2] = '\0';
-        char* toFile;
-        Int2B size_toFile = strlen(strErro)+50;
-        time_t now;
-        struct tm * timeinfo;
-        time (&now);
-        timeinfo = localtime (&now);
-        MALLOC (toFile, size_toFile);
-        *toFile = '\0';
-        strcpy (toFile, asctime(timeinfo));
-        char* needle = strchr (toFile, '\n');
-        *++needle = '\0';
-        strcat (toFile, strErro);
-        needle = strrchr (toFile, '\n');
-        *++needle = '\0';
-        FILE* logs;
-        OPENFILE (logs, ARQ_LOG, "ab");
-        fputs (toFile, logs);
-        fclose (logs);
-        free (toFile);
-        char* strColor = &strErro[tamErro+i];
-        sprintf (strColor, "%c[%d;%d;%dm", 0x1B, 0, 36, 40);
-        strColor+=10;
-        i+=10;
-        *strColor++ = '^';
-        Int2B tamEXP;
-        for (tamEXP = strlen (_TEXP); tamEXP-temp; tamEXP--)
-            *strColor++ = '~';
-        *strColor++ = '\n';
-        sprintf (strColor, "%c[%d;%d;%dm", 0x1B, 0, 0, 0);
-        strColor+=8;
-        *strColor = '\0';
+        strErro[tamErro+i] = ' ';
+        i++;
     }
+    strErro[tamErro+i] = '^';
+    strErro[tamErro+i+1] = '\n';
+    strErro[tamErro+i+2] = '\0';
+    char* toFile;
+    Int2B size_toFile = strlen(strErro)+50;
+    time_t now;
+    struct tm * timeinfo;
+    time (&now);
+    timeinfo = localtime (&now);
+    MALLOC (toFile, size_toFile);
+    *toFile = '\0';
+    strcpy (toFile, asctime(timeinfo));
+    char* needle = strchr (toFile, '\n');
+    *++needle = '\0';
+    strcat (toFile, strErro);
+    needle = strrchr (toFile, '\n');
+    *++needle = '\0';
+    FILE* logs;
+    OPENFILE (logs, ARQ_LOG, "ab");
+    fputs (toFile, logs);
+    fclose (logs);
+    free (toFile);
+    char* strColor = &strErro[tamErro+i];
+    sprintf (strColor, "%c[%d;%d;%dm", 0x1B, 0, 36, 40);
+    strColor+=10;
+    i+=10;
+    *strColor++ = '^';
+    Int2B tamEXP;
+    for (tamEXP = strlen (_TEXP); tamEXP-temp; tamEXP--)
+        *strColor++ = '~';
+    *strColor++ = '\n';
+    sprintf (strColor, "%c[%d;%d;%dm", 0x1B, 0, 0, 0);
+    strColor+=8;
+    *strColor = '\0';
     puts (strErro);
     free (idc);
     fclose (erroS);
