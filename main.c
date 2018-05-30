@@ -22,7 +22,7 @@
 #define ARQ_ENTRADA "lib/expressoes.txt"
 #define ARQ_SAIDA "lib/resultados.txt"
 #define ARQ_ERROS "lib/erros.txt"
-#define ARQ_LOG "log.txt"
+#define ARQ_LOG "logs.txt"
 
 #define TAM 28
 #define NUM_ERROS 12
@@ -82,15 +82,13 @@ void criaIndices (FILE* in, Int2B** out, int size);
 int analiSemantica (void);
 int semUnidade (FilaNum** inicio);
 void pluralOrdem (FilaNum* inicio);
-int pegaOrdem (FilaNum* inicio);
+Int2B pegaOrdem (FilaNum* inicio);
 char* toNum (void);
-char* toNumber (void);
 void toName (char** resposta);
 int toNameMenOrd (char** str, char* resultado, Int2B* size, Int2B* flagPlural);
-void strInit (char** s);
 void filaInsere (Int2B i, char* nome, char* valor);
-FilaNum* getLastNumber (FilaNum* inicio);
-int getNextNumberClass (FilaNum* inicio);
+FilaNum* pegaProxNum (FilaNum* inicio);
+Int2B pegaProxClasse (FilaNum* inicio);
 void filaLibera (void);
 int filaCount (void);
 
@@ -232,8 +230,7 @@ void atomo (char* resposta)
     {
         if (analiSemantica ())
         {
-            char* temp = toNum();
-            strcpy (resposta, temp);
+            strcpy (resposta, toNum());
             filaLibera ();
             flagNUM = 0;
             pega_token ();
@@ -311,137 +308,109 @@ int semUnidade (FilaNum** inicio)
     return 1;
 }
 
-int pegaOrdem (FilaNum* inicio)
+Int2B pegaOrdem (FilaNum* inicio)
 {
     FilaNum* aux = inicio;
     while (aux && (aux -> classe < MIL || aux -> classe == CONJUCAO)) aux = aux -> prox;
-    if (! aux) return ZERO;
+    if (! aux) return NOVECENTOS;
     return aux -> classe;
-}
-
-char* toNumber (void)
-{
-    char *resultado = NULL, *guardaClasse = NULL, *aux;
-    strInit (&resultado);
-    strInit (&guardaClasse);
-    aux = guardaClasse;
-    while (queue)
-    {
-        int k = queue -> classe;
-        if (k!=CONJUCAO)
-        {
-            if (k<MIL)
-            {
-                guardaClasse = soma (queue->info->valor, guardaClasse);
-            }
-            else
-            {
-                char* temp = multiplica (queue->info->valor, guardaClasse);
-                resultado = soma (temp, resultado);
-                //if (temp && *temp) free (temp);
-                strInit (&guardaClasse);
-            }
-        }
-        queue = queue -> prox;
-    }
-    if (*resultado == '0')
-    {
-        free (resultado);
-        resultado = guardaClasse;
-    }
-    else if (*guardaClasse != '0')
-    {
-        resultado = soma (resultado, guardaClasse);
-        *guardaClasse = '\0';
-    }
-    free (aux);
-    return resultado;
-}
-
-void strInit (char** s)
-{
-    if (!*s)
-    {
-        *s = (char*) malloc (2);
-        if (!*s) ERRO;
-    }
-    (*s)[0] = '0';
-    (*s)[1] = '\0';
 }
 
 char* toNum (void)
 {
-    FilaNum* inicio = queue;
-    char *resultado = NULL, *aux;
-    Int2B flag, count = filaCount(), cursor = 0, limit = pegaOrdem(queue), ordem, flare = 0;
+    char *resultado, *aux, *ext;
+    Int2B limit = pegaOrdem(queue), ord, proxOrd, proxClasse;
+    Int2B i, flare = 0, flag;
     if (limit) limit = (limit+1-MIL)*3+3;
     else limit+=3;
-    const Int2B saveLimit = limit;
-    MALLOC (resultado, limit*2+1);
-    memset (resultado, 0, limit*2+1);
-    aux = resultado;
-    while (queue)
+    MALLOC (ext, limit*2+1);
+    memset (ext, 0, limit*2+1);
+    aux = ext;
+    while (queue && limit)
     {
-        flag = queue -> classe;
-        ordem = pegaOrdem (queue);
-        while (ordem && (ordem+1-MIL)*3+3 < limit - 3)
+        i = queue -> classe;
+        if (i != CONJUCAO && i < MIL)
         {
-            *aux++ = '0';
-            limit--;
-        }
-        if (queue -> ant && (ordem+1-MIL)*3+3 != saveLimit)
-        {
-            FilaNum *temp = queue -> ant;
-            int prevClass = temp -> classe, prevOrd = pegaOrdem (temp);
-            if (prevOrd != ordem)
+            ord = pegaOrdem (queue);
+            if (i < DEZ)
             {
-                if (prevClass >= CEM && prevClass <= NOVECENTOS)
+                if (! flare)
+                {
+                    strcpy (aux, (char*) "00");
                     aux += 2;
-                else if (prevClass >= DEZ && prevClass <= NOVENTA)
-                    aux++;
+                    flare = 1;
+                    flag = 0;
+                }
+                if (aux - ext && (*(aux-1) != '0' && *aux == '0' && *(aux+1) == '0')) aux++;
+                *aux++ = *(queue -> info -> valor);
             }
-        }
-        if (queue -> prox == NULL || (queue -> prox && !pegaOrdem(queue -> prox)))
-        {
-            cursor = aux - resultado + 1;
-            char tmp = getNextNumberClass (queue -> prox);
-            if (tmp && tmp >= VINTE && tmp < CEM) cursor++;
-            else if (tmp && tmp >= CEM && tmp < MIL) cursor += 2;
-            while (cursor <= saveLimit - 3)
+            else if (i < CEM)
             {
-                resultado[cursor++] = '0';
-                aux++;
+                if (! flare)
+                {
+                    strcpy (aux++, (char*) "0");
+                    flare = 1;
+                    flag = 1;
+                }
+                strcpy (aux++, queue -> info -> valor);
+            }
+            else
+            {
+                strcpy (aux++, queue -> info -> valor);
                 flare = 1;
+                flag = 2;
             }
         }
-        if (isdigit (queue -> info -> valor[0]) && flag < MIL)
+        else if (i != CONJUCAO)
         {
-            strcpy ((char*) aux, queue -> info -> valor);
-            aux++;
+            flare = 0;
+            if (queue -> prox)
+                proxOrd = pegaOrdem (queue -> prox);
+            else proxOrd = NOVECENTOS;
+            while (ord - proxOrd >= 1)
+            {
+                flare = 1;
+                if (ord - proxOrd == 1)
+                {
+                    proxClasse = pegaProxClasse (queue -> prox);
+                    if (proxClasse >= CEM)
+                        break;
+                    else if (proxClasse >= DEZ)
+                    {
+                        aux += flag;
+                        *aux++ = '0';
+                    }
+                    else if (proxClasse >= UM)
+                    {
+                        strcat (aux, "00");
+                        aux += 2 + flag;
+                    }
+                    else
+                    {
+                        strcat (aux, (char*) "000");
+                        aux += 3 + flag;
+                    }
+                }
+                else
+                {
+                    strcat (aux, (char*) "000");
+                    aux += 3;
+                }
+                proxOrd++;
+            }
         }
-        count--;
         queue = queue -> prox;
     }
-    flag = inicio -> classe;
-    if (flag >= DEZ)
-    {
-        const Int2B boo = (flag <= DEZ && flag < CEM);
-        if (inicio -> prox && pegaOrdem (inicio -> prox))
-            while (cursor < saveLimit - boo) resultado[cursor++] = '0';
-    }
-    limit = cursor;
-    while (cursor < saveLimit) cursor++;
-    resultado[cursor] = '\0';
-    flag = 0;
-    while (flare && flag < limit)
-    {
-        if (flag && !resultado[flag])
-            resultado[flag] = '0';
-        flag++;
-    }
-    if (flare) resultado[flag] = '\0';
+
+    flare = strlen (ext);
+    MALLOC (resultado, flare + 1);
+    strcpy (resultado, ext);
+    resultado[flare] = '\0';
+    free (ext);
+    while (*resultado == '0') resultado++;
     return resultado;
 }
+
 
 void erroSS (int tipoErro)
 {
@@ -478,10 +447,7 @@ void erroSS (int tipoErro)
         *toFile = '\0';
         strcpy (toFile, asctime(timeinfo));
         char* needle = strchr (toFile, '\n');
-        *needle++ = ' ';
-        *needle++ = '=';
-        *needle++ = ' ';
-        *needle++ = '\0';
+        *++needle = '\0';
         strcat (toFile, strErro);
         needle = strrchr (toFile, '\n');
         *++needle = '\0';
@@ -846,12 +812,12 @@ void filaInsere (Int2B i, char* nome, char* valor)
     while (aux && aux->prox)
         aux = aux -> prox;
     if (no -> classe < MIL)
-        no -> ant = getLastNumber (queue);
+        no -> ant = pegaProxNum (queue);
     else no -> ant = NULL;
     aux -> prox = no;
 }
 
-int getNextNumberClass (FilaNum* inicio)
+Int2B pegaProxClasse (FilaNum* inicio)
 {
     Int2B classe;
     if (! inicio) return ZERO;
@@ -860,7 +826,7 @@ int getNextNumberClass (FilaNum* inicio)
     return classe;
 }
 
-FilaNum* getLastNumber (FilaNum* inicio)
+FilaNum* pegaProxNum (FilaNum* inicio)
 {
     FilaNum* aux;
     while (inicio)
