@@ -113,6 +113,7 @@ int main (void)
                 getchar (); scanf ("%*c");
                 break;
             case 't':
+                fflush (stdout);
                 scanf ("%*c");
                 puts ("Digite uma expressao numerica: ");
                 scanf ("%[^\n]", EXP);
@@ -778,7 +779,7 @@ void toName (char** resposta)
         }
     }
     aux = strrchr (resultado, 'e');
-    if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ')) *aux = '\0';
+    if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ') && (*(aux+2) == ' ' || *(aux+2) == '\0') ) *aux = '\0';
     strcpy (*resposta, resultado);
     free (resultado);
     free (ind);
