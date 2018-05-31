@@ -109,21 +109,23 @@ int main (void)
         switch (op)
         {
             case 'a':
+                clearScreen ();
                 printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultados podem ser encontrados em %s\n", fileParsingInit (), ARQ_SAIDA);
+                fflush (stdin);
                 getchar (); scanf ("%*c");
                 break;
             case 't':
-                fflush (stdout);
+                clearScreen ();
                 scanf ("%*c");
                 puts ("Digite uma expressao numerica: ");
                 scanf ("%[^\n]", EXP);
                 resultado = expParsingStart ();
-                putchar ('\n');
-                puts (resultado);
+                printf ("\n\tResultado: %s\n", resultado);
                 getchar (); scanf ("%*c");
                 break;
             case 'e': return 0;
             default: 
+                fflush (stdin);
                 puts ("Opcao invalida.\n");
                 getchar (); scanf ("%*c");
 
@@ -723,6 +725,11 @@ void ajustaDelim (int* k, char* temp) /* COLOCA UM HIFEN ENTRE OS DELIMITADORES 
 
 void toName (char** resposta)
 {
+    if (!**resposta)
+    {
+        strcpy (*resposta, (char*) "zero");
+        return;
+    }
     Int2B tam = strlen (*resposta);
     if (tam > DECILHAO-10) return;
     char *resultado, *aux = NULL;
