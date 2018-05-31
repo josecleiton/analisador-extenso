@@ -18,10 +18,10 @@
 #endif
 #include <time.h>
 #include "lib/operacoes.c"
-#define ARQ_ORDENS "lib/ordens.txt"
+#define ARQ_ORDENS "lib/ordens.dat"
 #define ARQ_ENTRADA "lib/expressoes.txt"
 #define ARQ_SAIDA "lib/resultados.txt"
-#define ARQ_ERROS "lib/erros.txt"
+#define ARQ_ERROS "lib/erros.dat"
 #define ARQ_LOG "logs.txt"
 
 #define TAM 28
@@ -144,15 +144,21 @@ int fileParsingInit (void)
     {
         fseek (entrada, indices[i++], SEEK_SET);
         fgets (EXP, 512, entrada);
-        char* aux = strchr (EXP, '\n');
-        if (aux) *aux = '\0';
+        char* aux[2];
+        aux[0] = strchr (EXP, '\n');
+        aux[1] = strchr (EXP, '\r');
+        if (aux[1]) aux[0] = aux[1];
+        if (aux[0]) *(aux[0]) = '\0';
         expOut = expParsingStart ();
         fputs (expOut, saida);
-        fputc ('\n', saida);
+        if (count-1)
+            fputc ('\n', saida);
         fflush (saida);
         count--;
     }
     fflush (stdout);
+    fclose (entrada);
+    fclose (saida);
     return i;
 }
 
@@ -809,7 +815,7 @@ int toNameMenOrd (char** str, char* resultado, Int2B* size, Int2B* flagPlural)
             }
             label += *s - '0';
             fseek (dicionario, ind[label-1+flagNUM], SEEK_SET);
-            MALLOC (tmp, 12);
+            MALLOC (tmp, 25);
             fscanf (dicionario, "%[^=]", tmp);
             if (strstr (tmp, (char*) "cem"))
             {
