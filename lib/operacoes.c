@@ -261,10 +261,10 @@ char* multiplica (char a[],char b[])
     MALLOC (produto, ta+tb+10);
     memset (produto, 0, ta+tb+10);
     int ls = 0, i, j, cursor = 0;
-    for (i = tb-2; i >= 0; i--)
+    for (i = tb-1; i >= 0; i--)
     {
         int resto = 0, k = ls;
-        for (j = ta-2; j >= 0; j--)
+        for (j = ta-1; j >= 0; j--)
         {
             int temp = (a[j] - '0') * (b[i] - '0') + resto;
             if (produto[k])

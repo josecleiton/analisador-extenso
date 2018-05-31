@@ -57,7 +57,7 @@ enum tokens
 *
 */
 Ordem* ref;
-char *EXP, *_TEXP, expNum[300];
+char *EXP, *_TEXP, expNum[512], *expOut;
 char token[50], tk_tmp[100];
 int flagNUM;
 char tipoToken, fimEXP;
@@ -65,7 +65,7 @@ Int2B* ind;
 FILE* dicionario;
 FilaNum* queue;
 
-void fileParsingInit (void);
+int fileParsingInit (void);
 char* expParsingStart (void); /* GATILHO DE PARTIDA */
 void expResTermo (char* resposta); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
 void expResFator (char* resposta); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
@@ -93,24 +93,28 @@ Int2B pegaProxClasse (FilaNum* inicio);
 void filaLibera (void);
 int filaCount (void);
 int fstrcount (FILE* in);
+void clearScreen (void);
 
 int main (void)
 {
     EXP = expNum;
     char* resultado, op;
-    printf ("\n\t\tANALISADOR DE EXPRESSOES NUMERICAS POR EXTENSO\n");
-    for (;;)
+    puts ("\n\t\tANALISADOR DE EXPRESSOES NUMERICAS POR EXTENSO\n");
+    getchar (); scanf ("%*c");
+    while (1)
     {
-        printf ("\n\tEntrada:\n\t a= Arquivo\n\t t= Teclado\n\t e= Sair\n\nopcao = ");
-        scanf (" %c", &op);
+        clearScreen();
+        puts ("Selecione a entrada:\n a= Arquivo\n t= Teclado\n e= Sair\n\nopcao = ");
+        scanf ("%c", &op);
         switch (op)
         {
             case 'a':
-                fileParsingInit ();
+                printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultados podem ser encontrados em %s\n", fileParsingInit (), ARQ_SAIDA);
+                getchar (); scanf ("%*c");
                 break;
             case 't':
                 scanf ("%*c");
-                printf ("Digite uma expressao numerica: ");
+                puts ("Digite uma expressao numerica: ");
                 scanf ("%[^\n]", EXP);
                 resultado = expParsingStart ();
                 putchar ('\n');
@@ -119,7 +123,7 @@ int main (void)
                 break;
             case 'e': return 0;
             default: 
-                printf ("Opcao invalida.\n");
+                puts ("Opcao invalida.\n");
                 getchar (); scanf ("%*c");
 
         }
@@ -127,20 +131,29 @@ int main (void)
     return 0;
 }
 
-void fileParsingInit (void)
+int fileParsingInit (void)
 {
     FILE* entrada;
     OPENFILE (entrada, ARQ_ENTRADA, "rb");
+    FILE* saida;
+    OPENFILE (saida, ARQ_SAIDA, "wb");
     int count = fstrcount (entrada), i = 0;
     Int2B* indices;
     criaIndices (entrada, &indices, count, '\n');
     while (count > 0)
     {
         fseek (entrada, indices[i++], SEEK_SET);
-        fgets (EXP, 300, entrada);
-        expParsingStart ();
+        fgets (EXP, 512, entrada);
+        char* aux = strchr (EXP, '\n');
+        if (aux) *aux = '\0';
+        expOut = expParsingStart ();
+        fputs (expOut, saida);
+        fputc ('\n', saida);
+        fflush (saida);
         count--;
     }
+    fflush (stdout);
+    return i;
 }
 
 char* expParsingStart (void)
@@ -913,4 +926,11 @@ int fstrcount (FILE* in)
     }
     return i;
     rewind (in);
+}
+
+void clearScreen (void)
+{
+    int n;
+    for (n = 0; n < 10; n++)
+      printf ("\n\n\n\n\n\n\n\n\n\n");
 }
