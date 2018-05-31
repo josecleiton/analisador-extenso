@@ -3,7 +3,6 @@
     #include "preproc.h"
 #endif
 #include <math.h>
-#define MAX 10000
 
 char* soma (char a[], char b[]);
 char* subtrair (char a[], char b[]);
@@ -82,18 +81,13 @@ int menor (int a, int b)
 char* soma (char a[], char b[])
 {
     int ta = strlen (a), tb = strlen (b), ts = maior (ta, tb);
-    if (! ta || *a == 0)
+    if (! ta)
         return b;
-    else if (! tb || *b == 0)
+    else if (! tb)
         return a;
     int i=0, resto;
     char* soma;
     MALLOC (soma, ts+1);
-    /*while (i<ts+1)
-    {
-        soma[i] = 0;
-        i++;
-    }*/
     memset (soma, 0, sizeof(char)*(ts+1));
     inverte (a); inverte (b);
     char2int (a); char2int (b);
@@ -202,7 +196,7 @@ char* subtrair (char a[], char b[])
     }
     */
     inverte (diferenca);
-
+    if (!*diferenca) *diferenca = '0';
     return diferenca;
 }
 
@@ -258,6 +252,11 @@ char* multiplica (char a[],char b[])
     char* produto;
     Int2B ta = strlen (a);
     Int2B tb = strlen (b);
+    if ((ta == 0) || (tb == 1 && *b == '1'))
+        return a;
+    else if ((tb == 0) || (ta == 1 && *a == '1'))
+        return b;
+    
     MALLOC (produto, ta+tb+10);
     memset (produto, 0, ta+tb+10);
     int ls = 0, i, j, cursor = 0;
