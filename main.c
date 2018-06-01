@@ -19,10 +19,10 @@
 #include <time.h>
 #include "lib/operacoes.c"
 
-#define ARQ_ORDENS "lib/ordens.dat"
+#define ARQ_DICT "lib/dicionario.cfg"
+#define ARQ_ERROS "lib/erros.cfg"
 #define ARQ_ENTRADA "lib/expressoes.txt"
 #define ARQ_SAIDA "lib/resultados.txt"
-#define ARQ_ERROS "lib/erros.dat"
 #define ARQ_LOG "logs.txt"
 
 #define CLEARBUF scanf ("%*c")
@@ -159,9 +159,9 @@ int fileParsingInit (void)
         fflush (saida);
         count--;
     }
+    fclose (saida);
     fflush (stdout);
     fclose (entrada);
-    fclose (saida);
     return i;
 }
 
@@ -169,7 +169,7 @@ char* expParsingStart (void)
 {
     char *resposta;
     MALLOC (resposta, 1024);
-    OPENFILE (dicionario, ARQ_ORDENS, "r");
+    OPENFILE (dicionario, ARQ_DICT, "rb");
     MALLOC (ref, sizeof(Ordem));
     _TEXP = EXP;
     pega_token ();
@@ -482,8 +482,8 @@ void erroSS (int tipoErro)
 {
     FILE* erroS;
     OPENFILE (erroS, ARQ_ERROS, "rb");
-    char strErro[512];
-    int temp, i = 0, tamErro;
+    char strErro[512], *strBump;
+    int temp, i = 0, tamErro, tamEXP;
     Int2B *idc = NULL;
     criaIndices (erroS, &idc, NUM_ERROS, '\n');
     fseek (erroS, idc[tipoErro], SEEK_SET);
@@ -499,8 +499,11 @@ void erroSS (int tipoErro)
         i++;
     }
     strErro[tamErro+i] = '^';
-    strErro[tamErro+i+1] = '\n';
-    strErro[tamErro+i+2] = '\0';
+    strBump = &strErro[tamErro+i+1];
+    for (tamEXP = strlen (_TEXP); tamEXP-temp; tamEXP--)
+        *strBump++ = '~';
+    *strBump++ = '\n';
+    *strBump++ = '\0';
     char* toFile;
     Int2B size_toFile = strlen(strErro)+50;
     time_t now;
@@ -518,20 +521,9 @@ void erroSS (int tipoErro)
     FILE* logs;
     OPENFILE (logs, ARQ_LOG, "ab");
     fputs (toFile, logs);
+    fflush (logs);
     fclose (logs);
     free (toFile);
-    char* strColor = &strErro[tamErro+i];
-    sprintf (strColor, "%c[%d;%d;%dm", 0x1B, 0, 36, 40);
-    strColor+=10;
-    i+=10;
-    *strColor++ = '^';
-    Int2B tamEXP;
-    for (tamEXP = strlen (_TEXP); tamEXP-temp; tamEXP--)
-        *strColor++ = '~';
-    *strColor++ = '\n';
-    sprintf (strColor, "%c[%d;%d;%dm", 0x1B, 0, 0, 0);
-    strColor+=8;
-    *strColor = '\0';
     puts (strErro);
     free (idc);
     fclose (erroS);

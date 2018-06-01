@@ -4,7 +4,7 @@
 #endif
 #include <math.h>
 
-char* soma (char a[], char b[]);
+char* soma (char op1[], char op2[]);
 char* subtrair (char a[], char b[]);
 char* completaMenor (char a[], char b[], char* menor);
 char* multiplica (char a[], char b[]);
@@ -78,17 +78,20 @@ int menor (int a, int b)
     return (a<=b)*a + (b<a)*b;
 }
 
-char* soma (char a[], char b[])
+
+char* soma (char op1[], char op2[])
 {
-    int ta = strlen (a), tb = strlen (b), ts = maior (ta, tb);
+    int ta = strlen (op1), tb = strlen (op2), ts = maior (ta, tb);
     if (! ta)
-        return b;
+        return op2;
     else if (! tb)
-        return a;
+        return op1;
     int i=0, resto;
-    char* soma;
+    char* soma, *a, *b;
+    a = (ta > tb) ? op1 : op2;
+    b = (ta > tb) ? op2 : op1;
     MALLOC (soma, ts+1);
-    memset (soma, 0, sizeof(char)*(ts+1));
+    memset (soma, 0, ts+1);
     inverte (a); inverte (b);
     char2int (a); char2int (b);
     for (i=0; i<menor(ta, tb); i++)
@@ -102,9 +105,9 @@ char* soma (char a[], char b[])
             resto = 1;
         }
     }
-    if (ta == tb) /*SE OS OPERANDOS FOREM DE IGUAL TAMANHO, COLOQUE O QUE RESTOU DA CONTA NA ULTIMA POSIÇÃO DO VETOR*/
+    if (ta == tb) 
         soma[i] = resto;
-    else if (ta > tb)
+    else
     {
         while (i<ts)
         {
@@ -113,25 +116,90 @@ char* soma (char a[], char b[])
             i++;
         }
     }
-    else
-    {
-        while (i<ts)
-        {
-            soma[i] += b[i] + resto;
-            resto = 0;
-            i++;
-        }
-    }
-    int2char (soma, ts+2); /*TS + 1 PORQUE A CONTA PODE TER GERADO UM OPERADOR A MAIS*/
+    int2char (soma, ts+2);
     inverte (soma);
     while (*soma=='0') soma++;
     return soma;
 }
 
+ char* subtrair (char a[], char b[])
+ {
+    char *min, *subt, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
+    int i;
+    int tamMinuendo = strlen(a), tamSubtraendo = strlen(b);
+    if (! tamMinuendo)
+        return b;
+    else if (! tamSubtraendo)
+        return a;
+    if (tamMinuendo != tamSubtraendo)
+    {
+        subt = completaMenor (a, b, &flagMenor);
+        if (flagMenor)
+        {
+            min = b;
+            flagSinal = 1;
+        }
+        else
+        {
+            min = a;
+            flagSinal = 0;
+        }
+    }
+    else
+    {
+        if (strcmp (a,b) >= 0)
+        {
+            min = a;
+            subt = b;
+            flagSinal = 0;
+        }
+        else
+        {
+            min = b;
+            subt = a;
+            flagSinal = 1;
+        }
+    }
+    tamMinuendo = strlen (min);
+    tamSubtraendo = strlen (subt);
+
+    char* diferenca = (char*) malloc (tamMinuendo+1);
+    if (! diferenca) ERRO;
+    for (i=0; i < tamMinuendo+1; i++)
+        diferenca[i] = 0;
+    inverte (min); inverte (subt);
+    char2int (min); char2int (subt);
+    for (i=0; i<tamMinuendo; i++)
+    {
+        diferenca[i] = min[i] - subt[i];
+        if (diferenca[i] < 0)
+        {
+            min[i+1]--;
+            diferenca[i] += 10;
+        }  
+    }
+    //inverte (diferenca);
+    if (tamMinuendo == 1) tamMinuendo++;
+    int2char (diferenca, tamMinuendo);
+    for (i=0;diferenca[i] != '\0' && diferenca[i] != '0'; i++);
+    diferenca[i] = '\0';
+/*   if (flagMenor)
+    {
+        diferenca[i] = '-';
+        diferenca[i+1] = '\0';
+    }
+    */
+    inverte (diferenca);
+
+    if (!*diferenca) *diferenca = '0';
+    return diferenca;
+ }
+
+/*
 char* subtrair (char a[], char b[])
 {
     char *min = NULL, *subt = NULL, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
-    int i;
+/*    int i;
     int tamMinuendo = strlen(a), tamSubtraendo = strlen(b);
     if (! tamMinuendo)
         return b;
@@ -189,7 +257,7 @@ char* subtrair (char a[], char b[])
     //while (*diferenca && *diferenca == '0') diferenca++;
     return diferenca;
 }
-
+*/
 char* completaMenor (char a[], char b[], char* menor)
 {
     int tamMaior = 0, tamMenor = 0, tamA = strlen(a), tamB = strlen(b);
