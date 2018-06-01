@@ -25,7 +25,7 @@
 #define ARQ_SAIDA "resultados.txt"
 #define ARQ_LOG "logs.txt"
 
-#define CLEARBUF scanf ("%*c")
+#define CLRBUF scanf ("%*c")
 #define TAM 28
 #define NUM_ERROS 12
 
@@ -38,7 +38,7 @@ struct ordem
 };
 struct filanum
 {
-    Int2B classe;
+    short classe;
     Ordem *info;
     FilaNum *ant, *prox;
 };
@@ -61,7 +61,7 @@ enum tokens
 Ordem* ref;
 char *EXP, *_TEXP, expNum[512], *expOut;
 char token[2];
-short int tipoToken, flagNUM, *ind; /* a partir daqui short int sera usado como Int2B (olhar typedef em preproc.h) */
+short tipoToken, flagNUM, *ind; /* a partir daqui short int sera usado como SU (olhar typedef em preproc.h) */
 FILE* dicionario;
 FilaNum* queue;
 
@@ -79,17 +79,17 @@ int verificaProxToken (void);
 int resPlural (int i, char** s); /* EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PLURAL QUANTO SINGULAR E ENFILA A FORMA INSERIDA */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
-void criaIndices (FILE* in, Int2B** out, int size, int del);
+void criaIndices (FILE* in, SU** out, int size, int del);
 int analiSemantica (void);
 int semUnidade (FilaNum** inicio);
 void pluralOrdem (FilaNum* inicio);
-Int2B pegaOrdem (FilaNum* inicio);
+SU pegaOrdem (FilaNum* inicio);
 char* toNum (void);
 void toName (char** resposta);
-int toNameMenOrd (char** str, char* resultado, Int2B* size, Int2B* flagPlural);
-void filaInsere (Int2B i, char* nome, char* valor);
+int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural);
+void filaInsere (SU i, char* nome, char* valor);
 FilaNum* pegaProxNum (FilaNum* inicio);
-Int2B pegaProxClasse (FilaNum* inicio);
+SU pegaProxClasse (FilaNum* inicio);
 void filaLibera (void);
 int filaCount (void);
 int fstrcount (FILE* in);
@@ -100,7 +100,7 @@ int main (void)
     EXP = expNum;
     char* resultado, op;
     puts ("\n\t\tANALISADOR DE EXPRESSOES NUMERICAS POR EXTENSO\n");
-    getchar (); CLEARBUF;
+    getchar (); CLRBUF;
     while (1)
     {
         clearScreen ();
@@ -111,23 +111,23 @@ int main (void)
             case 'a':
                 clearScreen ();
                 printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultados podem ser encontrados em %s\n", fileParsingInit (), ARQ_SAIDA);
-                CLEARBUF;
-                getchar (); CLEARBUF;
+                CLRBUF;
+                getchar (); CLRBUF;
                 break;
             case 't':
                 clearScreen ();
-                CLEARBUF;
+                CLRBUF;
                 puts ("Digite uma expressao numerica: ");
                 scanf ("%[^\n]", EXP);
                 resultado = expParsingStart ();
                 printf ("\n\tResultado: %s\n", resultado);
-                getchar (); CLEARBUF;
+                getchar (); CLRBUF;
                 break;
             case 'e': return 0;
             default: 
-                CLEARBUF;
+                CLRBUF;
                 puts ("Opcao invalida.\n");
-                getchar (); CLEARBUF;
+                getchar (); CLRBUF;
 
         }
     }
@@ -141,7 +141,7 @@ int fileParsingInit (void)
     FILE* saida;
     OPENFILE (saida, ARQ_SAIDA, "wb");
     int count = fstrcount (entrada), i = 0;
-    Int2B* indices;
+    SU* indices;
     criaIndices (entrada, &indices, count, '\n');
     while (count > 0)
     {
@@ -199,7 +199,7 @@ void expResTermo (char* resposta)
         switch (op)
         {
             case '-':
-            strcpy (resposta, subtrair (resposta, segTermo));
+            strcpy (resposta, subtrair (resposta, segTermo, 1));
             free (segTermo);
             break;
             case '+':
@@ -227,7 +227,7 @@ void expResFator (char* resposta)
             free (segFator);
             break;
             case '/':
-            strcpy (resposta, divisaoPos (resposta, segFator));
+            strcpy (resposta, divisaoPos (resposta, segFator, 1));
             free (segFator);
             break;
         }
@@ -309,7 +309,7 @@ int analiSemantica (void)
     FilaNum* queueSem = queue;
     if (! queueSem) erroSS (3);
     if (filaCount() > 43) erroSS (7); /* LIMITE DE DECILHÕES */
-    Int2B ord[2], i = 0;
+    SU ord[2], i = 0;
     while (queueSem)
     {
         pluralOrdem(queueSem);
@@ -374,7 +374,7 @@ int semUnidade (FilaNum** inicio)
     return 1;
 }
 
-Int2B pegaOrdem (FilaNum* inicio)
+SU pegaOrdem (FilaNum* inicio)
 {
     FilaNum* aux = inicio;
     while (aux && (aux -> classe < MIL || aux -> classe == CONJUCAO)) aux = aux -> prox;
@@ -385,8 +385,8 @@ Int2B pegaOrdem (FilaNum* inicio)
 char* toNum (void)
 {
     char *resultado, *aux, *ext;
-    Int2B limit = pegaOrdem(queue), ord, proxOrd, proxClasse;
-    Int2B i, flare = 0, flag;
+    SU limit = pegaOrdem(queue), ord, proxOrd, proxClasse;
+    SU i, flare = 0, flag;
     if (limit) limit = (limit+1-MIL)*3+3;
     else limit+=3;
     MALLOC (ext, limit*2+1);
@@ -484,7 +484,7 @@ void erroSS (int tipoErro)
     OPENFILE (erroS, ARQ_ERROS, "rb");
     char strErro[512], *strBump;
     int temp, i = 0, tamErro, tamEXP;
-    Int2B *idc = NULL;
+    SU *idc = NULL;
     criaIndices (erroS, &idc, NUM_ERROS, '\n');
     fseek (erroS, idc[tipoErro], SEEK_SET);
     fgets (strErro, 512, erroS);
@@ -505,7 +505,7 @@ void erroSS (int tipoErro)
     *strBump++ = '\n';
     *strBump++ = '\0';
     char* toFile;
-    Int2B size_toFile = strlen(strErro)+50;
+    SU size_toFile = strlen(strErro)+50;
     time_t now;
     struct tm * timeinfo;
     time (&now);
@@ -530,11 +530,11 @@ void erroSS (int tipoErro)
     ERRO;
 }
 
-void criaIndices (FILE* in, Int2B** out, int size, int del)
+void criaIndices (FILE* in, SU** out, int size, int del)
 {
     rewind (in);
-    Int2B *ind, i = 1, k = 1;
-    MALLOC(ind, sizeof(Int2B)*(size+2));
+    SU *ind, i = 1, k = 1;
+    MALLOC(ind, sizeof(SU)*(size+2));
     *ind = 0;
     char ch = getc (in);
     while (ch != EOF && i <= size)
@@ -556,7 +556,7 @@ void pega_token (void)
 {
     rewind (dicionario);
     register char *temp;
-    Int2B i = 0;
+    SU i = 0;
     int k = 0;
     char trade;
     temp = token;
@@ -723,10 +723,10 @@ void toName (char** resposta)
         strcpy (*resposta, (char*) "zero");
         return;
     }
-    Int2B tam = strlen (*resposta);
+    SU tam = strlen (*resposta);
     if (tam > DECILHAO-10) return;
     char *resultado, *aux = NULL;
-    Int2B ord, plural;
+    SU ord, plural;
     int flag;
     MALLOC (resultado, tam*20);
     memset (resultado, 0, tam*20);
@@ -773,7 +773,7 @@ void toName (char** resposta)
         }
         if (ord==1 && flagNUM)
         {
-            Int2B AC = 0, c = 0;
+            SU AC = 0, c = 0;
             while ((*resposta)[c]) AC += (*resposta)[c++] - '0';
             if (AC) strcat (resultado, (char*) " e ");
         }
@@ -785,12 +785,12 @@ void toName (char** resposta)
     free (ind);
 }
 
-int toNameMenOrd (char** str, char* resultado, Int2B* size, Int2B* flagPlural)
+int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural)
 {
     char *s = *str, label, *tmp;
-    Int2B tam = *size, count = tam%3;
+    SU tam = *size, count = tam%3;
     if (! count) count += 3;
-    const Int2B cnt = count;
+    const SU cnt = count;
     while (count)
     {
         label = 0;
@@ -856,7 +856,7 @@ int toNameMenOrd (char** str, char* resultado, Int2B* size, Int2B* flagPlural)
     return (*s && tam);
 }
 
-void filaInsere (Int2B i, char* nome, char* valor)
+void filaInsere (SU i, char* nome, char* valor)
 {
     FilaNum *no, *aux = queue;
     MALLOC(no, sizeof (FilaNum));
@@ -880,9 +880,9 @@ void filaInsere (Int2B i, char* nome, char* valor)
     aux -> prox = no;
 }
 
-Int2B pegaProxClasse (FilaNum* inicio)
+SU pegaProxClasse (FilaNum* inicio)
 {
-    Int2B classe;
+    SU classe;
     if (! inicio) return ZERO;
     while (inicio -> classe >= MIL) inicio = inicio -> prox;
     classe = inicio -> classe;

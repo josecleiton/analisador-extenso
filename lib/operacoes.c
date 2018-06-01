@@ -5,10 +5,10 @@
 #include <math.h>
 #define MAX 10000
 char* soma (char op1[], char op2[]);
-char* subtrair (char a[], char b[]);
+char* subtrair (char a[], char b[], char boolIGNORELFZEROS);
 char* completaMenor (char a[], char b[], char* menor);
 char* multiplica (char a[], char b[]);
-char* divisaoPos (char a[], char b[]);
+char* divisaoPos (char a[], char D[], char boolMOD);
 char* fatorial (char a[]);
 int strIsDigit (char a[]);
 int fatorial_multiplicador (int a, char fat[], int limit);
@@ -18,7 +18,7 @@ int inverte (char a[]); /* strrev (apenas para Janelas OS) */
 int maior (int a, int b);
 int menor (int a, int b);
 
-/*
+
 int main (void)
 {
     char a[MAX];
@@ -29,11 +29,11 @@ int main (void)
     //printf("Digite o segundo numero: ");
     scanf("%s",b);
     //printf("Soma dos dois numeros: ");
-    c = soma (a, b);
+    c = divisaoPos (a, b, 0);
     puts (c);
     return 0;
 }
-*/
+
 
 int inverte (char a[])
 {
@@ -122,7 +122,7 @@ char* soma (char a[], char b[])
     return soma;
 }
 
- char* subtrair (char a[], char b[])
+ char* subtrair (char a[], char b[], char boolIGNORELFZEROS)
  {
     char *min, *subt, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
     int i;
@@ -175,7 +175,8 @@ char* soma (char a[], char b[])
         }  
         diferenca[i] += '0';
     }
-    while (*diferenca == '0') diferenca++;
+    if (boolIGNORELFZEROS)
+        while (*diferenca == '0') diferenca++;
     return diferenca;
 }
 
@@ -229,8 +230,8 @@ char* completaMenor (char a[], char b[], char* menor)
 char* multiplica (char a[],char b[])
 {
     char* produto;
-    Int2B ta = strlen (a);
-    Int2B tb = strlen (b);
+    SU ta = strlen (a);
+    SU tb = strlen (b);
     if ((ta == 0) || (tb == 1 && *b == '1'))
         return a;
     else if ((tb == 0) || (ta == 1 && *a == '1'))
@@ -259,7 +260,7 @@ char* multiplica (char a[],char b[])
     inverte (produto);
     return produto;
 }
-
+/*
 char* divisaoPos (char N[], char D[])
 {
     int tn = strlen (N);
@@ -296,6 +297,57 @@ char* divisaoPos (char N[], char D[])
     if (quo < 0) return NULL;
     
     return NULL;
+}
+*/
+
+char* divisaoPos (char a[], char D[], char boolMOD)
+{
+    int tn = strlen (a), td = strlen (D);
+    int i, j = 0;
+    char k;
+    char *N, *R, *Q, *temp, *lnSig;
+    char tmp, fl = 0;
+    MALLOC (N, tn+1);
+    MALLOC (lnSig, tn+1-td);
+    strcpy (N, a);
+    temp = N;
+    N[tn] = '\0';
+    MALLOC (R, 1);
+    MALLOC (Q, tn-1);
+    *R = 0;
+    for (i = 0; i < tn-1; i++)
+    {
+        k = 0;
+        if (td+j <= tn-1)
+            tmp = N[td+j];
+        N[td+j] = '\0';
+        if (fl)
+            strcat (lnSig, &N[td+j+1]);
+        while (*N == '0') N++;
+        while (strcmp (N, D) >= 0)
+        {
+            N = subtrair (N, D, 0);
+            k++;
+            fl = 1;
+        }
+        N[td+j] = tmp;
+        N[td+j+1] = '\0';
+        if (i+1 < tn-1)
+            strcat (N, lnSig);
+        Q[j] = k + '0';
+        j++;
+    }
+    Q[j] = '\0';
+    free (temp);
+    free (lnSig);
+    if (boolMOD)
+    {
+        free (Q);
+        while (*N == '0') N++;
+        return N;
+    }
+    free (N);
+    return Q;
 }
 
 char* fatorial (char in[])
