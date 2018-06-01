@@ -22,7 +22,7 @@
 #define ARQ_DICT "lib/dicionario.cfg"
 #define ARQ_ERROS "lib/erros.cfg"
 #define ARQ_ENTRADA "lib/expressoes.txt"
-#define ARQ_SAIDA "lib/resultados.txt"
+#define ARQ_SAIDA "resultados.txt"
 #define ARQ_LOG "logs.txt"
 
 #define CLEARBUF scanf ("%*c")
@@ -103,7 +103,7 @@ int main (void)
     getchar (); CLEARBUF;
     while (1)
     {
-        clearScreen();
+        clearScreen ();
         puts ("Selecione a entrada:\n a= Arquivo\n t= Teclado\n e= Sair\n\nopcao = ");
         scanf ("%c", &op);
         switch (op)
@@ -227,7 +227,7 @@ void expResFator (char* resposta)
             free (segFator);
             break;
             case '/':
-            strcpy (resposta, divide (resposta, segFator));
+            strcpy (resposta, divisaoPos (resposta, segFator));
             free (segFator);
             break;
         }
