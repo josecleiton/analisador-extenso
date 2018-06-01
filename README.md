@@ -5,7 +5,7 @@ Este é um **analisador de expressões númericas por extenso**, que resolve exp
 A linguagem de programação é C e funciona bem com o GCC 8.1.0.
 
 ## Da motivação
-Este projeto foi proposto como "trabalho de semestre" da disciplina Linguagem de Programação I, pelo professor **__[Jorge Sampaio Farias]__**(http://lattes.cnpq.br/6683499592786376), referente ao período 2 do curso de Sistemas de Informação na **Universidade do Estado da Bahia (UNEB)**.
+Este projeto foi proposto como "trabalho de semestre" da disciplina Linguagem de Programação I, pelo professor [Jorge Sampaio Farias](http://lattes.cnpq.br/6683499592786376), referente ao período 2 do curso de Sistemas de Informação na **Universidade do Estado da Bahia (UNEB)**.
 
 ##  Analisador de expressões?
 
