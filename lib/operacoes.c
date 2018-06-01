@@ -130,7 +130,7 @@ char* soma (char a[], char b[])
 
 char* subtrair (char a[], char b[])
 {
-    char *min, *subt, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
+    char *min = NULL, *subt = NULL, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
     int i;
     int tamMinuendo = strlen(a), tamSubtraendo = strlen(b);
     if (! tamMinuendo)
@@ -169,34 +169,24 @@ char* subtrair (char a[], char b[])
     tamMinuendo = strlen (min);
     tamSubtraendo = strlen (subt);
 
-    char* diferenca = (char*) malloc (tamMinuendo+1);
-    if (! diferenca) ERRO;
-    for (i=0; i < tamMinuendo+1; i++)
-        diferenca[i] = 0;
-    inverte (min); inverte (subt);
+    char* diferenca;
+    MALLOC (diferenca, tamMinuendo + 1);
+    memset (diferenca, 0, tamMinuendo + 1);
+    //inverte (min); inverte (subt);
     char2int (min); char2int (subt);
-    for (i=0; i<tamMinuendo; i++)
+    for (i=tamMinuendo-1; i>=0; i--)
     {
         diferenca[i] = min[i] - subt[i];
         if (diferenca[i] < 0)
         {
-            min[i+1]--;
+            min[i-1]--;
             diferenca[i] += 10;
         }  
     }
     //inverte (diferenca);
     if (tamMinuendo == 1) tamMinuendo++;
-    int2char (diferenca, tamMinuendo);
-    for (i=0;diferenca[i] != '\0' && diferenca[i] != '0'; i++);
-    diferenca[i] = '\0';
- /*   if (flagMenor)
-    {
-        diferenca[i] = '-';
-        diferenca[i+1] = '\0';
-    }
-    */
-    inverte (diferenca);
-    if (!*diferenca) *diferenca = '0';
+    int2char (diferenca, tamMinuendo + 1);
+    //while (*diferenca && *diferenca == '0') diferenca++;
     return diferenca;
 }
 
@@ -219,7 +209,8 @@ char* completaMenor (char a[], char b[], char* menor)
     }
     if (tamMaior + tamMenor)
     {
-        char* completaZeros = (char*) malloc (tamMaior);
+        char* completaZeros;
+        MALLOC (completaZeros, tamMaior);
         while (k < tamMaior-tamMenor)
         {    
             completaZeros[k] = '0';
@@ -237,7 +228,6 @@ char* completaMenor (char a[], char b[], char* menor)
             strcat (completaZeros, b);
             *menor = __menor;
         }
-        
         return completaZeros;
     }
     else
@@ -283,7 +273,20 @@ char* multiplica (char a[],char b[])
 
 char* divide (char a[], char b[])
 {
-    ERRO;
+    char* quociente;
+    int ta = strlen (a);
+    int tb = strlen (b);
+    if ((ta == 0) || (tb == 1 && *b == '1'))
+        return a;
+    else if ((tb == 0) || (ta == 1 && *a == '1'))
+        return b;
+    int len = menor (ta, tb) + 1;
+    int i, j, k, ls, rs;
+    MALLOC (quociente, len + 1);
+    memset (quociente, 0, len + 1);
+    char* tmpSubt;
+    
+    return quociente;
 }
 
 char* fatorial (char in[])
@@ -303,7 +306,7 @@ char* fatorial (char in[])
         i++;
     }
     i=0;
-    fat[0] = 1;
+    *fat = 1;
     int num = 0;
     inverte (a);
     char2int (a);

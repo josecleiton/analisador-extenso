@@ -18,12 +18,14 @@
 #endif
 #include <time.h>
 #include "lib/operacoes.c"
+
 #define ARQ_ORDENS "lib/ordens.dat"
 #define ARQ_ENTRADA "lib/expressoes.txt"
 #define ARQ_SAIDA "lib/resultados.txt"
 #define ARQ_ERROS "lib/erros.dat"
 #define ARQ_LOG "logs.txt"
 
+#define CLEARBUF scanf ("%*c")
 #define TAM 28
 #define NUM_ERROS 12
 
@@ -58,10 +60,8 @@ enum tokens
 */
 Ordem* ref;
 char *EXP, *_TEXP, expNum[512], *expOut;
-char token[50], tk_tmp[100];
-int flagNUM;
-char tipoToken, fimEXP;
-Int2B* ind;
+char token[2];
+short int tipoToken, flagNUM, *ind; /* a partir daqui short int sera usado como Int2B (olhar typedef em preproc.h) */
 FILE* dicionario;
 FilaNum* queue;
 
@@ -100,7 +100,7 @@ int main (void)
     EXP = expNum;
     char* resultado, op;
     puts ("\n\t\tANALISADOR DE EXPRESSOES NUMERICAS POR EXTENSO\n");
-    getchar (); scanf ("%*c");
+    getchar (); CLEARBUF;
     while (1)
     {
         clearScreen();
@@ -111,23 +111,23 @@ int main (void)
             case 'a':
                 clearScreen ();
                 printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultados podem ser encontrados em %s\n", fileParsingInit (), ARQ_SAIDA);
-                fflush (stdin);
-                getchar (); scanf ("%*c");
+                CLEARBUF;
+                getchar (); CLEARBUF;
                 break;
             case 't':
                 clearScreen ();
-                scanf ("%*c");
+                CLEARBUF;
                 puts ("Digite uma expressao numerica: ");
                 scanf ("%[^\n]", EXP);
                 resultado = expParsingStart ();
                 printf ("\n\tResultado: %s\n", resultado);
-                getchar (); scanf ("%*c");
+                getchar (); CLEARBUF;
                 break;
             case 'e': return 0;
             default: 
-                fflush (stdin);
+                CLEARBUF;
                 puts ("Opcao invalida.\n");
-                getchar (); scanf ("%*c");
+                getchar (); CLEARBUF;
 
         }
     }
@@ -585,8 +585,9 @@ void pega_token (void)
         {
             if (isdigit (ref->valor[0]))
             {
-                strcat (temp, EXP);
-                while ((*EXP && isalpha (*EXP)) || *EXP == ' ') EXP++;
+                *temp++ = ref -> valor[0];
+                *temp = '\0';
+                while (*EXP && (isalpha (*EXP) || *EXP == ' ')) EXP++;
                 *EXP = trade;
                 tipoToken = NUM;
                 flagNUM = 1;
