@@ -5,7 +5,7 @@ Este é um **analisador de expressões númericas por extenso**, que resolve exp
 A linguagem de programação é C e funciona bem com o GCC 8.1.0.
 
 ## Da motivação
-Este projeto foi proposto como "trabalho de semestre" da disciplina Linguagem de Programação I, pelo professor [Jorge Sampaio Farias](http://lattes.cnpq.br/6683499592786376), referente ao período 2 do curso de Sistemas de Informação na **Universidade do Estado da Bahia (UNEB)**.
+Este projeto foi proposto como "trabalho de semestre" da disciplina Linguagem de Programação I, pelo professor [Jorge Sampaio Farias](http://lattes.cnpq.br/6683499592786376), referente ao período 2 do curso de [Sistemas de Informação](http://www.csi.uneb.br/) na [Universidade do Estado da Bahia (UNEB)](https://portal.uneb.br/).
 
 ##  Analisador de expressões?
 
@@ -19,12 +19,12 @@ Este projeto foi proposto como "trabalho de semestre" da disciplina Linguagem de
 
 ## Instruções de uso
 **Não utilize acentos nas palavras.**
--Correto = dois milhoes
--Incorreto = ~~dois milhões~~
+- Correto = dois milhoes
+- Incorreto = ~~dois milhões~~
 
 **Não utilize pontuação**
--Correto = sete trilhoes e oitenta milhoes
--Incorreto = ~~sete trilhoes, e oitenta milhoes~~
+- Correto = sete trilhoes e oitenta milhoes
+- Incorreto = ~~sete trilhoes, e oitenta milhoes~~
 
 ## Adição de mais ordens no dicionario
 Após adicionar a referida ordem, cuide com o __size__ da macro MALLOC (em diversos ponteiros no arquivo **main.c**).
