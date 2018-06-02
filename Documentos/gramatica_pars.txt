@@ -1,5 +1,5 @@
 GRAMÁTICA PARA O ANALISADOR
-UTILIZANDO O FORMALISMO DE BACK-NAUR
+UTILIZANDO O FORMALISMO DE BACKUS-NAUR
 ** não sei se está construída corretamente, desculpe a falta de conhecimento da minha parte **
 
 <expressão>	::= <termo> <mais-termos>
