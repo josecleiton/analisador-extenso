@@ -1,7 +1,7 @@
-GRAMÁTICA PARA O ANALISADOR LÉXICO
+GRAMÁTICA PARA O ANALISADOR
 UTILIZANDO O FORMALISMO DE BACK-NAUR
+** não sei se está construída corretamente, desculpe a falta de conhecimento da minha parte **
 
-<instrução>	::= <expressão>
 <expressão>	::= <termo> <mais-termos>
 <termo> 	::= "" | <fator> <mais-fator>
 <mais-termos>	::= "" | ("+"|"-") <termo>

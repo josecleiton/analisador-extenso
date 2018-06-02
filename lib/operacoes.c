@@ -24,11 +24,11 @@ int main (void)
     char a[MAX];
     char b[MAX];
     char *c;
-    //printf("Digite o primeiro numero: ");
+    /*printf("Digite o primeiro numero: ");*/
     scanf("%s",a);
-    //printf("Digite o segundo numero: ");
+    /*printf("Digite o segundo numero: ");*/
     scanf("%s",b);
-    //printf("Soma dos dois numeros: ");
+    /*printf("Soma dos dois numeros: ");*/
     c = divisaoPos (a, b, 0);
     puts (c);
     return 0;

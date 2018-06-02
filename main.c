@@ -14,7 +14,7 @@
 
 #ifndef INCLUSOS
     #define INCLUSOS
-    #include "lib/preproc.h"
+    #include "lib/preproc.h" /* Header com as bibliotecas desse arquivo e do auxiliar "operacoes.c" */
 #endif
 #include <time.h>
 #include "lib/operacoes.c"
@@ -29,8 +29,13 @@
 #define TAM 28
 #define NUM_ERROS 12
 
+/*
+*   ABAIXO SEGUEM AS DECLARAÇÕES, RESPECTIVAMENTE:
+*   Struct para guardar temporariamente uma linha do ARQ_DICT
+*   Lista encadeada que carregara todo o número
+*/
 typedef struct ordem Ordem;
-typedef struct filanum FilaNum;
+typedef struct filanum FilaNum; 
 struct ordem
 {
     char* nome;
@@ -43,6 +48,10 @@ struct filanum
     FilaNum *ant, *prox;
 };
 
+/*
+*   Vários tokens que auxiliam na análise (léxica/sintática/semântica)
+*   Se esses termos não forem familiares, leia README.md
+*/
 enum tokens
 {
     ZERO, UM, DOIS, TRES, QUATRO, CINCO, SEIS, SETE, OITO, NOVE, DEZ, ONZE, DOZE,
@@ -58,14 +67,21 @@ enum tokens
 *       VARIAVEIS GLOBAIS
 *
 */
-Ordem* ref;
-char *EXP, *_TEXP, expNum[512], *expOut;
-char token[2];
-short tipoToken, flagNUM, *ind; /* a partir daqui short int sera usado como SU (olhar typedef em preproc.h) */
+Ordem* ref; /* Ponteiro para uma struct ordem */
+
+char *EXP, /* Ponteiro para expNum */
+*_TEXP, /* guarda a expressão sem modificações, para a possível exibição de erros */
+expNum[512], /* Expressão que será analisada */
+*expOut, /* Resultado da expressão analisada */
+token[2]; /* guarda o token */
+short tipoToken, flagNUM, /* sinaliza se o(s) token(s) em análise são numeros */
+*ind; /* vetor que guarda as posições das strings no ARQ_DICT */
 FILE* dicionario;
 FilaNum* queue;
 
-int fileParsingInit (void);
+/* a partir daqui short int será usado como SU (olhar typedef em preproc.h) */
+
+int fileParsingInit (void); /* GATILHO DE PARTIDA A PARTIR DE UM ARQUIVO */
 char* expParsingStart (void); /* GATILHO DE PARTIDA */
 void expResTermo (char* resposta); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
 void expResFator (char* resposta); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
@@ -73,27 +89,27 @@ void expResFatorial (char* resposta); /* ROTINA QUE RESOLVE O FATORIAL DE UM FAT
 void expResParenteses (char* resposta); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DENTRO DE PARENTESES */
 /* EM CONSTRUÇÃO void expAvalSinal (char* resposta);  AVALIA + OU - UNÁRIO */
 void atomo (char* resposta); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
-void pega_token (void);
-void ajustaEXP (void);
-int verificaProxToken (void);
+void pega_token (void); /* VERIFICA A EXISTENCIA DA PALAVRA NA EXPRESSÃO COM ALGUMA DO DICIONÁRIO, SE EXISTIR, GUARDA EM TOKEN O PRIMEIRO CARACTER DA MESMA */
+void ajustaEXP (void); /* PULA A PALAVRA CORRENTE */
+int verificaProxToken (void); /* RETORNA 1 SE O PROX TOKEN FOR UM DELIMITADOR */
 int resPlural (int i, char** s); /* EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PLURAL QUANTO SINGULAR E ENFILA A FORMA INSERIDA */
 void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
 void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
-void criaIndices (FILE* in, SU** out, int size, int del);
-int analiSemantica (void);
-int semUnidade (FilaNum** inicio);
-void pluralOrdem (FilaNum* inicio);
-SU pegaOrdem (FilaNum* inicio);
-char* toNum (void);
-void toName (char** resposta);
-int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural);
-void filaInsere (SU i, char* nome, char* valor);
-FilaNum* pegaProxNum (FilaNum* inicio);
-SU pegaProxClasse (FilaNum* inicio);
-void filaLibera (void);
-int filaCount (void);
-int fstrcount (FILE* in);
-void clearScreen (void);
+void criaIndices (FILE* in, SU** out, int size, int del); /* DEVOLVE EM out UM VETOR COM AS POSIÇÕES DE del NO ARQUIVO in */
+int analiSemantica (void); /* ANALISA O SIGNIFICADO DA EXPRESSÃO */
+int semUnidade (FilaNum** inicio); /* ANALISA O SIGNIFICADO DA CENTENA/DEZENA/UNIDADE NA EXPRESSÃO */
+void pluralOrdem (FilaNum* inicio); /* ANALISA O SIGNIFICADO DO PLURAL DE ORDENS (>= MIL) NA EXPRESSÃO */
+SU pegaOrdem (FilaNum* inicio); /* RETORNA A ORDEM DO NUMERO APONTADO POR INICIO */
+char* toNum (void); /* CONVERTE DE EXTENSO PARA UMA STRING DE DIGITOS, A QUAL FORMA UM NUMERO */
+void toName (char** resposta); /* CONVERTE DE UMA STRING DE DIGITOS PARA EXTENSO */
+int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural); /* CONVERTE A C/D/U PARA EXTENSO */
+void filaInsere (SU i, char* nome, char* valor); /* INSERÇÃO COMO FILA NUMA LISTA ENCADEADA */
+FilaNum* pegaProxNum (FilaNum* inicio); /* DEVOLVE O NÓ DO PROXIMO NUMERO NA FILA APONTADA POR INICIO */
+SU pegaProxClasse (FilaNum* inicio); /* DEVOLVE A PROXIMA CLASSE APONTADA POR INICIO */
+void filaLibera (void); /* LIBERA A LISTA */
+int filaCount (void); /* CONTA OS NÓS DA LISTA */
+int fstrcount (FILE* in); /* CONTA QUANTAS LINHAS TEM O ARQUIVO IN */
+void clearScreen (void); /* MÉTODO PORTÁVEL DE LIMPAR A TELA */
 
 int main (void)
 {
