@@ -14,17 +14,20 @@ O limite de expressões atualmente está em 0 ≤ N < 10³⁴. Mas, o projeto co
 
 ## Conceitos
 
-###  Analisador de expressões?
+###  Interpretador de expressões
 
-###  Analisador léxico?
+A proposta é de resolver expressões númericas por extenso usando a linguagem C, um problema que para alguns pode parecer trivial, porém ele requer uma interpretação das expressões de entrada. Porque mesmo que resolvamos expressões simples facilmente, isto é, com apenas uma operação (é necessário atentar para o N), quando há várias operações, fica impossível dizer ao computador qual a precedência, sem deixar o código ilegível. A partir dessa premissa e com os materiais de apoio, implementei um conjunto de rotinas que resolvem corretamente cada operação no momento desejado. Esse subconjunto de rotinas têm prefixo *exp*.
 
-###  Analisador sintático?
+Além disso, precisamos de um analisador gramatical (ou léxico) para sabermos se as palavras que compõem a expressão são válidas, este analisador quebra a expressão em vários tokens. Isso é o que a função *pega_token* faz.
 
-###  Analisador semântico?
+Um outro subconjunto de rotinas é necessário para a verificação semântica, ou seja, de significado das palavras ali colocadas. Porque "milhao um" está lexicamente correto, porém, não tem o mesmo significado que "um milhao". Nós, nativos da lingua, fazemos essa avaliação automaticamente, mas foi necessário passar isso para o computador. Esse subconjunto de rotinas tem prefixo *sem*.
+
+ ![Formalismo](url="https://raw.githubusercontent.com/josecleiton/compilha/blob/master/Documentos/analisador.jpg")
+ ###### Gramática de Back-Naur utilizada pelo analisador.
 
 ### Operações com números em strings
 
-Em vista do N ser muito maior do que um long long int, foi necessário colocar os números como strings, cada digito destes representa uma posição no vetor de caracteres.
+Em vista do N ser muito maior do que um *long long*, foi necessário guardar os números como strings, cada digito destes representa uma posição no vetor de caracteres.
 
 ## Instruções de uso
 
