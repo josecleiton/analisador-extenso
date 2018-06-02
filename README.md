@@ -10,7 +10,7 @@ Este projeto foi proposto como trabalho final da disciplina Linguagem de Program
 
 ## Do limite
 
-O limite de expressões atualmente está em $0$ $≤$ $N$ $<$ $10$³⁴. Mas, o projeto continuará e o próximo passo é atingir $1$/$10$³⁴ $<$ $N$ $<$ $10$³⁴.
+O limite de expressões atualmente está em 0 ≤ N < 10³⁴. Mas, o projeto continuará e o próximo passo é atingir 1/10³⁴ < N < 10³⁴.
 
 ## Conceitos
 
