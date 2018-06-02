@@ -22,7 +22,7 @@ Além disso, precisamos de um analisador gramatical (ou léxico) para sabermos s
 
 Um outro subconjunto de rotinas é necessário para a verificação semântica, ou seja, de significado das palavras ali colocadas. Porque "milhao um" está lexicamente correto, porém, não tem o mesmo significado que "um milhao". Nós, nativos da lingua, fazemos essa avaliação automaticamente, mas foi necessário passar isso para o computador. Esse subconjunto de rotinas tem prefixo *sem*.
 
- ![Formalismo](url="https://raw.githubusercontent.com/josecleiton/compilha/blob/master/Documentos/analisador.jpg")
+ ![Formalismo](url="https://raw.githubusercontent.com/josecleiton/compilha/master/Documentos/analisador.jpg")
  ###### Gramática de Back-Naur utilizada pelo analisador.
 
 ### Operações com números em strings
