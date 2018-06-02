@@ -7,14 +7,14 @@ função pega token
             se ref é um digito então
                 coloque o primeiro caractere de EXP em temp
                 enquanto *EXP é um caractere alfa ou um espaço faça -- pula a palavra e vai para a proxima
-                    EXP <- EXP +1
+                    EXP := EXP +1
                 fim-enquanto
-                *EXP <- trade -- recolocando o espaço em branco, para poder analisar a proxima palavra
-                tipoToken <- NUM
-                flagNUM <- 1 -- marcando que a palavra que analisamos é um número
+                *EXP := trade -- recolocando o espaço em branco, para poder analisar a proxima palavra
+                tipoToken := NUM
+                flagNUM := 1 -- marcando que a palavra que analisamos é um número
                 insira ref na fila
                 recoloque o cursor do arquivo (ARQ_DICT) no começo -- em C isso é o rewind (FILE* stream)
-                i <- -1; -- para reiniciar a analise
+                i := -1; -- para reiniciar a analise
                 se a função verificaProxToken retornar VERDADE
                     retorne a função
                 fim-se
@@ -22,20 +22,20 @@ função pega token
         fim-se
         senão 
             se o nome de ref é um delimitador
-                tipoToken <- CONJUCAO
+                tipoToken := CONJUCAO
                 enquanto *EXP é um caracter alfa ou um hífen ou um espaço faça
-                    EXP <- EXP +1
+                    EXP := EXP +1
                 fim-enquanto
-                temp <- valor de ref
+                temp := valor de ref
                 se i != CONJUCAO então
-                    tipoToken <- DELIMITADOR
-                    flagNUM <- 0 -- estamos analisando um delimitador, não um numero
+                    tipoToken := DELIMITADOR
+                    flagNUM := 0 -- estamos analisando um delimitador, não um numero
                     libere ref
                     retornar função
                 fim-se
                 senão
                     insira ref na fila
-                    i <- -1
+                    i := -1
                     coloque o cursor do ARQ_DICT no inicio -- análogo a rewind (em C)
                 fim-senão
             fim-se
@@ -46,7 +46,7 @@ função pega token
         senão
             função ajustaEXP
         fim-senão
-        i <- i+1
+        i := i+1
     fim-enquanto
     erro tipo 0
 fim-funçao

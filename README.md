@@ -24,7 +24,7 @@ O limite de expressões atualmente está em 0 ≤ N < 10³⁴. Mas, o projeto co
 
 ### Operações com números em strings
 
-Em vista do N ser muito maior do que um long long int, foi necessário colocar os números como strings, cada digito deste representa uma posição no vetor de caracteres.
+Em vista do N ser muito maior do que um long long int, foi necessário colocar os números como strings, cada digito destes representa uma posição no vetor de caracteres.
 
 ## Instruções de uso
 
