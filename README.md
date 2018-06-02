@@ -16,18 +16,18 @@ O limite de expressões atualmente está em 0 ≤ N < 10³⁴. Mas, o projeto co
 
 ###  Interpretador de expressões
 
-A proposta é de resolver expressões númericas por extenso usando a linguagem C, um problema que para alguns pode parecer trivial, porém ele requer uma interpretação das expressões de entrada. Porque mesmo que resolvamos expressões simples facilmente, isto é, com apenas uma operação (é necessário atentar para o N), quando há várias operações, fica impossível dizer ao computador qual a precedência, sem deixar o código ilegível. A partir dessa premissa e com os materiais de apoio, implementei um conjunto de rotinas que resolvem corretamente cada operação no momento desejado. Esse subconjunto de rotinas têm prefixo *exp*.
+A proposta é de resolver expressões númericas por extenso usando a linguagem C, um problema que para alguns pode parecer trivial, porém ele requer uma interpretação das expressões de entrada. Porque mesmo que resolvamos expressões simples facilmente, isto é, com apenas uma operação (é necessário atentar para o N), quando há várias operações, fica impossível dizer ao computador qual a precedência, sem deixar o código ilegível. A partir dessa premissa e com os materiais de apoio, implementei um conjunto de rotinas que resolvem corretamente cada operação no momento desejado. Esse subconjunto de rotinas têm prefixo **exp**.
 
-Além disso, precisamos de um analisador gramatical (ou léxico) para sabermos se as palavras que compõem a expressão são válidas, este analisador quebra a expressão em vários tokens. Isso é o que a função *pega_token* faz.
+Além disso, precisamos de um analisador gramatical (ou léxico) para sabermos se as palavras que compõem a expressão são válidas, este analisador quebra a expressão em vários tokens. Isso é o que a função `pega_token` faz.
 
-Um outro subconjunto de rotinas é necessário para a verificação semântica, ou seja, de significado das palavras ali colocadas. Porque "milhao um" está lexicamente correto, porém, não tem o mesmo significado que "um milhao". Nós, nativos da lingua, fazemos essa avaliação automaticamente, mas foi necessário passar isso para o computador. Esse subconjunto de rotinas tem prefixo *sem*.
+Um outro subconjunto de rotinas é necessário para a verificação semântica, ou seja, de significado das palavras ali colocadas. Porque "milhao um" está lexicamente correto, porém, não tem o mesmo significado que "um milhao". Nós, nativos da lingua, fazemos essa avaliação automaticamente, mas foi necessário passar isso para o computador. Esse subconjunto de rotinas tem prefixo **sem**.
 
  ![Formalismo](Documentos/analisador.jpg?raw=true "Formalismo de Backus-Naur")
  ###### Gramática de Backus-Naur utilizada pelo analisador.
 
 ### Operações com números em strings
 
-Em vista do N ser muito maior do que um *long long*, foi necessário guardar os números como strings, cada digito destes representa uma posição no vetor de caracteres.
+Em vista do N ser muito maior do que um `long long`, foi necessário guardar os números como strings, cada digito destes representa uma posição no vetor de caracteres.
 
 ## Instruções de uso
 
@@ -65,22 +65,22 @@ As expressões devem ser formatadas com espaços delimitando as palavras.
 
 ### Da adição de ordens no dicionário
 
-Sugiro que antes da edição do arquivo de dicionário, leia a próxima seção. Se o dicionário foi aumentado, cuide com a alocação de alguns ponteiros, o tamanho de algumas variáveis e definição de constantes, no arquivo principal *main.c*. No caso dos ponteiros, acrescente adequadamente o parâmetro *size* da macro **MALLOC**. Alguns pontos para tomar cuidado:
+Sugiro que antes da edição do arquivo de dicionário, leia a próxima seção. Se o dicionário foi aumentado, cuide com a alocação de alguns ponteiros, o tamanho de algumas variáveis e definição de constantes, no arquivo principal `main.c`. No caso dos ponteiros, acrescente adequadamente o parâmetro `size` da macro `MALLOC`. Alguns pontos para tomar cuidado:
 
-- Variável global *expNum*
+- Variável global `expNum`
 - Alocações
-    - *resposta*
-    - *ref*
-    - *segFator*
-    - *segTermo*
-    - *proxFator*
-    - *strErro*
-- Constante *TAM*
+    - `resposta`
+    - `ref`
+    - `segFator`
+    - `segTermo`
+    - `proxFator`
+    - `strErro`
+- Constante `TAM`
 - Comparação lógica `filaCount() > 43` (limite padrão = decilhões)
 
 ### Da adição de erros
 
-Atente para a constante *NUM_ERROS*, que numera a quantidade de linhas do arquivo **erros.cfg**, cada linha com um erro diferente. É bom ter cuidado com a alocação do ponteiro *strErro*, o qual guarda a string formatada com o erro e um cursor que indica a ocorrencia do erro. Novamente, é só adequar o parâmetro *size* da macro **MALLOC**.
+Atente para a constante `NUM_ERROS`, que numera a quantidade de linhas do arquivo **erros.cfg**, cada linha com um erro diferente. É bom ter cuidado com a alocação do ponteiro `strErro`, o qual guarda a string formatada com o erro e um cursor que indica a ocorrencia do erro. Novamente, é só adequar o parâmetro `size` da macro `MALLOC`.
 
 
 ## Tratamento dos arquivos *erros.cfg* e *dicionario.cfg*
@@ -93,7 +93,7 @@ O arquivo de saida *resultados.txt* também está em LF, então sugiro a visuali
 
 ## Descrição das funções
 
-O funcionamento das funções (e seu algoritmo) estão descritos no arquivo de cabeçalho *lib/main.h*. As funções de operações básicas são "algoritmos clássicos" de soma, subtração, divisão e multiplicação, digito por digito, como aprendido no Ensino Fundamental do Brasil.
+O funcionamento das funções (e seu algoritmo) estão descritos no arquivo de cabeçalho `lib/main.h`. As funções de operações básicas são "algoritmos clássicos" de soma, subtração, divisão e multiplicação, digito por digito, como aprendido no Ensino Fundamental do Brasil.
 
 
 ## Bibliografia
