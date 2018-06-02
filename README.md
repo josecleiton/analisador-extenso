@@ -2,7 +2,7 @@
 
 ## Introdução
 
-Este é um **analisador de expressões númericas por __extenso__**, que resolve expressões escritas em português, seguindo algumas regras bem definidas.
+Este é um **analisador de expressões númericas por __extenso__**, em português, seguindo algumas regras bem definidas.
 A linguagem de programação utilizada: ISO C90 ou apenas **C**.
 ## Da motivação
 
@@ -39,7 +39,7 @@ Por ser uma aplicação em C, você necessita do GCC na sua máquina. Algumas ID
 - Abra a pasta *compilha* no seu terminal
 - Verifique se o GCC está instalado com `gcc --version`
 - Após isso compile com o seguinte código: `gcc main.c -o main -lm`
-- Se tiver utilizando Windows, altere o main para main.exe
+- Se estiver utilizando Windows, altere o `main` para `main.exe`
 
 ### Do programa
 
@@ -76,16 +76,16 @@ Sugiro que antes da edição do arquivo de dicionário, leia a próxima seção.
     - *proxFator*
     - *strErro*
 - Constante *TAM*
-- Comparação lógica *filaCount() > 43* (limite padrão = decilhões)
+- Comparação lógica `filaCount() > 43` (limite padrão = decilhões)
 
 ### Da adição de erros
 
-Atente para a constante *NUM_ERROS*, que numera a quantidade de linhas do arquivo **erros.cfg**, cada linha com um erro diferente. É bom ter cuidado com a alocação do ponteiro *strErro*, o qual guarda a string formatada com o erro e um cursor que indica a ocorrencia do erro. Novamente, é só adequar o parâmetro *size* da macro 
+Atente para a constante *NUM_ERROS*, que numera a quantidade de linhas do arquivo **erros.cfg**, cada linha com um erro diferente. É bom ter cuidado com a alocação do ponteiro *strErro*, o qual guarda a string formatada com o erro e um cursor que indica a ocorrencia do erro. Novamente, é só adequar o parâmetro *size* da macro **MALLOC**.
 
 
 ## Tratamento dos arquivos *erros.cfg* e *dicionario.cfg*
 
-Foi assumida a padronização LF (GNU/Linux) para os arquivos e não CRLF (Windows) ou CR (macOS), porque eu, o desenvolvi em uma distribuição **GNU/Linux**. Portanto, se você utilizar um desses SO proprietários e decidir alterar qualquer um desses arquivos, sugiro a utilização do **Notepad++** para a conversão deles de volta para LF, senão o comportamento da saída (resultado das expressões) é indefinido.
+Foi assumida a padronização LF (GNU/Linux) para os arquivos e não CRLF (Windows) ou CR (macOS), porque eu, desenvolvi o projeto em uma distribuição **GNU/Linux**. Portanto, se você utilizar um daqueles SO proprietários e decidir alterar qualquer um desses arquivos, sugiro a utilização do **Notepad++** para a conversão deles de volta para LF, senão o comportamento da saída (resultado das expressões) é indefinido.
 
 ## Saída
 
