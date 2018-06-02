@@ -601,7 +601,7 @@ void pega_token (void)
                 flagNUM = 1;
                 filaInsere (i, ref->nome, ref->valor);
                 rewind (dicionario);
-                i=-1;
+                i = -1;
                 if (verificaProxToken ()) return;
             }
             else if (strchr ("+/-*!e()", ref->valor[0]))
@@ -622,7 +622,7 @@ void pega_token (void)
                 else
                 {
                     filaInsere(i, ref->nome, ref->valor);
-                    i=-1;
+                    i = -1;
                     rewind (dicionario);
                 }
             }
