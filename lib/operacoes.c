@@ -8,36 +8,19 @@ char* soma (char op1[], char op2[]);
 char* subtrair (char a[], char b[]);
 char* completaMenor (char a[], char b[], char* menor);
 char* multiplica (char a[], char b[]);
-char* unsigneDiv (char a[], char D[], char boolMOD);
+char* unsigneDiv (char a[], char D[], BOOL MOD);
 char* fatorial (char a[]);
 int strIsDigit (char a[]);
 int fatorial_multiplicador (int a, char fat[], int limit);
-int char2int (char a[]);
-int int2char (char a[], int tam);
-int inverte (char a[]); /* strrev (apenas para Janelas OS) */
+BOOL char2int (char a[]);
+BOOL int2char (char a[], int tam);
+BOOL inverte (char a[]); /* strrev (apenas para Janelas OS) */
 int maior (int a, int b);
 int menor (int a, int b);
 int strCmpNum (char x[], char b[]);
 int numDigitos (int x);
 
-/*
-int main (void)
-{
-    char a[MAX];
-    char b[MAX];
-    char *c;
-    printf("Digite o primeiro numero: ");
-    scanf("%s",a);
-    printf("Digite o segundo numero: ");
-    scanf("%s",b);
-    printf("div dos dois numeros: ");
-    c = unsignedDiv (a, b, 0);
-    puts (c);
-    return 0;
-}
-*/
-
-int inverte (char a[])
+BOOL inverte (char a[])
 {
     int i, tam = strlen (a);
     char c;
@@ -50,7 +33,7 @@ int inverte (char a[])
     return 1;
 }
 
-int char2int (char a[])
+BOOL char2int (char a[])
 {
     int i, tam = strlen (a);
     for (i=0; i<=tam; i++)
@@ -58,7 +41,7 @@ int char2int (char a[])
     return 1;
 }
 
-int int2char (char a[], int tam)
+BOOL int2char (char a[], int tam)
 {
     int i;
     for (i=0; i<tam-1; i++)
@@ -261,64 +244,62 @@ char* multiplica (char a[],char b[])
     inverte (produto);
     return produto;
 }
-/*
-char* unsignedDiv (char N[], char D[])
-{
-    int tn = strlen (N);
-    int td = strlen (D);
-    if ((tn == 0) || (!*N && tn == 1) || (td == 1 && *D == '1'))
-        return N;
-    else if (!td)
-        return D;
-    if (td > tn) return 0;
-    long long quo = (long long) 0;
-    int watch;
-    int len = menor (tn, td) + 1;
-    int i, resto = 0;
-    char carry;
-    char *R, *DwZ;
-    if (td != tn)
-    {
-        int j, k = 0;
-        MALLOC (DwZ, tn+1);
-        for (j = tn - td; j > 0; j--)
-            DwZ[k++] = '0';
-        strcat (DwZ, D);
-    }
-    else DwZ = D;
-    MALLOC (R, tn+1);
-    *R = 0;
-    strcpy (R, N);
-    while (strcmp (R, DwZ))
-    {
-        R = subtrair (R, DwZ);
-        quo++;
-        if (!R) break;
-    }
-    if (quo < 0) return NULL;
-    
-    return NULL;
-}
-*/
 
-char* unsigneDiv (char a[], char D[], char boolMOD)
+
+/*
+**  DIVISÃO POSITIVA
+**  
+**  N = Numerador
+**  Q = Quociente
+**
+**  O algoritmo de divisão foi baseado na divisão do Ensino Fundamental
+**
+**  15467 | 58      Selecione em N o tamanho de D
+**   386  |_____    -- 15
+**    387  266      A subtração de 15 por 58 (D) resulta em um número positivo?
+**      39           -- Não
+**                  Então pegue o proximo numero de N e coloque em 15
+**                  -- 154
+**                  Subtraia 154 por 58 até que gerar um resultado negativo
+**                  -- 154 - 58 = 96
+**                  -- 96 - 58 = 38
+**                  Coloque em Q quantas vezes a subtração ocorreu
+**                  -- Q(0) := 2
+**                  Coloque em 38 o proximo digito de N
+**                  -- 386
+**                  Faça a subtração novamente por D
+**                  Coloque em Q quantas vezes a subtração ocorreu
+**                  -- Q(1) := 6
+**                  [...]
+**                  O algoritmo segue até termos
+**                        266 em Q
+**                        39 em N (RESTO)
+**
+**
+**  A função abaixo aplica o algoritmo acima, nele podemos visualizar que 
+**  Q sempre terá len(N) - len(D) digitos 
+**  
+*/
+char* unsigneDiv (char a[], char D[], BOOL MOD)
 {
-    const int tn = strlen (a), td = strlen (D);
-    int i, j, x;
-    x = j = 0;
-    char k;
-    char *N, *Q, *temp, len;
-    char tmp, fl = 0;
+    const int tn = strlen (a), td = strlen (D); /* len(N) e len(D) respectivamente */
+    int i; /* indice de interações do laço para a divisão */
+    int j = 0; /* cursor para escrita na string Q */
+    int k; /* conta quantas subtrações foram feitas de N por D */ 
+    int leN; /* guarda o tamanho atualizado (pela subtração) de N */
+    char *N, *Q, *temp; /* N, Q e o ponteiro que guarda o inicio da alocação primeira de N */ 
+    BOOL fl = 0; /* Marca se ocorreu ou não uma subtração de N por D */
     MALLOC (N, tn+1);
     strcpy (N, a);
     temp = N;
     N[tn] = '\0';
-    MALLOC (Q, tn-td+1);
+    MALLOC (Q, tn-td+1); /* O quociente terá pelo menos tn-td digitos */
     for (i = 0; i < tn-td+1; i++)
     {
-        if (strlen (Q) == tn - td) break;
+        if (strlen (Q) == tn-td) 
+            break;
         k = 0;
-        N[td+j%2+fl] = '\0';
+        N[td+i%2+fl] = '\0';
         fl = 0;
         while (strCmpNum (N,D))
         {
@@ -326,27 +307,35 @@ char* unsigneDiv (char a[], char D[], char boolMOD)
             k++;
             fl = 1;
         }
-        strcpy (&N[td], &a[td+j]);
+        leN = strlen (N);
+        if (leN > td || !i)
+            strcpy (&N[td], &a[td+i]);
+        else if (fl)
+            strcpy (&N[leN], &a[td+1]);
         if (!strCmpNum (N, D) || fl)
         {
             if (k < 10)
-                Q[x++] = k + '0';
+                Q[j++] = k + '0';
             else
             {
                 int w = numDigitos (k);
                 for (w--; w >= 0; w--)
                 {
-                    Q[x++] = k / (int) pow (10, w) + '0';
+                    Q[j++] = k / (int) pow (10, w) + '0';
                     k %= (int) pow (10, w);
+                }
+                if (j > tn - td)
+                {
+                    Q[--j] = '\0';
+                    N[td] = '\0';
                 }
             }
         }
-        j++;
     }
-    Q[x] = '\0';
-    if (strcmp (N, D) < 0 && Q[x-1] == '0')
-        Q[--x] = '\0';
-    if (boolMOD)
+    Q[j] = '\0';
+    if (strcmp (N, D) < 0 && Q[j-1] == '0')
+        Q[--j] = '\0';
+    if (MOD) /* Se o paramento for verdadeiro, retorne o resto */
     {
         free (Q);
         while (*N == '0') N++;
