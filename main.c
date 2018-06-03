@@ -11,12 +11,8 @@
 */
 
 /* PROX PASSO: CORRIGIR CONVERSOR DE EXTENSO PARA NUMERO */
-
-#ifndef INCLUSOS
-    #define INCLUSOS
-    #include "lib/preproc.h" /* Header com as bibliotecas desse arquivo e do auxiliar "operacoes.c" */
-#endif
 #include <time.h>
+#include "main.h"
 #include "lib/operacoes.c"
 
 #define ARQ_DICT "lib/dicionario.cfg"
@@ -28,25 +24,6 @@
 #define CLRBUF scanf ("%*c")
 #define TAM 28
 #define NUM_ERROS 12
-
-/*
-*   ABAIXO SEGUEM AS DECLARAÇÕES, RESPECTIVAMENTE:
-*   Struct para guardar temporariamente uma linha do ARQ_DICT
-*   Lista encadeada que carregara todo o número
-*/
-typedef struct ordem Ordem;
-typedef struct filanum FilaNum; 
-struct ordem
-{
-    char* nome;
-    char* valor;
-};
-struct filanum
-{
-    short classe;
-    Ordem *info;
-    FilaNum *ant, *prox;
-};
 
 /*
 *   Vários tokens que auxiliam na análise (léxica/sintática/semântica)

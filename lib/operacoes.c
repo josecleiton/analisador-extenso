@@ -20,7 +20,7 @@ int menor (int a, int b);
 int strCmpNum (char x[], char b[]);
 int numDigitos (int x);
 
-
+/*
 int main (void)
 {
     char a[MAX];
@@ -35,7 +35,7 @@ int main (void)
     puts (c);
     return 0;
 }
-
+*/
 
 int inverte (char a[])
 {
