@@ -1,6 +1,6 @@
 #ifndef INCLUSOS
     #define INCLUSOS
-    #include "lib/preproc.h" /* Header com as bibliotecas desse arquivo e do auxiliar "operacoes.c" */
+    #include "preproc.h" /* Header com as bibliotecas desse arquivo e do auxiliar "operacoes.c" */
 #endif
 
 /*
