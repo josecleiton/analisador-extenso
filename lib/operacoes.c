@@ -9,6 +9,7 @@ char* subtrair (char a[], char b[], char boolIGNORELFZEROS);
 char* completaMenor (char a[], char b[], char* menor);
 char* multiplica (char a[], char b[]);
 char* divisaoPos (char a[], char D[], char boolMOD);
+int strCmpNum (char x[], char b[]);
 char* fatorial (char a[]);
 int strIsDigit (char a[]);
 int fatorial_multiplicador (int a, char fat[], int limit);
@@ -18,7 +19,7 @@ int inverte (char a[]); /* strrev (apenas para Janelas OS) */
 int maior (int a, int b);
 int menor (int a, int b);
 
-/*
+
 int main (void)
 {
     char a[MAX];
@@ -33,7 +34,7 @@ int main (void)
     puts (c);
     return 0;
 }
-*/
+
 
 int inverte (char a[])
 {
@@ -315,16 +316,19 @@ char* divisaoPos (char a[], char D[], char boolMOD)
     MALLOC (R, 1);
     MALLOC (Q, tn-1);
     *R = 0;
-    for (i = 0; i < tn-1; i++)
+    for (i = 0; i <= tn-1; i++)
     {
         k = 0;
-        if (td+j <= tn-1)
-            tmp = N[td+j];
-        N[td+j] = '\0';
-        if (fl)
-            strcat (lnSig, &N[td+j+1]);
+        if (td+j <= tn-1) tmp = N[td+j];
         while (*N == '0') N++;
-        while (strcmp (N, D) >= 0)
+        N[td+(j%2)] = '\0';
+        if (fl)
+        {
+            strcpy (lnSig, &a[j+1]);
+            fl = 0;
+        }
+        /*while (*N == '0') N++;*/
+        while (strCmpNum (N, D))
         {
             N = subtrair (N, D, 0);
             k++;
@@ -332,9 +336,8 @@ char* divisaoPos (char a[], char D[], char boolMOD)
         }
         N[td+j] = tmp;
         N[td+j+1] = '\0';
-        if (i+1 < tn-1)
-            strcat (N, lnSig);
-        Q[j] = k + '0';
+        if (i+1 < tn-1) strcat (N, lnSig);
+        if (!strCmpNum (N, D) || fl) Q[j] = k + '0';   
         j++;
     }
     Q[j] = '\0';
@@ -349,6 +352,26 @@ char* divisaoPos (char a[], char D[], char boolMOD)
     free (N);
     return Q;
 }
+
+int strCmpNum (char x[], char b[])
+{
+    char* a = x;
+    while (*a == '0') a++;
+    int ta = strlen (a), tb = strlen (b);
+    if (ta > tb) return 1;
+    if (ta == tb)
+    {
+        int i;
+        for (i = 0; a[i] != '\0'; i++)
+        {
+            if (a[i] > b[i]) return 1;
+            else if (a[i] < b[i]) return 0;
+        }
+    }
+    else return 0;
+    return 1;
+}
+
 
 char* fatorial (char in[])
 {
@@ -368,15 +391,15 @@ char* fatorial (char in[])
     }
     i=0;
     *fat = 1;
-    int num = 0;
+    LLI num = 0;
     inverte (a);
     char2int (a);
     while (i<tamA)
     {
-        num += (int) a[i] * pow (10, i);
+        num += (LLI) a[i] * pow (10, i);
         i++;
     }
-    if (num > 400) return NULL;
+    if (num > 400 || num < 0) return NULL;
     for (i=2; i<=num; i++)
         k = fatorial_multiplicador (i, fat, k);
     int2char (fat, k+1);
