@@ -20,4 +20,5 @@
 #define ERRO exit (3141592)
 typedef short int SU;
 typedef long long int LLI;
+typedef char BOOL;
 

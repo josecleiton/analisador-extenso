@@ -70,12 +70,12 @@ void ajustaEXP (void);
 /*
 **  RETORNA 1 SE O PROX TOKEN FOR UM DELIMITADOR
 */
-int verificaProxToken (void); 
+BOOL verificaProxToken (void); 
 
 /*
 **  EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PLURAL QUANTO SINGULAR E ENFILA A FORMA INSERIDA
 */
-int resPlural (int i, char** s);
+BOOL resPlural (int i, char** s);
 
 /*
 **  AJUSTA DELIMITADORES COMPOSTOS COLOCANDO HÍFEN ENTRE AS PALAVRAS
@@ -97,12 +97,12 @@ void criaIndices (FILE* in, SU** out, int size, int del);
 /*
 **  ANALISA O SIGNIFICADO DA EXPRESSÃO
 */
-int analiSemantica (void); 
+BOOL analiSemantica (void); 
 
 /*
 **  ANALISA O SIGNIFICADO DA CENTENA/DEZENA/UNIDADE NA EXPRESSÃO
 */
-int semUnidade (FilaNum** inicio); 
+BOOL semUnidade (FilaNum** inicio); 
 
 /*
 **  ANALISA O SIGNIFICADO DO PLURAL DE ORDENS (>= MIL) NA EXPRESSÃO

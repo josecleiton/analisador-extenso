@@ -22,10 +22,10 @@
 #define ARQ_LOG "logs.txt"
 
 #define CLRBUF scanf ("%*c")
-#define TAM 28
-#define NUM_ERROS 12
+#define TAM 28  /* METADE DO NUMERO DE LINHAS DO ARQ_DICT */
+#define NUM_ERROS 12 /* NUMERO DE LINHAS DO ARQ_ERROS
 
-/*
+/* 
 **   Vários tokens que auxiliam na análise (léxica/sintática/semântica)
 **   Se esses termos não forem familiares, leia README.md
 */
@@ -51,7 +51,7 @@ char expNum[512]; /* Expressão que será analisada */
 char *expOut; /* Resultado da expressão analisada */
 char token[2]; /* guarda o token */
 short tipoToken; /* sinalisa o tipo do token em analise */
-short flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
+BOOL flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
 short *ind; /* vetor que guarda as posições das strings no ARQ_DICT */
 FILE* dicionario;
 FilaNum* queue;
@@ -270,7 +270,7 @@ void atomo (char* resposta)
     erroSS (0);
 }
 
-int analiSemantica (void)
+BOOL analiSemantica (void)
 {
     FilaNum* queueSem = queue;
     if (! queueSem) erroSS (3);
@@ -299,10 +299,10 @@ void pluralOrdem (FilaNum* inicio)
     erroSS (12);
 }
 
-int semUnidade (FilaNum** inicio)
+BOOL semUnidade (FilaNum** inicio)
 {
     FilaNum *fila = *inicio;
-    int flag = 0;
+    BOOL flag = 0;
     while (fila && (fila -> classe < MIL || fila -> classe == CONJUCAO))
     {
         if (fila -> classe < VINTE && fila -> classe != DEZ)
@@ -333,7 +333,7 @@ int semUnidade (FilaNum** inicio)
             }
         }
         fila = fila -> prox;
-        flag++;
+        flag = 1;
     }
     *inicio = fila;
     if (! flag) erroSS (5);
@@ -407,7 +407,7 @@ char* toNum (void)
                     proxClasse = pegaProxClasse (queue -> prox);
                     if (proxClasse >= CEM)
                     {
-                        aux = (flag == 1) ? aux+1 : aux;
+                        aux += flag;
                         break;
                     }
                     else if (proxClasse >= DEZ)
@@ -476,7 +476,7 @@ void erroSS (int tipoErro)
     char* toFile;
     SU size_toFile = strlen(strErro)+50;
     time_t now;
-    struct tm * timeinfo;
+    struct tm *timeinfo;
     time (&now);
     timeinfo = localtime (&now);
     MALLOC (toFile, size_toFile);
@@ -598,7 +598,7 @@ void ajustaEXP (void)
     EXP[k] = '\0';
 }
 
-int verificaProxToken (void)
+BOOL verificaProxToken (void)
 {
     while (*EXP && *EXP == ' ') EXP++;
     char* temp = strpbrk (EXP, (char*) " ");
@@ -608,7 +608,7 @@ int verificaProxToken (void)
         return 1;
     }
     int k = temp - EXP;
-    int i=0;
+    int i = 0;
     char** dicT = (char**) malloc (sizeof (char*)*7);
     dicT[0] = (char*) "mais";
     dicT[1] = (char*) "menos";
@@ -632,12 +632,12 @@ int verificaProxToken (void)
     return 0;
 }
 
-int resPlural (int i, char** s)
+BOOL resPlural (int i, char** s)
 {
     char *nome = *s;
     if (! strchr ("mbtqdscount", nome[0])) return 0;
     char* del = strpbrk (nome, (char*) ",");
-    char fl = 0;
+    BOOL fl = 0;
     if (!del) return 0;
     int k = del - nome;
     nome[k] = '\0';
