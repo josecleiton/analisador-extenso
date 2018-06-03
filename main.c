@@ -12,7 +12,7 @@
 
 /* PROX PASSO: CORRIGIR CONVERSOR DE EXTENSO PARA NUMERO */
 #include <time.h>
-#include "main.h"
+#include "lib/main.h"
 #include "lib/operacoes.c"
 
 #define ARQ_DICT "lib/dicionario.cfg"
@@ -26,8 +26,8 @@
 #define NUM_ERROS 12
 
 /*
-*   Vários tokens que auxiliam na análise (léxica/sintática/semântica)
-*   Se esses termos não forem familiares, leia README.md
+**   Vários tokens que auxiliam na análise (léxica/sintática/semântica)
+**   Se esses termos não forem familiares, leia README.md
 */
 enum tokens
 {
@@ -40,53 +40,22 @@ enum tokens
 };
 
 /*
-*
-*       VARIAVEIS GLOBAIS
-*
+**
+**       VARIAVEIS GLOBAIS
+**
 */
 Ordem* ref; /* Ponteiro para uma struct ordem */
-
-char *EXP, /* Ponteiro para expNum */
-*_TEXP, /* guarda a expressão sem modificações, para a possível exibição de erros */
-expNum[512], /* Expressão que será analisada */
-*expOut, /* Resultado da expressão analisada */
-token[2]; /* guarda o token */
-short tipoToken, flagNUM, /* sinaliza se o(s) token(s) em análise são numeros */
-*ind; /* vetor que guarda as posições das strings no ARQ_DICT */
+char *EXP; /* Ponteiro para expNum */
+char *_TEXP; /* guarda a expressão sem modificações, para a possível exibição de erros */
+char expNum[512]; /* Expressão que será analisada */
+char *expOut; /* Resultado da expressão analisada */
+char token[2]; /* guarda o token */
+short tipoToken; /* sinalisa o tipo do token em analise */
+short flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
+short *ind; /* vetor que guarda as posições das strings no ARQ_DICT */
 FILE* dicionario;
 FilaNum* queue;
-
-/* a partir daqui short int será usado como SU (olhar typedef em preproc.h) */
-
-int fileParsingInit (void); /* GATILHO DE PARTIDA A PARTIR DE UM ARQUIVO */
-char* expParsingStart (void); /* GATILHO DE PARTIDA */
-void expResTermo (char* resposta); /* ROTINA QUE SOMA OU SUBTRAI TERMOS */
-void expResFator (char* resposta); /* ROTINA QUE DIVIDE OU MULTIPLICA FATORES */
-void expResFatorial (char* resposta); /* ROTINA QUE RESOLVE O FATORIAL DE UM FATOR */
-void expResParenteses (char* resposta); /* ROTINA QUE RESOLVE UMA EXPRESSÃO DENTRO DE PARENTESES */
-/* EM CONSTRUÇÃO void expAvalSinal (char* resposta);  AVALIA + OU - UNÁRIO */
-void atomo (char* resposta); /* DEVOLVE O VALOR NUMERICO DAS EXPRESSÕES POR EXTENSO*/
-void pega_token (void); /* VERIFICA A EXISTENCIA DA PALAVRA NA EXPRESSÃO COM ALGUMA DO DICIONÁRIO, SE EXISTIR, GUARDA EM TOKEN O PRIMEIRO CARACTER DA MESMA */
-void ajustaEXP (void); /* PULA A PALAVRA CORRENTE */
-int verificaProxToken (void); /* RETORNA 1 SE O PROX TOKEN FOR UM DELIMITADOR */
-int resPlural (int i, char** s); /* EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PLURAL QUANTO SINGULAR E ENFILA A FORMA INSERIDA */
-void ajustaDelim (int* k, char* temp); /* AJUSTA DELIMITADORES COMPOSTOS COM HÍFEN ENTRE AS PALAVRAS */
-void erroSS (int tipoErro); /* TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt) */
-void criaIndices (FILE* in, SU** out, int size, int del); /* DEVOLVE EM out UM VETOR COM AS POSIÇÕES DE del NO ARQUIVO in */
-int analiSemantica (void); /* ANALISA O SIGNIFICADO DA EXPRESSÃO */
-int semUnidade (FilaNum** inicio); /* ANALISA O SIGNIFICADO DA CENTENA/DEZENA/UNIDADE NA EXPRESSÃO */
-void pluralOrdem (FilaNum* inicio); /* ANALISA O SIGNIFICADO DO PLURAL DE ORDENS (>= MIL) NA EXPRESSÃO */
-SU pegaOrdem (FilaNum* inicio); /* RETORNA A ORDEM DO NUMERO APONTADO POR INICIO */
-char* toNum (void); /* CONVERTE DE EXTENSO PARA UMA STRING DE DIGITOS, A QUAL FORMA UM NUMERO */
-void toName (char** resposta); /* CONVERTE DE UMA STRING DE DIGITOS PARA EXTENSO */
-int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural); /* CONVERTE A C/D/U PARA EXTENSO */
-void filaInsere (SU i, char* nome, char* valor); /* INSERÇÃO COMO FILA NUMA LISTA ENCADEADA */
-FilaNum* pegaProxNum (FilaNum* inicio); /* DEVOLVE O NÓ DO PROXIMO NUMERO NA FILA APONTADA POR INICIO */
-SU pegaProxClasse (FilaNum* inicio); /* DEVOLVE A PROXIMA CLASSE APONTADA POR INICIO */
-void filaLibera (void); /* LIBERA A LISTA */
-int filaCount (void); /* CONTA OS NÓS DA LISTA */
-int fstrcount (FILE* in); /* CONTA QUANTAS LINHAS TEM O ARQUIVO IN */
-void clearScreen (void); /* MÉTODO PORTÁVEL DE LIMPAR A TELA */
+/* OBS: a partir daqui short int será usado como SU (olhar typedef em lib/preproc.h) */
 
 int main (void)
 {
