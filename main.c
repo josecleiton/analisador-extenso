@@ -406,7 +406,10 @@ char* toNum (void)
                 {
                     proxClasse = pegaProxClasse (queue -> prox);
                     if (proxClasse >= CEM)
+                    {
+                        aux = (flag == 1) ? aux+1 : aux;
                         break;
+                    }
                     else if (proxClasse >= DEZ)
                     {
                         aux += flag;

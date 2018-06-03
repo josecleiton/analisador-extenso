@@ -116,6 +116,8 @@ SU pegaOrdem (FilaNum* inicio);
 
 /*
 **  CONVERTE DE EXTENSO PARA UMA STRING DE DIGITOS
+**  
+**  
 */
 char* toNum (void);
 
