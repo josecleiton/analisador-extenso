@@ -5,11 +5,10 @@
 #include <math.h>
 #define MAX 10000
 char* soma (char op1[], char op2[]);
-char* subtrair (char a[], char b[], char boolIGNORELFZEROS);
+char* subtrair (char a[], char b[]);
 char* completaMenor (char a[], char b[], char* menor);
 char* multiplica (char a[], char b[]);
-char* divisaoPos (char a[], char D[], char boolMOD);
-int strCmpNum (char x[], char b[]);
+char* unsigneDiv (char a[], char D[], char boolMOD);
 char* fatorial (char a[]);
 int strIsDigit (char a[]);
 int fatorial_multiplicador (int a, char fat[], int limit);
@@ -18,6 +17,8 @@ int int2char (char a[], int tam);
 int inverte (char a[]); /* strrev (apenas para Janelas OS) */
 int maior (int a, int b);
 int menor (int a, int b);
+int strCmpNum (char x[], char b[]);
+int numDigitos (int x);
 
 
 int main (void)
@@ -30,7 +31,7 @@ int main (void)
     printf("Digite o segundo numero: ");
     scanf("%s",b);
     printf("div dos dois numeros: ");
-    c = divisaoPos (a, b, 0);
+    c = unsignedDiv (a, b, 0);
     puts (c);
     return 0;
 }
@@ -123,7 +124,7 @@ char* soma (char a[], char b[])
     return soma;
 }
 
- char* subtrair (char a[], char b[], char boolIGNORELFZEROS)
+ char* subtrair (char a[], char b[])
  {
     char *min, *subt, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
     int i;
@@ -176,8 +177,7 @@ char* soma (char a[], char b[])
         }  
         diferenca[i] += '0';
     }
-    if (boolIGNORELFZEROS)
-        while (*diferenca == '0') diferenca++;
+    while (*diferenca == '0') diferenca++;
     return diferenca;
 }
 
@@ -262,7 +262,7 @@ char* multiplica (char a[],char b[])
     return produto;
 }
 /*
-char* divisaoPos (char N[], char D[])
+char* unsignedDiv (char N[], char D[])
 {
     int tn = strlen (N);
     int td = strlen (D);
@@ -301,55 +301,58 @@ char* divisaoPos (char N[], char D[])
 }
 */
 
-char* divisaoPos (char a[], char D[], char boolMOD)
+char* unsigneDiv (char a[], char D[], char boolMOD)
 {
-    int tn = strlen (a), td = strlen (D);
-    int i, j = 0;
+    const int tn = strlen (a), td = strlen (D);
+    int i, j, x;
+    x = j = 0;
     char k;
-    char *N, *R, *Q, *temp, *lnSig;
+    char *N, *Q, *temp, len;
     char tmp, fl = 0;
     MALLOC (N, tn+1);
-    MALLOC (lnSig, tn+1-td);
     strcpy (N, a);
     temp = N;
     N[tn] = '\0';
-    MALLOC (R, 1);
-    MALLOC (Q, tn-1);
-    *R = 0;
-    for (i = 0; i <= tn-1; i++)
+    MALLOC (Q, tn-td+1);
+    for (i = 0; i < tn-td+1; i++)
     {
+        if (strlen (Q) == tn - td) break;
         k = 0;
-        if (td+j <= tn-1) tmp = N[td+j];
-        while (*N == '0') N++;
-        N[td+(j%2)] = '\0';
-        if (fl)
+        N[td+j%2+fl] = '\0';
+        fl = 0;
+        while (strCmpNum (N,D))
         {
-            strcpy (lnSig, &a[j+1]);
-            fl = 0;
-        }
-        /*while (*N == '0') N++;*/
-        while (strCmpNum (N, D))
-        {
-            N = subtrair (N, D, 0);
+            N = subtrair (N, D);
             k++;
             fl = 1;
         }
-        N[td+j] = tmp;
-        N[td+j+1] = '\0';
-        if (i+1 < tn-1) strcat (N, lnSig);
-        if (!strCmpNum (N, D) || fl) Q[j] = k + '0';   
+        strcpy (&N[td], &a[td+j]);
+        if (!strCmpNum (N, D) || fl)
+        {
+            if (k < 10)
+                Q[x++] = k + '0';
+            else
+            {
+                int w = numDigitos (k);
+                for (w--; w >= 0; w--)
+                {
+                    Q[x++] = k / (int) pow (10, w) + '0';
+                    k %= (int) pow (10, w);
+                }
+            }
+        }
         j++;
     }
-    Q[j] = '\0';
-    free (temp);
-    free (lnSig);
+    Q[x] = '\0';
+    if (strcmp (N, D) < 0 && Q[x-1] == '0')
+        Q[--x] = '\0';
     if (boolMOD)
     {
         free (Q);
         while (*N == '0') N++;
         return N;
     }
-    free (N);
+    free (temp);
     return Q;
 }
 
@@ -372,6 +375,16 @@ int strCmpNum (char x[], char b[])
     return 1;
 }
 
+int numDigitos (int x)
+{
+    int i = 0;
+    while (x > 0)
+    {
+        x /= 10;
+        i++;
+    }
+    return i;
+}
 
 char* fatorial (char in[])
 {

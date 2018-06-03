@@ -215,7 +215,7 @@ void expResTermo (char* resposta)
         switch (op)
         {
             case '-':
-            strcpy (resposta, subtrair (resposta, segTermo, 1));
+            strcpy (resposta, subtrair (resposta, segTermo));
             free (segTermo);
             break;
             case '+':
@@ -243,7 +243,11 @@ void expResFator (char* resposta)
             free (segFator);
             break;
             case '/':
-            strcpy (resposta, divisaoPos (resposta, segFator, 1));
+            strcpy (resposta, unsigneDiv (resposta, segFator, 0));
+            free (segFator);
+            break;
+            case '%':
+            strcpy (resposta, unsigneDiv (resposta, segFator, 1));
             free (segFator);
             break;
         }
