@@ -1,18 +1,18 @@
 /*
-    Universidade Estadual do Estado da Bahia - UNEB
-    Por: José Cleiton Borges Correia
-    Prof: Jorge Sampaio Farias
-    Disciplina: Linguagem de Programação 1 - 2018.1
-    #################################################
-    | AVALIADOR DE EXPRESSÕES NUMERICAS POR EXTENSO |
-    | Entrada: expressão numérica por extenso       |
-    | Saída: expressão resolvida por extenso        |
-    #################################################
+**  Universidade Estadual do Estado da Bahia - UNEB
+**  Por: José Cleiton Borges Correia
+**  Prof: Jorge Sampaio Farias
+**  Disciplina: Linguagem de Programação 1 - 2018.1
+**  #################################################
+**  | AVALIADOR DE EXPRESSÕES NUMERICAS POR EXTENSO |
+**  | Entrada: expressão numérica por extenso       |
+**  | Saída: expressão resolvida por extenso        |
+**  #################################################
 */
 
 /* PROX PASSO: CORRIGIR CONVERSOR DE EXTENSO PARA NUMERO */
-#include <time.h>
 #include "lib/main.h"
+#include <time.h>
 #include "lib/operacoes.c"
 
 #define ARQ_DICT "lib/dicionario.cfg"
@@ -55,7 +55,7 @@ BOOL flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
 short *ind; /* vetor que guarda as posições das strings no ARQ_DICT */
 FILE* dicionario;
 FilaNum* queue;
-/* OBS: a partir daqui short int será usado como SU (olhar typedef em lib/preproc.h) */
+/* OBS: a partir daqui short [int] será usado como SU (olhar typedef em lib/preproc.h) */
 
 int main (void)
 {
