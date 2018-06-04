@@ -283,20 +283,28 @@ char* multiplica (char a[],char b[])
 char* unsigneDiv (char a[], char D[], BOOL MOD)
 {
     const int tn = strlen (a), td = strlen (D); /* len(N) e len(D) respectivamente */
+    if (td > tn)
+    {
+        if (MOD) return a; /* 2 % 3 == 2 */
+        return NULL; /* 2 / 3 == 0 */
+    }
+    if (! td) return (char*) "E"; /* divisão por zero é indeterminada */
+    if (*D == '1' && td == 1) return a; /* divisão por um */
+    if (! strcmp (a, D)) return (char*) "1"; /* divisão de numeros iguais */
+    char *N, *Q, *temp; /* N, Q e o ponteiro que guarda o inicio da alocação primeira de N */
+    MALLOC (N, tn+1);
+    strcpy (N, a);
     int i; /* indice de interações do laço para a divisão */
     int j = 0; /* cursor para escrita na string Q */
     int k; /* conta quantas subtrações foram feitas de N por D */ 
     int leN; /* guarda o tamanho atualizado (pela subtração) de N */
-    char *N, *Q, *temp; /* N, Q e o ponteiro que guarda o inicio da alocação primeira de N */ 
-    BOOL fl = 0; /* Marca se ocorreu ou não uma subtração de N por D */
-    MALLOC (N, tn+1);
-    strcpy (N, a);
+    BOOL fl = 0; /* Marca se ocorreu ou não uma subtração de N por D */;
     temp = N;
     N[tn] = '\0';
     MALLOC (Q, tn-td+1); /* O quociente terá pelo menos tn-td digitos */
     for (i = 0; i < tn-td+1; i++)
     {
-        if (strlen (Q) == tn-td) 
+        if (i && strlen (Q) == tn-td) 
             break;
         k = 0;
         N[td+i%2+fl] = '\0';

@@ -11,7 +11,7 @@
     } \
 }
 #define ERRO exit (3141592)
+#define EXCEPTION 61023
 typedef short int SU;
 typedef long long int LLI;
-typedef char BOOL;
-
+typedef unsigned char BOOL;

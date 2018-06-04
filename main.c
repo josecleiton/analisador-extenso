@@ -22,8 +22,10 @@
 #define ARQ_LOG "logs.txt"
 
 #define CLRBUF scanf ("%*c")
-#define TAM 28  /* METADE DO NUMERO DE LINHAS DO ARQ_DICT */
-#define NUM_ERROS 12 /* NUMERO DE LINHAS DO ARQ_ERROS
+#define TAM 57  /* NUMERO DE LINHAS DO ARQ_DICT */
+#define INDEL 48 /* LINHA DO ARQ_DICT EM QUE COMEÇAM OS DELIMITADORES */
+#define NUM_ERROS 13 /* NUMERO DE LINHAS DO ARQ_ERROS */
+#define MAXWLEN 35 /* TAMANHO MAXIMO DAS PALAVRAS NO DICIONARIO */
 
 /* 
 **   Vários tokens que auxiliam na análise (léxica/sintática/semântica)
@@ -116,8 +118,7 @@ int fileParsingInit (void)
         if (aux[0]) *(aux[0]) = '\0';
         expOut = expParsingStart ();
         fputs (expOut, saida);
-        if (count-1)
-            fputc ('\n', saida);
+        fputc ('\n', saida);
         fflush (saida);
         count--;
     }
@@ -132,6 +133,7 @@ char* expParsingStart (void)
     char *resposta;
     MALLOC (resposta, 1024);
     OPENFILE (dicionario, ARQ_DICT, "rb");
+    criaIndices (dicionario, &ind, TAM, '\n');
     MALLOC (ref, sizeof(Ordem));
     _TEXP = EXP;
     pega_token ();
@@ -151,7 +153,7 @@ char* expParsingStart (void)
 void expResTermo (char* resposta)
 {
     register char op;
-    char* segTermo;
+    register char* segTermo;
     expResFator (resposta);
     while ((op = token) == '+' || op == '-')
     {
@@ -162,22 +164,21 @@ void expResTermo (char* resposta)
         {
             case '-':
             strcpy (resposta, subtrair (resposta, segTermo));
-            free (segTermo);
             break;
             case '+':
             strcpy (resposta, soma (resposta, segTermo));
-            free (segTermo);
             break;
         }
+        free (segTermo);
     }
 }
 
 void expResFator (char* resposta)
 {
     register char op;
-    char* segFator;
+    register char* segFator;
     expResFatorial (resposta);
-    while ((op=token) == '*' || op == '/')
+    while ((op=token) == '*' || op == '/' || op == '%')
     {
         pega_token ();
         MALLOC (segFator, 300);
@@ -186,23 +187,22 @@ void expResFator (char* resposta)
         {
             case '*':
             strcpy (resposta, multiplica (resposta, segFator));
-            free (segFator);
             break;
             case '/':
             strcpy (resposta, unsigneDiv (resposta, segFator, 0));
-            free (segFator);
             break;
             case '%':
             strcpy (resposta, unsigneDiv (resposta, segFator, 1));
-            free (segFator);
             break;
         }
+        if (*resposta == 'E') erroSS (13);
+        free (segFator);
     }
 }
 
 void expResFatorial (char* resposta)
 {
-    char* proxFator;
+    register char* proxFator;
     if (token == '!')
     {
         pega_token ();
@@ -507,7 +507,7 @@ void criaIndices (FILE* in, SU** out, int size, int del)
 {
     rewind (in);
     SU *ind, i = 1, k = 1;
-    MALLOC(ind, sizeof(SU)*(size+2));
+    MALLOC (ind, sizeof(SU)*(size+2));
     *ind = 0;
     char ch = getc (in);
     while (ch != EOF && i <= size)
@@ -539,10 +539,10 @@ void pega_token (void)
     trade = EXP[k];
     EXP[k] = '\0';
     ajustaDelim (&k, &trade);
-    while (!feof (dicionario) && i < TAM*2)
+    while (!feof (dicionario) && i < TAM)
     {
-        MALLOC (ref->nome, TAM+DOZE);
-        MALLOC (ref->valor, TAM+DOZE)
+        MALLOC (ref->nome, MAXWLEN);
+        MALLOC (ref->valor, MAXWLEN)
         fscanf (dicionario, "%[^=]=%[^\n]%*c", ref->nome, ref->valor);
         if (! strcmp (ref->nome, EXP) || resPlural(i, &ref->nome))
         {
@@ -558,7 +558,7 @@ void pega_token (void)
                 i = -1;
                 if (verificaProxToken ()) return;
             }
-            else if (strchr ("+/-*!e()", ref->valor[0]))
+            else if (strchr ("+/%-*!e()", ref->valor[0]))
             {
                 tipoToken = CONJUCAO;
                 while (*EXP && (isalpha (*EXP) || *EXP == ' ' || *EXP == '-')) EXP++;
@@ -600,35 +600,33 @@ void ajustaEXP (void)
 
 BOOL verificaProxToken (void)
 {
-    while (*EXP && *EXP == ' ') EXP++;
-    char* temp = strpbrk (EXP, (char*) " ");
-    if (! temp)
+    while (*EXP && *EXP == ' ') EXP++; /* Posiciona a analise no inicio do proximo token */
+    char* needle = strchr (EXP, ' ');
+    if (! needle)
     {
         if (*EXP) return 0;
         return 1;
     }
-    int k = temp - EXP;
-    int i = 0;
-    char** dicT = (char**) malloc (sizeof (char*)*7);
-    dicT[0] = (char*) "mais";
-    dicT[1] = (char*) "menos";
-    dicT[2] = (char*) "vezes";
-    dicT[3] = (char*) "dividido";
-    dicT[4] = (char*) "abre";
-    dicT[5] = (char*) "fecha";
-    dicT[6] = (char*) "fatorial";
+    int k = needle - EXP;
     EXP[k] = '\0';
-    for (i=0; i < 7; i++)
+    int i = 1; /* COMEÇA EM UM PORQUE O PRIMEIRO DELIMITADOR É O 'e' */
+    char DEL[20] = {'\0'};
+    while (!feof (dicionario))
     {
-        if (!strcmp (dicT[i], EXP))
+        fseek (dicionario, ind[INDEL+(i++)], SEEK_SET);
+        fscanf (dicionario, "%[^=]", DEL);
+        char* needle2 = strchr (DEL, '-'); /* TRATA O HIFEN NO DELIMITADOR COMPOSTO */
+        if (needle2)
+            *needle2 = '\0';
+        if (!strcmp (DEL, EXP))
         {
-            free (dicT);
             EXP[k] = ' ';
+            rewind (dicionario);
             return 1;
         }
     }
     EXP[k] = ' ';
-    free (dicT);
+    rewind (dicionario);
     return 0;
 }
 
@@ -636,7 +634,7 @@ BOOL resPlural (int i, char** s)
 {
     char *nome = *s;
     if (! strchr ("mbtqdscount", nome[0])) return 0;
-    char* del = strpbrk (nome, (char*) ",");
+    char* del = strchr (nome, ',');
     BOOL fl = 0;
     if (!del) return 0;
     int k = del - nome;
@@ -692,7 +690,6 @@ void toName (char** resposta)
     int flag;
     MALLOC (resultado, tam*20);
     memset (resultado, 0, tam*20);
-    criaIndices (dicionario, &ind, (TAM-4)*2, '\n');
     while (tam > 0)
     {
         ord = (tam - 1)/3;
@@ -715,7 +712,7 @@ void toName (char** resposta)
                 memset (aux, 0, 36);
                 char* tmp = aux;
                 fscanf (dicionario, "%[^=]", ++aux);
-                char* del = strpbrk (aux, (char*) ",");
+                char* del = strchr (aux, ',');
                 aux[del - aux] = '\0';
                 if (plural)
                 {
