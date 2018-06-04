@@ -184,3 +184,8 @@ int fstrcount (FILE* in);
 **  MÉTODO PORTÁVEL DE LIMPAR A TELA
 */
 void clearScreen (void); 
+
+/*
+**  CONVERTE POSSÍVEIS CARACTERES MAÍUSCULOS DE EXP PARA MINÚSCULOS
+*/
+void strToLower (void);
