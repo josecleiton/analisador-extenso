@@ -6,7 +6,15 @@
     #define INCLUSOS
     #include "preproc.h"
 #endif
-
+#ifndef OPENFILE
+    #define OPENFILE(ptr_file, file_name, type) { \
+        ptr_file = fopen (file_name, type); \
+        if (! ptr_file) { \
+            fprintf (stderr, "Arquivo %s nao encontrado.\n", file_name); \
+            exit (2718); \
+        } \
+    }
+#endif
 /*
 *   ABAIXO SEGUEM AS DECLARAÇÕES, RESPECTIVAMENTE:
 *   Struct para guardar temporariamente uma linha do ARQ_DICT
