@@ -63,25 +63,30 @@ As expressões devem ser formatadas com espaços delimitando as palavras.
 - Correto = sete trilhoes e oitenta milhoes
 - Incorreto = ~~sete trilhoes, e oitenta milhoes~~
 
-### Da adição de ordens no dicionário
+### Da adição de ordens e delimitadores no dicionário
 
 Sugiro que antes da edição do arquivo de dicionário, leia a próxima seção. Se o dicionário foi aumentado, cuide com a alocação de alguns ponteiros, o tamanho de algumas variáveis e definição de constantes, no arquivo principal `main.c`. No caso dos ponteiros, acrescente adequadamente o parâmetro `size` da macro `MALLOC`. Alguns pontos para tomar cuidado:
 
 - Variável global `expNum`
 - Alocações
     - `resposta`
-    - `ref`
     - `segFator`
     - `segTermo`
     - `proxFator`
     - `strErro`
-- Constante `TAM`
-- Comparação lógica `filaCount() > 43` (limite padrão = decilhões)
+- Constantes
+    - `TAM`
+    - `INDEL`
+    - `MAXWLEN`
+- Comparação lógica
+    - `filaCount() > 43` (limite padrão = decilhões) *
+    - `strchr ("+/%-*!e()", ref->valor[0])` **
+###### * quantas palavras compõem o maior numero do dicionário
+###### ** o primeiro parâmetro deve ser modificado, se algum delimitador for adicionado/retirado
 
 ### Da adição de erros
 
 Atente para a constante `NUM_ERROS`, que numera a quantidade de linhas do arquivo **erros.cfg**, cada linha com um erro diferente. É bom ter cuidado com a alocação do ponteiro `strErro`, o qual guarda a string formatada com o erro e um cursor que indica a ocorrencia do erro. Novamente, é só adequar o parâmetro `size` da macro `MALLOC`.
-
 
 ## Tratamento dos arquivos *erros.cfg* e *dicionario.cfg*
 
