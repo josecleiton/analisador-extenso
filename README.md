@@ -16,7 +16,7 @@ O limite de expressões atualmente está em 0 ≤ N < 10³⁴. Mas, o projeto co
 
 ###  Interpretador de expressões
 
-A proposta é de resolver expressões númericas por extenso usando a linguagem C, um problema que para alguns pode parecer trivial, porém ele requer uma interpretação das expressões de entrada. Porque mesmo que resolvamos expressões simples facilmente, isto é, com apenas uma operação (é necessário atentar para o N), quando há várias operações, fica impossível dizer ao computador qual a precedência, sem deixar o código ilegível. A partir dessa premissa e com os materiais de apoio, implementei um conjunto de rotinas que resolvem corretamente cada operação no momento desejado. Esse subconjunto de rotinas têm prefixo **exp**.
+A proposta é de resolver expressões númericas por extenso usando a linguagem C, um problema que requer uma interpretação das expressões de entrada. Porque mesmo que resolvamos expressões simples facilmente, isto é, com apenas uma operação (é necessário atentar para o N), quando há várias operações, fica muito difícil programar o computador, sem deixar o código ilegível. A partir dessa premissa e com os materiais de apoio, implementei um conjunto de rotinas que resolvem corretamente cada operação no momento desejado. Esse subconjunto de rotinas têm prefixo **exp**.
 
 Além disso, precisamos de um analisador gramatical (ou léxico) para sabermos se as palavras que compõem a expressão são válidas, este analisador quebra a expressão em vários tokens. Isso é o que a função `pega_token` faz.
 
