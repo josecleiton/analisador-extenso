@@ -662,15 +662,8 @@ BOOL resPlural (int i, char** s)
     return fl;
 }
 
-void ajustaDelim (int* k, char* temp) /* COLOCA UM HIFEN ENTRE OS DELIMITADORES COMPOSTOS */
+void ajustaDelim (int* k, char* temp)
 {
-    /*
-    *   DELIMITADORES COMPOSTOS:
-    *   dividido-por
-    *   fatorial-de
-    *   abre-parentese
-    *   fecha-parentese
-    */
     if (*EXP != 'a' && *EXP != 'f' && *EXP != 'd') return;
     else if (! strcmp (EXP, (char*) "abre") || ! strcmp (EXP, (char*) "fecha") || ! strcmp (EXP, (char*) "dividido") || ! strcmp (EXP, (char*) "fatorial"))
     {
