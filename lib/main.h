@@ -1,6 +1,10 @@
+/*
+**  Inclusão do header com as bibliotecas e macros utilizados pelos arquivos:
+**  main.c e operacoes.c
+*/
 #ifndef INCLUSOS
     #define INCLUSOS
-    #include "preproc.h" /* Header com as bibliotecas desse arquivo e do auxiliar "operacoes.c" */
+    #include "preproc.h"
 #endif
 
 /*
@@ -81,11 +85,18 @@ BOOL resPlural (int i, char** s);
 **  AJUSTA DELIMITADORES COMPOSTOS COLOCANDO HÍFEN ENTRE AS PALAVRAS
 **  Entrada: dividido por
 **  Saida: dividido-por
+**
+**  DELIMITADORES COMPOSTOS:
+**  dividido-por
+**  fatorial-de
+**  abre-parentese
+**  fecha-parentese
+**
 */
 void ajustaDelim (int* k, char* temp);
 
 /*
-**  TODOS OS POSSÍVEIS ERROS (CHECAR lib/erros.txt)
+**  TODOS OS POSSÍVEIS ERROS (CHECAR ARQ_ERROS)
 */
 void erroSS (int tipoErro); 
 
