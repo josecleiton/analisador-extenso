@@ -49,7 +49,7 @@ char *EXP; /* Ponteiro para expNum */
 char *_TEXP; /* guarda a expressão sem modificações, para a possível exibição de erros */
 char expNum[512]; /* Expressão que será analisada */
 char *expOut; /* Resultado da expressão analisada */
-char token[2]; /* guarda o token */
+char token; /* guarda o token */
 short tipoToken; /* sinalisa o tipo do token em analise */
 BOOL flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
 short *ind; /* vetor que guarda as posições das strings no ARQ_DICT */
@@ -135,13 +135,13 @@ char* expParsingStart (void)
     MALLOC (ref, sizeof(Ordem));
     _TEXP = EXP;
     pega_token ();
-    if (!*token)
+    if (!token)
     {
         erroSS(3);
         return NULL;
     }
     expResTermo (resposta);
-    if (*token) erroSS (0);
+    if (token) erroSS (0);
     toName (&resposta);
     free (ref);
     fclose (dicionario);
@@ -153,7 +153,7 @@ void expResTermo (char* resposta)
     register char op;
     char* segTermo;
     expResFator (resposta);
-    while ((op = *token) == '+' || op == '-')
+    while ((op = token) == '+' || op == '-')
     {
         pega_token ();
         MALLOC (segTermo, 300);
@@ -177,7 +177,7 @@ void expResFator (char* resposta)
     register char op;
     char* segFator;
     expResFatorial (resposta);
-    while ((op=*token) == '*' || op == '/')
+    while ((op=token) == '*' || op == '/')
     {
         pega_token ();
         MALLOC (segFator, 300);
@@ -203,7 +203,7 @@ void expResFator (char* resposta)
 void expResFatorial (char* resposta)
 {
     char* proxFator;
-    if (*token == '!')
+    if (token == '!')
     {
         pega_token ();
         MALLOC (proxFator, 300);
@@ -242,11 +242,11 @@ void expAvalSinal (char* resposta)
 
 void expResParenteses (char* resposta)
 {
-    if (*token == '(')
+    if (token == '(')
     {
         pega_token ();
         expResTermo (resposta);
-        if (*token != ')')
+        if (token != ')')
             erroSS (1);
         pega_token ();
     }
@@ -528,12 +528,10 @@ void criaIndices (FILE* in, SU** out, int size, int del)
 void pega_token (void)
 {
     rewind (dicionario);
-    register char *temp;
     SU i = 0;
     int k = 0;
     char trade;
-    temp = token;
-    *temp = '\0';
+    token = '\0';
     tipoToken = 0;
     if (!*EXP) return;
     while (isspace(*EXP)) ++EXP;
@@ -550,8 +548,7 @@ void pega_token (void)
         {
             if (isdigit (ref->valor[0]))
             {
-                *temp++ = ref -> valor[0];
-                *temp = '\0';
+                token = ref -> valor[0];
                 while (*EXP && (isalpha (*EXP) || *EXP == ' ')) EXP++;
                 *EXP = trade;
                 tipoToken = NUM;
@@ -565,8 +562,7 @@ void pega_token (void)
             {
                 tipoToken = CONJUCAO;
                 while (*EXP && (isalpha (*EXP) || *EXP == ' ' || *EXP == '-')) EXP++;
-                *temp++ = ref->valor[0];
-                *temp = '\0';
+                token = ref->valor[0];
                 *EXP = trade;
                 if (i != CONJUCAO)
                 {
