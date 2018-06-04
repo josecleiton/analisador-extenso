@@ -10,7 +10,6 @@
 **  #################################################
 */
 
-/* PROX PASSO: CORRIGIR CONVERSOR DE EXTENSO PARA NUMERO */
 #include "lib/main.h"
 #include <time.h>
 #include "lib/operacoes.c"
@@ -25,7 +24,7 @@
 #define TAM 57  /* NUMERO DE LINHAS DO ARQ_DICT */
 #define INDEL 48 /* LINHA DO ARQ_DICT EM QUE COMEÇAM OS DELIMITADORES */
 #define NUM_ERROS 13 /* NUMERO DE LINHAS DO ARQ_ERROS */
-#define MAXWLEN 35 /* TAMANHO MAXIMO DAS PALAVRAS NO DICIONARIO */
+#define MAXWLEN 35 /* TAMANHO MAXIMO DAS PALAVRAS NO DICIONARIO (antes e depois do '=') */
 
 /* 
 **   Vários tokens que auxiliam na análise (léxica/sintática/semântica)
@@ -130,6 +129,7 @@ int fileParsingInit (void)
 
 char* expParsingStart (void)
 {
+    strToLower ();
     char *resposta;
     MALLOC (resposta, 1024);
     OPENFILE (dicionario, ARQ_DICT, "rb");
@@ -137,11 +137,7 @@ char* expParsingStart (void)
     MALLOC (ref, sizeof(Ordem));
     _TEXP = EXP;
     pega_token ();
-    if (!token)
-    {
-        erroSS(3);
-        return NULL;
-    }
+    if (!token) erroSS(3);
     expResTermo (resposta);
     if (token) erroSS (0);
     toName (&resposta);
@@ -897,4 +893,12 @@ void clearScreen (void)
     int n;
     for (n = 0; n < 10; n++)
       printf ("\n\n\n\n\n\n\n\n\n\n");
+}
+
+void strToLower (void)
+{
+    int i;
+    for (i=0; EXP[i] != '\0'; i++)
+        if (isupper (EXP[i]))
+            EXP[i] = tolower (EXP[i]);
 }
