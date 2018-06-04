@@ -407,7 +407,11 @@ char* toNum (void)
                     proxClasse = pegaProxClasse (queue -> prox);
                     if (proxClasse >= CEM)
                     {
-                        aux += flag;
+                        SU prevClass = queue -> ant -> classe;
+                        if (prevClass >= CEM)
+                            aux += 2;
+                        else if (prevClass >= DEZ)
+                            aux++;
                         break;
                     }
                     else if (proxClasse >= DEZ)
@@ -748,7 +752,7 @@ void toName (char** resposta)
         }
     }
     aux = strrchr (resultado, 'e');
-    if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ') && (*(aux+2) == ' ' || *(aux+2) == '\0') ) *aux = '\0';
+    if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ') && (*(aux+2) == ' ' || *(aux+2) == '\0') && (*(aux+3) == ' ' || *(aux+3) == '\0') ) *aux = '\0';
     strcpy (*resposta, resultado);
     free (resultado);
     free (ind);
@@ -843,9 +847,7 @@ void filaInsere (SU i, char* nome, char* valor)
     }
     while (aux && aux->prox)
         aux = aux -> prox;
-    if (no -> classe < MIL)
-        no -> ant = pegaProxNum (queue);
-    else no -> ant = NULL;
+    no -> ant = pegaProxNum (queue);
     aux -> prox = no;
 }
 
