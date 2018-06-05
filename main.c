@@ -15,7 +15,7 @@
 #include "lib/operacoes.c"
 
 /* 
-**   Vários tokens que auxiliam na análise (léxica/sintática/semântica)
+**   Vários tokens que auxiliam na análise (léxica/semântica)
 **   Se esses termos não forem familiares, leia README.md
 */
 enum tokens
@@ -37,7 +37,6 @@ Ordem* ref; /* Ponteiro para uma struct ordem */
 char *EXP; /* Ponteiro para expNum */
 char *_TEXP; /* guarda a expressão sem modificações, para a possível exibição de erros */
 char expNum[512]; /* Expressão que será analisada */
-char *expOut; /* Resultado da expressão analisada */
 char token; /* guarda o token */
 short tipoToken; /* sinalisa o tipo do token em analise */
 BOOL flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
@@ -72,6 +71,7 @@ int main (void)
                 scanf ("%[^\n]", EXP);
                 resultado = expParsingStart ();
                 printf ("\n\tResultado: %s\n", resultado);
+                free (_TEXP);
                 getchar (); CLRBUF;
                 break;
             case 'e': return 0;
@@ -92,6 +92,7 @@ int fileParsingInit (void)
     FILE* saida;
     OPENFILE (saida, ARQ_SAIDA, "wb");
     int count = fstrcount (entrada), i = 0;
+    char *expOut = NULL; /* Resultado da expressão analisada */
     SU* indices;
     criaIndices (entrada, &indices, count, '\n');
     while (count > 0)
@@ -107,6 +108,7 @@ int fileParsingInit (void)
         fputs (expOut, saida);
         fputc ('\n', saida);
         fflush (saida);
+        free (_TEXP);
         count--;
     }
     fclose (saida);
@@ -120,6 +122,7 @@ char* expParsingStart (void)
     strToLower ();
     char *resposta;
     MALLOC (resposta, 1024);
+    char *fResposta = resposta;
     OPENFILE (dicionario, ARQ_DICT, "rb");
     criaIndices (dicionario, &ind, TAM, '\n');
     MALLOC (ref, sizeof(Ordem));
@@ -129,7 +132,9 @@ char* expParsingStart (void)
     expResTermo (resposta);
     if (token) erroSS (0);
     toName (&resposta);
+    _TEXP = fResposta;
     free (ref);
+    free (ind);
     fclose (dicionario);
     return resposta;
 }
@@ -430,7 +435,7 @@ char* toNum (void)
     strcpy (resultado, ext);
     resultado[flare] = '\0';
     free (ext);
-    while (*resultado == '0') resultado++;
+    trataZeros (&resultado);
     return resultado;
 }
 
@@ -522,17 +527,19 @@ void pega_token (void)
     while (EXP[k] && isalpha(EXP[k])) k++;
     trade = EXP[k];
     EXP[k] = '\0';
+    register char valorTk = '\0';
     ajustaDelim (&k, &trade);
     while (!feof (dicionario) && i < TAM)
     {
         MALLOC (ref->nome, MAXWLEN);
-        MALLOC (ref->valor, MAXWLEN)
+        MALLOC (ref->valor, MAXWLEN);
         fscanf (dicionario, "%[^=]=%[^\n]%*c", ref->nome, ref->valor);
         if (! strcmp (ref->nome, EXP) || resPlural(i, &ref->nome))
         {
-            if (isdigit (ref->valor[0]))
+            valorTk = ref -> valor[0];
+            if (isdigit (valorTk))
             {
-                token = ref -> valor[0];
+                token = valorTk;
                 while (*EXP && (isalpha (*EXP) || *EXP == ' ')) EXP++;
                 *EXP = trade;
                 tipoToken = NUM;
@@ -540,20 +547,19 @@ void pega_token (void)
                 filaInsere (i, ref->nome, ref->valor);
                 rewind (dicionario);
                 i = -1;
+                FREEREF;
                 if (verificaProxToken ()) return;
             }
-            else if (strchr ("+/%-*!e()", ref->valor[0]))
+            else if (strchr ("+/%-*!e()", valorTk))
             {
                 tipoToken = CONJUCAO;
                 while (*EXP && (isalpha (*EXP) || *EXP == ' ' || *EXP == '-')) EXP++;
-                token = ref->valor[0];
+                token = valorTk;
                 *EXP = trade;
                 if (i != CONJUCAO)
                 {
                     tipoToken = DELIMITADOR;
                     flagNUM = 0;
-                    free (ref->nome);
-                    free (ref->valor);
                     return;
                 }
                 else
@@ -562,12 +568,12 @@ void pega_token (void)
                     i = -1;
                     rewind (dicionario);
                 }
+                FREEREF;
             }
         }
         if (! flagNUM)
         {
-            free (ref->nome);
-            free (ref->valor);
+            FREEREF;
         }
         else ajustaEXP();
         i++;
@@ -725,7 +731,6 @@ void toName (char** resposta)
     if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ') && (*(aux+2) == ' ' || *(aux+2) == '\0') && (*(aux+3) == ' ' || *(aux+3) == '\0') ) *aux = '\0';
     strcpy (*resposta, resultado);
     free (resultado);
-    free (ind);
 }
 
 int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural)
@@ -805,8 +810,12 @@ void filaInsere (SU i, char* nome, char* valor)
     MALLOC(no, sizeof (FilaNum));
     no -> info = (Ordem*) malloc (sizeof(Ordem));
     if (no->info == NULL) ERRO;
-    no->info->nome = nome;
-    no->info->valor = valor;
+    int lenNome = strlen (nome), lenValor = strlen (valor);
+    MALLOC (no->info->nome, MAXWLEN);
+    MALLOC (no->info->valor, MAXWLEN);
+    strcpy (no->info->nome, nome);
+    strcpy (no->info->valor, valor);
+    no->info->nome[lenNome] = no->info->valor[lenValor] = '\0';
     no -> classe = i;
     no -> prox = NULL;
     if (! queue)
@@ -848,7 +857,12 @@ void filaLibera (void)
     {
         aux2 = aux;
         aux = aux -> prox;
-        if (aux2 -> info) free (aux2 -> info);
+        if (aux2->info)
+        {
+            free (aux2->info->nome);
+            free (aux2->info->valor);
+            free (aux2->info);
+        }
         free (aux2);
     }
     queue = NULL;

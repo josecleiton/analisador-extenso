@@ -17,9 +17,25 @@ BOOL int2char (char a[], int tam);
 BOOL inverte (char a[]); /* strrev (apenas para Janelas OS) */
 int maior (int a, int b);
 int menor (int a, int b);
-int strCmpNum (char x[], char b[]);
+BOOL strCmpNum (char x[], char b[]);
 int numDigitos (int x);
-
+void trataZeros (char** K);
+/*
+int main (void)
+{
+    char a[MAX];
+    char b[MAX];
+    char *c;
+    printf("Digite o primeiro numero: ");
+    scanf("%s",a);
+    printf("Digite o segundo numero: ");
+    scanf("%s",b);
+    printf("div dos dois numeros: ");
+    c = unsigneDiv (a, b, 0);
+    puts (c);
+    return 0;
+}
+*/
 BOOL inverte (char a[])
 {
     int i, tam = strlen (a);
@@ -103,14 +119,15 @@ char* soma (char a[], char b[])
         soma[i] += '0';
     }
     if (resto) *--soma += resto;
-    while (*soma=='0') soma++;
+    trataZeros (&soma);
     return soma;
 }
 
  char* subtrair (char a[], char b[])
  {
-    char *min, *subt, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
+    char *min = NULL, *subt = NULL, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
     int i;
+
     int tamMinuendo = strlen(a), tamSubtraendo = strlen(b);
     if (! tamMinuendo)
         return b;
@@ -155,12 +172,12 @@ char* soma (char a[], char b[])
         diferenca[i] = (min[i]-'0') - (subt[i]-'0');
         if (diferenca[i] < 0)
         {
-            min[i-1]--;
+            if (i) min[i-1]--;
             diferenca[i] += 10;
         }  
         diferenca[i] += '0';
     }
-    while (*diferenca == '0') diferenca++;
+    trataZeros (&diferenca);
     return diferenca;
 }
 
@@ -184,7 +201,8 @@ char* completaMenor (char a[], char b[], char* menor)
     if (tamMaior + tamMenor)
     {
         char* completaZeros;
-        MALLOC (completaZeros, tamMaior);
+        MALLOC (completaZeros, tamMaior+1);
+        completaZeros[tamMaior] = '\0';
         while (k < tamMaior-tamMenor)
         {    
             completaZeros[k] = '0';
@@ -292,16 +310,17 @@ char* unsigneDiv (char a[], char D[], BOOL MOD)
     if (*D == '1' && td == 1) return a; /* divisão por um */
     if (! strcmp (a, D)) return (char*) "1"; /* divisão de numeros iguais */
     char *N, *Q, *temp; /* N, Q e o ponteiro que guarda o inicio da alocação primeira de N */
-    MALLOC (N, tn+1);
+    MALLOC (N, tn+2);
+    memset (N, 0, tn+2);
+    temp = N;
     strcpy (N, a);
     int i; /* indice de interações do laço para a divisão */
     int j = 0; /* cursor para escrita na string Q */
     int k; /* conta quantas subtrações foram feitas de N por D */ 
     int leN; /* guarda o tamanho atualizado (pela subtração) de N */
     BOOL fl = 0; /* Marca se ocorreu ou não uma subtração de N por D */;
-    temp = N;
-    N[tn] = '\0';
     MALLOC (Q, tn-td+1); /* O quociente terá pelo menos tn-td digitos */
+    *Q = '\0';
     for (i = 0; i < tn-td+1; i++)
     {
         if (i && strlen (Q) == tn-td) 
@@ -318,7 +337,7 @@ char* unsigneDiv (char a[], char D[], BOOL MOD)
         leN = strlen (N);
         if (leN > td || !i)
             strcpy (&N[td], &a[td+i]);
-        else if (fl)
+        else if (fl && a[td+1])
             strcpy (&N[leN], &a[td+1]);
         if (!strCmpNum (N, D) || fl)
         {
@@ -346,23 +365,22 @@ char* unsigneDiv (char a[], char D[], BOOL MOD)
     if (MOD) /* Se o paramento for verdadeiro, retorne o resto */
     {
         free (Q);
-        while (*N == '0') N++;
+        trataZeros (&N);
         return N;
     }
     free (temp);
     return Q;
 }
 
-int strCmpNum (char x[], char b[])
+BOOL strCmpNum (char x[], char b[])
 {
     char* a = x;
-    while (*a == '0') a++;
     int ta = strlen (a), tb = strlen (b);
     if (ta > tb) return 1;
     if (ta == tb)
     {
         int i;
-        for (i = 0; a[i] != '\0'; i++)
+        for (i = 0; a[i] != '\0' && b[i] != '\0'; i++)
         {
             if (a[i] > b[i]) return 1;
             else if (a[i] < b[i]) return 0;
@@ -414,7 +432,6 @@ char* fatorial (char in[])
         k = fatorial_multiplicador (i, fat, k);
     int2char (fat, k+1);
     inverte (fat);
-    while (*fat == '0') fat++;
     return fat;
 }
 
@@ -434,4 +451,19 @@ int fatorial_multiplicador (int a, char fat[], int limit)
         limit++;
     }
     return limit;
+}
+
+void trataZeros (char** K)
+{
+    char* in = *K;
+    int x;
+    for (x = 0; *in == '0'; x++) in++;
+    if (!x) return;
+    int len = strlen (in);
+    char* s = NULL;
+    MALLOC (s, len+1);
+    s[len] = '\0';
+    strcpy (s, in);
+    free (in-x);
+    *K = s;
 }

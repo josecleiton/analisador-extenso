@@ -81,6 +81,15 @@
 }
 
 /*
+**  FREEREF
+**  libera elementos da struct ref
+*/
+#define FREEREF \
+    free (ref -> nome); \
+    free (ref -> valor); \
+    ref -> valor = ref -> nome = NULL;
+
+/*
 **  CLRBUF
 **  limpeza do buffer de entrada
 */
