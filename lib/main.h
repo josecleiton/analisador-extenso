@@ -6,15 +6,86 @@
     #define INCLUSOS
     #include "preproc.h"
 #endif
-#ifndef OPENFILE
-    #define OPENFILE(ptr_file, file_name, type) { \
-        ptr_file = fopen (file_name, type); \
-        if (! ptr_file) { \
-            fprintf (stderr, "Arquivo %s nao encontrado.\n", file_name); \
-            exit (2718); \
-        } \
-    }
-#endif
+
+/*
+**  DICIONÁRIO
+**  <palavra>=<valor>
+**  
+**  palavra é o número por extenso aceito
+**  valor é o número cardinal em linguagem matemática
+**  Exemplo: trezentos=300
+*/
+#define ARQ_DICT "lib/dicionario.cfg"
+
+/*
+**  ERROS
+**  
+**  Um tipo de erro por linha
+*/
+#define ARQ_ERROS "lib/erros.cfg"
+
+/*
+**  ENTRADA
+** 
+**  expressões a serem analisadas pelo programa
+*/
+#define ARQ_ENTRADA "lib/expressoes.txt"
+
+/*
+**  SAIDA
+**  resultado das expressões analisadas
+*/
+#define ARQ_SAIDA "resultados.txt"
+
+/*
+**  LOG
+**  
+**  data da ocorrencia de algum erro na expressão, seguido da descrição do mesmo
+*/
+#define ARQ_LOG "logs.txt"
+
+/*
+**  TAM
+**  Número de linhas do ARQ_DICT
+*/
+#define TAM 57
+
+/*
+**  INDEL
+**  linha do ARQ_DIC na qual começam os delimitadores
+*/
+#define INDEL 48 
+
+/*
+**  NUM_ERROS
+**  número de linhas do ARQ_ERROS
+*/
+#define NUM_ERROS 13 
+
+/*
+**  MAXWLEN
+**  tamanho maximo das palavras no ARQ_DICT (antes e depois do '=')
+*/
+#define MAXWLEN 35
+
+/*
+**  OPENFILE
+**  macro para abertura de arquivos
+*/
+#define OPENFILE(ptr_file, file_name, type) { \
+    ptr_file = fopen (file_name, type); \
+    if (! ptr_file) { \
+        fprintf (stderr, "Arquivo %s nao encontrado.\n", file_name); \
+        exit (2718); \
+    } \
+}
+
+/*
+**  CLRBUF
+**  limpeza do buffer de entrada
+*/
+#define CLRBUF scanf ("%*c")
+
 /*
 *   ABAIXO SEGUEM AS DECLARAÇÕES, RESPECTIVAMENTE:
 *   Struct para guardar temporariamente uma linha do ARQ_DICT
@@ -25,6 +96,7 @@ typedef struct ordem
     char* nome;
     char* valor;
 } Ordem;
+
 typedef struct filanum 
 {
     short classe;
@@ -99,7 +171,6 @@ BOOL resPlural (int i, char** s);
 **  fatorial-de
 **  abre-parentese
 **  fecha-parentese
-**
 */
 void ajustaDelim (int* k, char* temp);
 

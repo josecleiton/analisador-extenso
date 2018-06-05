@@ -14,18 +14,6 @@
 #include <time.h>
 #include "lib/operacoes.c"
 
-#define ARQ_DICT "lib/dicionario.cfg"
-#define ARQ_ERROS "lib/erros.cfg"
-#define ARQ_ENTRADA "lib/expressoes.txt"
-#define ARQ_SAIDA "resultados.txt"
-#define ARQ_LOG "logs.txt"
-
-#define CLRBUF scanf ("%*c")
-#define TAM 57  /* NUMERO DE LINHAS DO ARQ_DICT */
-#define INDEL 48 /* LINHA DO ARQ_DICT EM QUE COMEÇAM OS DELIMITADORES */
-#define NUM_ERROS 13 /* NUMERO DE LINHAS DO ARQ_ERROS */
-#define MAXWLEN 35 /* TAMANHO MAXIMO DAS PALAVRAS NO DICIONARIO (antes e depois do '=') */
-
 /* 
 **   Vários tokens que auxiliam na análise (léxica/sintática/semântica)
 **   Se esses termos não forem familiares, leia README.md
