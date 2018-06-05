@@ -13,7 +13,7 @@
 #include "lib/main.h"
 #include <time.h>
 #include "lib/operacoes.c"
-
+// AJUSTAR criaIndices
 /* 
 **   Vários tokens que auxiliam na análise (léxica/semântica)
 **   Se esses termos não forem familiares, leia README.md
@@ -93,7 +93,7 @@ int fileParsingInit (void)
     OPENFILE (saida, ARQ_SAIDA, "wb");
     int count = fstrcount (entrada), i = 0;
     char *expOut = NULL; /* Resultado da expressão analisada */
-    SU* indices;
+    SU* indices = NULL;
     criaIndices (entrada, &indices, count, '\n');
     while (count > 0)
     {
@@ -124,8 +124,10 @@ char* expParsingStart (void)
     MALLOC (resposta, 1024);
     char *fResposta = resposta;
     OPENFILE (dicionario, ARQ_DICT, "rb");
+    ind = NULL;
     criaIndices (dicionario, &ind, TAM, '\n');
     MALLOC (ref, sizeof(Ordem));
+    ref -> nome = ref -> valor = NULL;
     _TEXP = EXP;
     pega_token ();
     if (!token) erroSS(3);
@@ -495,7 +497,7 @@ void erroSS (int tipoErro)
 void criaIndices (FILE* in, SU** out, int size, int del)
 {
     rewind (in);
-    SU *ind, i = 1, k = 1;
+    SU *ind = NULL, i = 1, k = 1;
     MALLOC (ind, sizeof(SU)*(size+2));
     *ind = 0;
     char ch = getc (in);
@@ -527,16 +529,16 @@ void pega_token (void)
     while (EXP[k] && isalpha(EXP[k])) k++;
     trade = EXP[k];
     EXP[k] = '\0';
-    register char valorTk = '\0';
+    char valorTk = '\0';
     ajustaDelim (&k, &trade);
     while (!feof (dicionario) && i < TAM)
     {
-        MALLOC (ref->nome, MAXWLEN);
-        MALLOC (ref->valor, MAXWLEN);
+        if (ref->nome == NULL) MALLOC (ref->nome, MAXWLEN);
+        if (ref->valor == NULL) MALLOC (ref->valor, MAXWLEN);
         fscanf (dicionario, "%[^=]=%[^\n]%*c", ref->nome, ref->valor);
         if (! strcmp (ref->nome, EXP) || resPlural(i, &ref->nome))
         {
-            valorTk = ref -> valor[0];
+            valorTk = ref->valor[0];
             if (isdigit (valorTk))
             {
                 token = valorTk;
@@ -560,6 +562,7 @@ void pega_token (void)
                 {
                     tipoToken = DELIMITADOR;
                     flagNUM = 0;
+                    if (ref -> nome && ref -> valor) { FREEREF; }
                     return;
                 }
                 else
@@ -568,12 +571,7 @@ void pega_token (void)
                     i = -1;
                     rewind (dicionario);
                 }
-                FREEREF;
             }
-        }
-        if (! flagNUM)
-        {
-            FREEREF;
         }
         else ajustaEXP();
         i++;
@@ -639,8 +637,11 @@ BOOL resPlural (int i, char** s)
         ++del;
         if (! strcmp (del, EXP))
         {
+            char temp[MAXWLEN] = {'\0'};
             fl = 1;
-            *s = del;
+            strcpy (temp, del);
+            strcpy (*s, temp);
+            (*s)[++k] = '\0';
         }
     }
     return fl;

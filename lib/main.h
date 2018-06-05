@@ -89,6 +89,13 @@
     free (ref -> valor); \
     ref -> valor = ref -> nome = NULL;
 
+#define ALLOCREF \
+    ref->nome = (char*) malloc(MAXWLEN);\
+    ref->valor = (char*) malloc(MAXWLEN);\
+    if (! (ref->nome) || ! (ref->valor))\
+        ERRO;
+
+
 /*
 **  CLRBUF
 **  limpeza do buffer de entrada
