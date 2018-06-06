@@ -17,7 +17,6 @@
 **  MALLOC
 **  função de alocação
 */
-
 void* MALLOC (size_t size)
 {
     void* ptr;

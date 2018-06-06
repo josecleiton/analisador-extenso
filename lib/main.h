@@ -182,7 +182,7 @@ void erroSS (int tipoErro);
 /*
 **  DEVOLVE EM out UM VETOR COM AS POSIÇÕES DE del NO ARQUIVO in
 */
-void criaIndices (FILE* in, SU** out, int size, int del); 
+SU* criaIndices (FILE* in, int size, int del); 
 
 /*
 **  ANALISA O SIGNIFICADO DA EXPRESSÃO
