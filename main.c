@@ -93,8 +93,7 @@ int fileParsingInit (void)
     OPENFILE (saida, ARQ_SAIDA, "wb");
     int count = fstrcount (entrada), i = 0;
     char *expOut = NULL; /* Resultado da expressão analisada */
-    SU* indices = NULL;
-    criaIndices (entrada, &indices, count, '\n');
+    SU* indices = criaIndices (entrada, count, '\n');
     while (count > 0)
     {
         fseek (entrada, indices[i++], SEEK_SET);
@@ -123,8 +122,7 @@ char* expParsingStart (void)
     char *resposta = (char*) MALLOC (1024);
     char *fResposta = resposta;
     OPENFILE (dicionario, ARQ_DICT, "rb");
-    ind = NULL;
-    criaIndices (dicionario, &ind, TAM, '\n');
+    ind = criaIndices (dicionario, TAM, '\n');
     ref = (Ordem*) MALLOC (sizeof(Ordem));
     _TEXP = EXP;
     pega_token ();
@@ -447,8 +445,7 @@ void erroSS (int tipoErro)
     OPENFILE (erroS, ARQ_ERROS, "rb");
     char strErro[512], *strBump;
     int temp, i = 0, tamErro, tamEXP;
-    SU *idc = NULL;
-    criaIndices (erroS, &idc, NUM_ERROS, '\n');
+    SU *idc = criaIndices (erroS, NUM_ERROS, '\n');
     fseek (erroS, idc[tipoErro], SEEK_SET);
     fgets (strErro, 512, erroS);
     strcat (strErro, "\n\t");
@@ -493,25 +490,25 @@ void erroSS (int tipoErro)
     ERRO;
 }
 
-void criaIndices (FILE* in, SU** out, int size, int del)
+SU* criaIndices (FILE* in, int size, int del)
 {
     rewind (in);
-    SU *ind = (SU*) MALLOC (sizeof(SU)*(size+2));
+    SU *index = (SU*) MALLOC (sizeof(SU)*(size+2));
     SU i = 1, k = 1;
-    *ind = 0;
+    *index = 0;
     char ch = getc (in);
     while (ch != EOF && i <= size)
     {
         if (ch == del)
         {
-            ind[i] = k;
+            index[i] = k;
             i++;
         }
         ch = getc (in);
         k++;
     }
-    *out = ind;
     rewind (in);
+    return index;
 }
 
 
@@ -520,7 +517,8 @@ void pega_token (void)
     rewind (dicionario);
     SU i = 0;
     int k = 0;
-    char trade;
+    char trade = '\0';
+    char valorTk = '\0';
     token = '\0';
     tipoToken = 0;
     if (!*EXP) return;
@@ -528,7 +526,6 @@ void pega_token (void)
     while (EXP[k] && isalpha(EXP[k])) k++;
     trade = EXP[k];
     EXP[k] = '\0';
-    char valorTk = '\0';
     ajustaDelim (&k, &trade);
     while (!feof (dicionario) && i < TAM)
     {
@@ -624,9 +621,7 @@ BOOL resPlural (int i, char *s)
     nome[k] = '\0';
 
     if (! strcmp (nome, EXP))
-    {
         fl = 1;
-    }
     else
     {
         ++del;
@@ -781,8 +776,7 @@ int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural)
         }
         else if (*s) tam = strlen (s);
     }
-    *flagPlural = 1;
-    if (*size == tam && *(s-1)=='1')  *flagPlural = 0;
+    *flagPlural = (cnt == 1 && *(s-1) == '1') ? 0 : 1;
     if (!*s) tam = 0;
     *str = s;
     if (strcmp (s, (char*) "000"))
@@ -825,8 +819,8 @@ void filaInsere (SU i, char* nome, char* valor)
 
 SU pegaProxClasse (FilaNum* inicio)
 {
-    SU classe;
-    if (! inicio) return ZERO;
+    SU classe = 0;
+    if (! inicio) return classe;
     while (inicio -> classe >= MIL) inicio = inicio -> prox;
     classe = inicio -> classe;
     return classe;
@@ -834,7 +828,7 @@ SU pegaProxClasse (FilaNum* inicio)
 
 FilaNum* pegaProxNum (FilaNum* inicio)
 {
-    FilaNum* aux;
+    FilaNum* aux = NULL;
     while (inicio)
     {
         if (inicio -> classe < MIL) aux = inicio;
@@ -845,7 +839,7 @@ FilaNum* pegaProxNum (FilaNum* inicio)
 
 void filaLibera (void)
 {
-    FilaNum *aux = queue, *aux2;
+    FilaNum *aux = queue, *aux2 = NULL;
     while (aux)
     {
         aux2 = aux;
@@ -889,7 +883,7 @@ void clearScreen (void)
 void strToLower (void)
 {
     int i;
-    for (i=0; EXP[i] != '\0'; i++)
+    for (i=0; EXP[i]; i++)
         if (isupper (EXP[i]))
             EXP[i] = tolower (EXP[i]);
 }
