@@ -99,12 +99,12 @@ char* soma (char a[], char b[])
     else if (! tb)
         return a;
     int i, resto = 0;
-    char* soma, *Op2, *Op1, flag;
+    char *soma, *Op2, *Op1, flag = 0;
     Op1 = (ta >= tb) ? a : b;
     Op2 = completaMenor (a, b, &flag);
     if (! Op2)
         Op2 = (ta >= tb) ? b : a;
-    MALLOC (soma, ts+2);
+    soma = (char*) MALLOC (ts+2);
     memset (soma, 0, ts+2);
     *soma = '0';
     soma++;
@@ -164,8 +164,7 @@ char* soma (char a[], char b[])
     }
     tamMinuendo = strlen (min);
     tamSubtraendo = strlen (subt);
-    char* diferenca;
-    MALLOC (diferenca, tamMinuendo+1);
+    char* diferenca = (char*) MALLOC (tamMinuendo+1);
     memset (diferenca, 0, tamMinuendo+1);
     for (i=tamMinuendo-1; i>=0; i--)
     {
@@ -200,8 +199,7 @@ char* completaMenor (char a[], char b[], char* menor)
     }
     if (tamMaior + tamMenor)
     {
-        char* completaZeros;
-        MALLOC (completaZeros, tamMaior+1);
+        char* completaZeros = (char*) MALLOC (tamMaior+1);
         completaZeros[tamMaior] = '\0';
         while (k < tamMaior-tamMenor)
         {    
@@ -231,15 +229,13 @@ char* completaMenor (char a[], char b[], char* menor)
 
 char* multiplica (char a[],char b[])
 {
-    char* produto;
     SU ta = strlen (a);
     SU tb = strlen (b);
     if ((ta == 0) || (tb == 1 && *b == '1'))
         return a;
     else if ((tb == 0) || (ta == 1 && *a == '1'))
         return b;
-    
-    MALLOC (produto, ta+tb+10);
+    char* produto = (char*) MALLOC (ta+tb+10);
     memset (produto, 0, ta+tb+10);
     int ls = 0, i, j, cursor = 0;
     for (i = tb-1; i >= 0; i--)
@@ -309,18 +305,19 @@ char* unsigneDiv (char a[], char D[], BOOL MOD)
     if (! td) return (char*) "E"; /* divisão por zero é indeterminada */
     if (*D == '1' && td == 1) return a; /* divisão por um */
     if (! strcmp (a, D)) return (char*) "1"; /* divisão de numeros iguais */
-    char *N, *Q, *temp; /* N, Q e o ponteiro que guarda o inicio da alocação primeira de N */
-    MALLOC (N, tn+2);
+
+    /* N, Q e o ponteiro que guarda o inicio da alocação primeira de N */
+    char *N = (char*) MALLOC (tn+2);
     memset (N, 0, tn+2);
-    temp = N;
     strcpy (N, a);
+    char *Q = (char*) MALLOC (tn-td+1); /* O quociente terá pelo menos tn-td digitos */
+    *Q = '\0';
+    char *temp = N;
     int i; /* indice de interações do laço para a divisão */
     int j = 0; /* cursor para escrita na string Q */
     int k; /* conta quantas subtrações foram feitas de N por D */ 
     int leN; /* guarda o tamanho atualizado (pela subtração) de N */
     BOOL fl = 0; /* Marca se ocorreu ou não uma subtração de N por D */;
-    MALLOC (Q, tn-td+1); /* O quociente terá pelo menos tn-td digitos */
-    *Q = '\0';
     for (i = 0; i < tn-td+1; i++)
     {
         if (i && strlen (Q) == tn-td) 
@@ -403,8 +400,8 @@ int numDigitos (int x)
 
 char* fatorial (char in[])
 {
-    char* a = (char*) malloc(strlen(in)+1);
-    register char* fat = (char*) malloc(900);
+    char* a = (char*) MALLOC (strlen(in)+1);
+    register char* fat = (char*) MALLOC (900);
     if (!a || !fat) ERRO;
     strcpy (a, in);
     int i=0,k=1, tamA = strlen (a);
@@ -460,8 +457,7 @@ void trataZeros (char** K)
     for (x = 0; *in == '0'; x++) in++;
     if (!x) return;
     int len = strlen (in);
-    char* s = NULL;
-    MALLOC (s, len+1);
+    char* s = (char*) MALLOC (len+1);
     s[len] = '\0';
     strcpy (s, in);
     free (in-x);
