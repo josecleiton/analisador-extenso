@@ -7,23 +7,28 @@
 #include <ctype.h>
 
 /*
-**  MALLOC
-**  macro de alocação
-*/
-#define MALLOC(ptr, size) { \
-    ptr = malloc (size); \
-    if (! ptr) {\
-        fprintf (stderr, "Memoria insuficiente.\n"); \
-        ERRO; \
-    } \
-}
-
-/*
 **  ERRO E EXCEPTION
 **  macros para termíno abrupto do programa
 */
 #define ERRO exit (3141592)
 #define EXCEPTION 61023
+
+/*
+**  MALLOC
+**  função de alocação
+*/
+
+void* MALLOC (size_t size)
+{
+    void* ptr;
+    ptr = malloc (size);
+    if (!ptr)
+    {
+        fprintf (stderr, "Memoria insuficiente.\n");
+        ERRO;
+    }
+    return ptr;
+}
 
 /*
 **  Redefinições de tipo

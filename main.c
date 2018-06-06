@@ -120,13 +120,12 @@ int fileParsingInit (void)
 char* expParsingStart (void)
 {
     strToLower ();
-    char *resposta;
-    MALLOC (resposta, 1024);
+    char *resposta = (char*) MALLOC (1024);
     char *fResposta = resposta;
     OPENFILE (dicionario, ARQ_DICT, "rb");
     ind = NULL;
     criaIndices (dicionario, &ind, TAM, '\n');
-    MALLOC (ref, sizeof(Ordem));
+    ref = (Ordem*) MALLOC (sizeof(Ordem));
     _TEXP = EXP;
     pega_token ();
     if (!token) erroSS(3);
@@ -148,7 +147,7 @@ void expResTermo (char* resposta)
     while ((op = token) == '+' || op == '-')
     {
         pega_token ();
-        MALLOC (segTermo, 300);
+        segTermo = (char*) MALLOC (300);
         expResFator (segTermo);
         switch (op)
         {
@@ -171,7 +170,7 @@ void expResFator (char* resposta)
     while ((op=token) == '*' || op == '/' || op == '%')
     {
         pega_token ();
-        MALLOC (segFator, 300);
+        segFator = MALLOC (300);
         expResFatorial (segFator);
         switch (op)
         {
@@ -196,7 +195,7 @@ void expResFatorial (char* resposta)
     if (token == '!')
     {
         pega_token ();
-        MALLOC (proxFator, 300);
+        proxFator = (char*) MALLOC (300);
         expResParenteses (proxFator);
         char* temp = fatorial (proxFator);
         if (! temp) erroSS (8);
@@ -340,12 +339,12 @@ SU pegaOrdem (FilaNum* inicio)
 
 char* toNum (void)
 {
-    char *resultado, *aux, *ext;
+    char *resultado = NULL, *aux = NULL, *ext = NULL;
     SU limit = pegaOrdem(queue), ord, proxOrd, proxClasse;
     SU i, flare = 0, flag;
     if (limit) limit = (limit+1-MIL)*3+3;
     else limit+=3;
-    MALLOC (ext, limit*2+1);
+    ext = (char*) MALLOC (limit*2+1);
     memset (ext, 0, limit*2+1);
     aux = ext;
     while (queue && limit)
@@ -433,7 +432,7 @@ char* toNum (void)
     }
 
     flare = strlen (ext);
-    MALLOC (resultado, flare + 1);
+    resultado = (char*) MALLOC (flare + 1);
     strcpy (resultado, ext);
     resultado[flare] = '\0';
     free (ext);
@@ -474,7 +473,7 @@ void erroSS (int tipoErro)
     struct tm *timeinfo;
     time (&now);
     timeinfo = localtime (&now);
-    MALLOC (toFile, size_toFile);
+    toFile = (char*) MALLOC (size_toFile);
     *toFile = '\0';
     strcpy (toFile, asctime(timeinfo));
     char* needle = strchr (toFile, '\n');
@@ -497,8 +496,8 @@ void erroSS (int tipoErro)
 void criaIndices (FILE* in, SU** out, int size, int del)
 {
     rewind (in);
-    SU *ind = NULL, i = 1, k = 1;
-    MALLOC (ind, sizeof(SU)*(size+2));
+    SU *ind = (SU*) MALLOC (sizeof(SU)*(size+2));
+    SU i = 1, k = 1;
     *ind = 0;
     char ch = getc (in);
     while (ch != EOF && i <= size)
@@ -672,11 +671,11 @@ void toName (char** resposta)
     }
     SU tam = strlen (*resposta);
     if (tam > DECILHAO-10) return;
-    char *resultado, *aux = NULL;
+    char *resultado = (char*) MALLOC (tam*20);
+    memset (resultado, 0, tam*20);
+    char *aux = NULL;
     SU ord, plural;
     int flag;
-    MALLOC (resultado, tam*20);
-    memset (resultado, 0, tam*20);
     while (tam > 0)
     {
         ord = (tam - 1)/3;
@@ -687,7 +686,7 @@ void toName (char** resposta)
         {
             if (ord == 1)
             {
-                MALLOC (aux, 5);
+                aux = (char*) MALLOC (5);
                 fscanf (dicionario, "%[^=]", ++aux);
                 *--aux = ' ';
                 strcat (resultado, aux);
@@ -695,7 +694,7 @@ void toName (char** resposta)
             }
             else if (ord)
             {
-                MALLOC (aux, 36);
+                aux = (char*) MALLOC (36);
                 memset (aux, 0, 36);
                 char* tmp = aux;
                 fscanf (dicionario, "%[^=]", ++aux);
@@ -732,7 +731,7 @@ void toName (char** resposta)
 
 int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural)
 {
-    char *s = *str, label, *tmp;
+    char *s = *str, label = 0, *tmp = NULL;
     SU tam = *size, count = tam%3;
     if (! count) count += 3;
     const SU cnt = count;
@@ -761,7 +760,7 @@ int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural)
             }
             label += *s - '0';
             fseek (dicionario, ind[label-1+flagNUM], SEEK_SET);
-            MALLOC (tmp, 25);
+            tmp = (char*) MALLOC (25);
             fscanf (dicionario, "%[^=]", tmp);
             if (strstr (tmp, (char*) "cem"))
             {
@@ -803,10 +802,9 @@ int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural)
 
 void filaInsere (SU i, char* nome, char* valor)
 {
-    FilaNum *no, *aux = queue;
-    MALLOC(no, sizeof (FilaNum));
-    no -> info = (Ordem*) malloc (sizeof(Ordem));
-    if (no->info == NULL) ERRO;
+    FilaNum *no = MALLOC (sizeof (FilaNum));
+    FilaNum *aux = queue;
+    no -> info = (Ordem*) MALLOC (sizeof (Ordem));
     int lenNome = strlen (nome), lenValor = strlen (valor);
     strcpy (no->info->nome, nome);
     strcpy (no->info->valor, valor);
