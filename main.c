@@ -500,10 +500,7 @@ SU* criaIndices (FILE* in, int size, int del)
     while (ch != EOF && i <= size)
     {
         if (ch == del)
-        {
-            index[i] = k;
-            i++;
-        }
+            index[i++] = k;
         ch = getc (in);
         k++;
     }
@@ -613,7 +610,7 @@ BOOL verificaProxToken (void)
 BOOL resPlural (int i, char *s)
 {
     char *nome = s;
-    if (! strchr ("mbtqdscount", nome[0])) return 0;
+    if (! strchr ("mbtqdscount", *nome)) return 0;
     char* del = strchr (nome, ',');
     BOOL fl = 0;
     if (!del) return 0;
