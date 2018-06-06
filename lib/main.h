@@ -81,22 +81,6 @@
 }
 
 /*
-**  FREEREF
-**  libera elementos da struct ref
-*/
-#define FREEREF \
-    free (ref -> nome); \
-    free (ref -> valor); \
-    ref -> valor = ref -> nome = NULL;
-
-#define ALLOCREF \
-    ref->nome = (char*) malloc(MAXWLEN);\
-    ref->valor = (char*) malloc(MAXWLEN);\
-    if (! (ref->nome) || ! (ref->valor))\
-        ERRO;
-
-
-/*
 **  CLRBUF
 **  limpeza do buffer de entrada
 */
@@ -109,8 +93,8 @@
 */
 typedef struct ordem
 {
-    char* nome;
-    char* valor;
+    char nome[MAXWLEN];
+    char valor[MAXWLEN];
 } Ordem;
 
 typedef struct filanum 
@@ -175,7 +159,7 @@ BOOL verificaProxToken (void);
 /*
 **  EM ORDENS COMPOSTAS, AVALIA TANTO A FORMA PLURAL QUANTO SINGULAR E ENFILA A FORMA INSERIDA
 */
-BOOL resPlural (int i, char** s);
+BOOL resPlural (int i, char *s);
 
 /*
 **  AJUSTA DELIMITADORES COMPOSTOS COLOCANDO HÍFEN ENTRE AS PALAVRAS

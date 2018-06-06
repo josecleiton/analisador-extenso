@@ -127,7 +127,6 @@ char* expParsingStart (void)
     ind = NULL;
     criaIndices (dicionario, &ind, TAM, '\n');
     MALLOC (ref, sizeof(Ordem));
-    ref -> nome = ref -> valor = NULL;
     _TEXP = EXP;
     pega_token ();
     if (!token) erroSS(3);
@@ -533,12 +532,10 @@ void pega_token (void)
     ajustaDelim (&k, &trade);
     while (!feof (dicionario) && i < TAM)
     {
-        if (ref->nome == NULL) MALLOC (ref->nome, MAXWLEN);
-        if (ref->valor == NULL) MALLOC (ref->valor, MAXWLEN);
         fscanf (dicionario, "%[^=]=%[^\n]%*c", ref->nome, ref->valor);
-        if (! strcmp (ref->nome, EXP) || resPlural(i, &ref->nome))
+        if (! strcmp (ref->nome, EXP) || resPlural(i, ref->nome))
         {
-            valorTk = ref->valor[0];
+            valorTk = *(ref->valor);
             if (isdigit (valorTk))
             {
                 token = valorTk;
@@ -549,7 +546,6 @@ void pega_token (void)
                 filaInsere (i, ref->nome, ref->valor);
                 rewind (dicionario);
                 i = -1;
-                FREEREF;
                 if (verificaProxToken ()) return;
             }
             else if (strchr ("+/%-*!e()", valorTk))
@@ -562,7 +558,6 @@ void pega_token (void)
                 {
                     tipoToken = DELIMITADOR;
                     flagNUM = 0;
-                    if (ref -> nome && ref -> valor) { FREEREF; }
                     return;
                 }
                 else
@@ -599,7 +594,7 @@ BOOL verificaProxToken (void)
     EXP[k] = '\0';
     int i = 1; /* COMEÇA EM UM PORQUE O PRIMEIRO DELIMITADOR É O 'e' */
     char DEL[20] = {'\0'};
-    while (!feof (dicionario))
+    while (i < TAM - INDEL+1 && !feof (dicionario))
     {
         fseek (dicionario, ind[INDEL+(i++)], SEEK_SET);
         fscanf (dicionario, "%[^=]", DEL);
@@ -618,9 +613,9 @@ BOOL verificaProxToken (void)
     return 0;
 }
 
-BOOL resPlural (int i, char** s)
+BOOL resPlural (int i, char *s)
 {
-    char *nome = *s;
+    char *nome = s;
     if (! strchr ("mbtqdscount", nome[0])) return 0;
     char* del = strchr (nome, ',');
     BOOL fl = 0;
@@ -640,8 +635,8 @@ BOOL resPlural (int i, char** s)
             char temp[MAXWLEN] = {'\0'};
             fl = 1;
             strcpy (temp, del);
-            strcpy (*s, temp);
-            (*s)[++k] = '\0';
+            strcpy (s, temp);
+            s[++k] = '\0';
         }
     }
     return fl;
@@ -812,8 +807,6 @@ void filaInsere (SU i, char* nome, char* valor)
     no -> info = (Ordem*) malloc (sizeof(Ordem));
     if (no->info == NULL) ERRO;
     int lenNome = strlen (nome), lenValor = strlen (valor);
-    MALLOC (no->info->nome, MAXWLEN);
-    MALLOC (no->info->valor, MAXWLEN);
     strcpy (no->info->nome, nome);
     strcpy (no->info->valor, valor);
     no->info->nome[lenNome] = no->info->valor[lenValor] = '\0';
@@ -859,11 +852,7 @@ void filaLibera (void)
         aux2 = aux;
         aux = aux -> prox;
         if (aux2->info)
-        {
-            free (aux2->info->nome);
-            free (aux2->info->valor);
             free (aux2->info);
-        }
         free (aux2);
     }
     queue = NULL;
