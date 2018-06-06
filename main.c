@@ -372,9 +372,10 @@ char* toNum (void)
                 {
                     strcpy (aux++, (char*) "0");
                     flare = 1;
-                    flag = 1;
+                    /*flag = 1;*/
                 }
                 strcpy (aux++, queue -> info -> valor);
+                flag = 1;
             }
             else
             {
