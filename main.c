@@ -90,7 +90,7 @@ int fileParsingInit (void)
     FILE* entrada;
     OPENFILE (entrada, ARQ_ENTRADA, "rb");
     FILE* saida;
-    OPENFILE (saida, ARQ_SAIDA, "wb");
+    OPENFILE (saida, ARQ_SAIDA, "wt");
     int count = fstrcount (entrada), i = 0;
     char *expOut = NULL; /* Resultado da expressão analisada */
     SU* indices = criaIndices (entrada, count, '\n');
