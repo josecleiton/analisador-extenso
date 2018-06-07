@@ -479,7 +479,7 @@ void erroSS (int tipoErro)
     needle = strrchr (toFile, '\n');
     *++needle = '\0';
     FILE* logs;
-    OPENFILE (logs, ARQ_LOG, "ab");
+    OPENFILE (logs, ARQ_LOG, "at");
     fputs (toFile, logs);
     fflush (logs);
     fclose (logs);
