@@ -92,10 +92,6 @@ Atente para a constante `NUM_ERROS`, que numera a quantidade de linhas do arquiv
 
 Foi assumida a padronização LF (GNU/Linux) para os arquivos e não CRLF (Windows) ou CR (macOS), porque eu, desenvolvi o projeto em uma distribuição **GNU/Linux**. Portanto, se você utilizar um daqueles SO proprietários e decidir alterar qualquer um desses arquivos, sugiro a utilização do **Notepad++** para a conversão deles de volta para LF, senão o comportamento da saída (resultado das expressões) é indefinido.
 
-## Saída
-
-O arquivo de saida *resultados.txt* também está em LF, então sugiro a visualização por um editor de texto que trate disso (desconsidere se você é um usuário GNU/Linux).
-
 ## Descrição das funções
 
 O funcionamento das funções (e seu algoritmo) estão descritos no arquivo de cabeçalho `lib/main.h`. As funções de operações básicas são "algoritmos clássicos" de soma, subtração, divisão e multiplicação, digito por digito, como aprendido no Ensino Fundamental do Brasil.

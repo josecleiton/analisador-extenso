@@ -33,7 +33,7 @@ enum tokens
 **       VARIAVEIS GLOBAIS
 **
 */
-Ordem* ref; /* Ponteiro para uma struct ordem */
+Ordem ref; /* struct ordem */
 char *EXP; /* Ponteiro para expNum */
 char *_TEXP; /* guarda a expressão sem modificações, para a possível exibição de erros */
 char expNum[512]; /* Expressão que será analisada */
@@ -123,7 +123,7 @@ char* expParsingStart (void)
     char *fResposta = resposta;
     OPENFILE (dicionario, ARQ_DICT, "rb");
     ind = criaIndices (dicionario, TAM, '\n');
-    ref = (Ordem*) MALLOC (sizeof(Ordem));
+    //ref = (Ordem*) MALLOC (sizeof(Ordem));
     _TEXP = EXP;
     pega_token ();
     if (!token) erroSS(3);
@@ -131,7 +131,7 @@ char* expParsingStart (void)
     if (token) erroSS (0);
     toName (&resposta);
     _TEXP = fResposta;
-    free (ref);
+    // (ref);
     free (ind);
     fclose (dicionario);
     return resposta;
@@ -526,10 +526,10 @@ void pega_token (void)
     ajustaDelim (&k, &trade);
     while (!feof (dicionario) && i < TAM)
     {
-        fscanf (dicionario, "%[^=]=%[^\n]%*c", ref->nome, ref->valor);
-        if (! strcmp (ref->nome, EXP) || resPlural(i, ref->nome))
+        fscanf (dicionario, "%[^=]=%[^\n]%*c", ref.nome, ref.valor);
+        if (! strcmp (ref.nome, EXP) || resPlural(i, ref.nome))
         {
-            valorTk = *(ref->valor);
+            valorTk = *(ref.valor);
             if (isdigit (valorTk))
             {
                 token = valorTk;
@@ -537,7 +537,7 @@ void pega_token (void)
                 *EXP = trade;
                 tipoToken = NUM;
                 flagNUM = 1;
-                filaInsere (i, ref->nome, ref->valor);
+                filaInsere (i, ref.nome, ref.valor);
                 rewind (dicionario);
                 i = -1;
                 if (verificaProxToken ()) return;
@@ -556,7 +556,7 @@ void pega_token (void)
                 }
                 else
                 {
-                    filaInsere(i, ref->nome, ref->valor);
+                    filaInsere(i, ref.nome, ref.valor);
                     i = -1;
                     rewind (dicionario);
                 }
