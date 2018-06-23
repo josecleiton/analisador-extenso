@@ -13,7 +13,6 @@
 #include "lib/main.h"
 #include <time.h>
 #include "lib/operacoes.c"
-// AJUSTAR criaIndices
 /* 
 **   Vários tokens que auxiliam na análise (léxica/semântica)
 **   Se esses termos não forem familiares, leia README.md
@@ -123,7 +122,6 @@ char* expParsingStart (void)
     char *fResposta = resposta;
     OPENFILE (dicionario, ARQ_DICT, "rb");
     ind = criaIndices (dicionario, TAM, '\n');
-    //ref = (Ordem*) MALLOC (sizeof(Ordem));
     _TEXP = EXP;
     pega_token ();
     if (!token) erroSS(3);
@@ -131,7 +129,6 @@ char* expParsingStart (void)
     if (token) erroSS (0);
     toName (&resposta);
     _TEXP = fResposta;
-    // (ref);
     free (ind);
     fclose (dicionario);
     return resposta;
@@ -206,7 +203,7 @@ void expResFatorial (char* resposta)
     }
     expResParenteses (resposta);
 }
-/*
+/* IMPLEMENTAR ISSO DEPOIS
 void expAvalSinal (char* resposta)
 {
     register char op = 0;
