@@ -38,7 +38,7 @@ char *_TEXP; /* guarda a expressão sem modificações, para a possível exibiç
 char expNum[512]; /* Expressão que será analisada */
 char token; /* guarda o token */
 short tipoToken; /* sinalisa o tipo do token em analise */
-BOOL flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
+unsigned flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
 short *ind; /* vetor que guarda as posições das strings no ARQ_DICT */
 FILE* dicionario;
 FilaNum* queue;
@@ -239,13 +239,13 @@ void expResParenteses (char* resposta)
 
 void atomo (char* resposta)
 {
-    if (flagNUM == 1)
+    if (flagNUM == true)
     {
         if (analiSemantica ())
         {
             strcpy (resposta, toNum());
             filaLibera ();
-            flagNUM = 0;
+            flagNUM = false;
             pega_token ();
             return;
         }
@@ -254,7 +254,7 @@ void atomo (char* resposta)
     erroSS (0);
 }
 
-BOOL analiSemantica (void)
+bool analiSemantica (void)
 {
     FilaNum* queueSem = queue;
     if (! queueSem) erroSS (3);
@@ -283,10 +283,10 @@ void pluralOrdem (FilaNum* inicio)
     erroSS (12);
 }
 
-BOOL semUnidade (FilaNum** inicio)
+bool semUnidade (FilaNum** inicio)
 {
     FilaNum *fila = *inicio;
-    BOOL flag = 0;
+    bool flag = false;
     while (fila && (fila -> classe < MIL || fila -> classe == CONJUCAO))
     {
         if (fila -> classe < VINTE && fila -> classe != DEZ)
@@ -317,7 +317,7 @@ BOOL semUnidade (FilaNum** inicio)
             }
         }
         fila = fila -> prox;
-        flag = 1;
+        flag = true;
     }
     *inicio = fila;
     if (! flag) erroSS (5);
@@ -533,7 +533,7 @@ void pega_token (void)
                 while (*EXP && (isalpha (*EXP) || *EXP == ' ')) EXP++;
                 *EXP = trade;
                 tipoToken = NUM;
-                flagNUM = 1;
+                flagNUM = true;
                 filaInsere (i, ref.nome, ref.valor);
                 rewind (dicionario);
                 i = -1;
@@ -548,7 +548,7 @@ void pega_token (void)
                 if (i != CONJUCAO)
                 {
                     tipoToken = DELIMITADOR;
-                    flagNUM = 0;
+                    flagNUM = false;
                     return;
                 }
                 else
@@ -572,7 +572,7 @@ void ajustaEXP (void)
     EXP[k] = '\0';
 }
 
-BOOL verificaProxToken (void)
+bool verificaProxToken (void)
 {
     while (*EXP && *EXP == ' ') EXP++; /* Posiciona a analise no inicio do proximo token */
     char* needle = strchr (EXP, ' ');
@@ -604,25 +604,25 @@ BOOL verificaProxToken (void)
     return 0;
 }
 
-BOOL resPlural (int i, char *s)
+bool resPlural (int i, char *s)
 {
     char *nome = s;
     if (! strchr ("mbtqdscount", *nome)) return 0;
     char* del = strchr (nome, ',');
-    BOOL fl = 0;
+    bool fl = false;
     if (!del) return 0;
     int k = del - nome;
     nome[k] = '\0';
 
     if (! strcmp (nome, EXP))
-        fl = 1;
+        fl = true;
     else
     {
         ++del;
         if (! strcmp (del, EXP))
         {
             char temp[MAXWLEN] = {'\0'};
-            fl = 1;
+            fl = true;
             strcpy (temp, del);
             strcpy (s, temp);
             s[++k] = '\0';
@@ -701,7 +701,7 @@ void toName (char** resposta)
             if ((**resposta) && !((tam - 1)/3))
             {
                 strcat (resultado, (char*) " e ");
-                flagNUM = 0;
+                flagNUM = false;
             }
             strcat (resultado, " ");
         }

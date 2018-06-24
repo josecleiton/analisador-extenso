@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 /*
 **  ERRO E EXCEPTION
@@ -34,4 +35,3 @@ void* MALLOC (size_t size)
 */
 typedef short int SU;
 typedef long long int LLI;
-typedef unsigned char BOOL;

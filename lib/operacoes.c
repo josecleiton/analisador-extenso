@@ -8,16 +8,16 @@ char* soma (char op1[], char op2[]);
 char* subtrair (char a[], char b[]);
 char* completaMenor (char a[], char b[], char* menor);
 char* multiplica (char a[], char b[]);
-char* unsigneDiv (char a[], char D[], BOOL MOD);
+char* unsigneDiv (char a[], char D[], bool MOD);
 char* fatorial (char a[]);
 int strIsDigit (char a[]);
 int fatorial_multiplicador (int a, char fat[], int limit);
-BOOL char2int (char a[]);
-BOOL int2char (char a[], int tam);
-BOOL inverte (char a[]); /* strrev (apenas para Janelas OS) */
+bool char2int (char a[]);
+bool int2char (char a[], int tam);
+bool inverte (char a[]); /* strrev (apenas para Janelas OS) */
 int maior (int a, int b);
 int menor (int a, int b);
-BOOL strCmpNum (char x[], char b[]);
+bool strCmpNum (char x[], char b[]);
 int numDigitos (int x);
 void trataZeros (char** K);
 /*
@@ -36,7 +36,7 @@ int main (void)
     return 0;
 }
 */
-BOOL inverte (char a[])
+bool inverte (char a[])
 {
     int i, tam = strlen (a);
     char c;
@@ -46,18 +46,18 @@ BOOL inverte (char a[])
         a[i] = a[tam-1-i];
         a[tam-1-i] = c;
     }
-    return 1;
+    return true;
 }
 
-BOOL char2int (char a[])
+bool char2int (char a[])
 {
     int i, tam = strlen (a);
     for (i=0; i<=tam; i++)
         a[i] = a[i] - '0';
-    return 1;
+    return true;
 }
 
-BOOL int2char (char a[], int tam)
+bool int2char (char a[], int tam)
 {
     int i;
     for (i=0; i<tam-1; i++)
@@ -66,7 +66,7 @@ BOOL int2char (char a[], int tam)
     }
     if (! isdigit(a[i-1])) a[i-1] = '\0'; 
     a[i] = '\0';
-    return 1;
+    return true;
 }
 
 int maior (int a, int b)
@@ -294,7 +294,7 @@ char* multiplica (char a[],char b[])
 **  Q sempre terá len(N) - len(D) digitos 
 **  
 */
-char* unsigneDiv (char a[], char D[], BOOL MOD)
+char* unsigneDiv (char a[], char D[], bool MOD)
 {
     const int tn = strlen (a), td = strlen (D); /* len(N) e len(D) respectivamente */
     if (td > tn)
@@ -317,19 +317,19 @@ char* unsigneDiv (char a[], char D[], BOOL MOD)
     int j = 0; /* cursor para escrita na string Q */
     int k; /* conta quantas subtrações foram feitas de N por D */ 
     int leN; /* guarda o tamanho atualizado (pela subtração) de N */
-    BOOL fl = 0; /* Marca se ocorreu ou não uma subtração de N por D */;
+    bool fl = false; /* Marca se ocorreu ou não uma subtração de N por D */;
     for (i = 0; i < tn-td+1; i++)
     {
         if (i && strlen (Q) == tn-td) 
             break;
         k = 0;
         N[td+i%2+fl] = '\0';
-        fl = 0;
+        fl = false;
         while (strCmpNum (N,D))
         {
             N = subtrair (N, D);
             k++;
-            fl = 1;
+            fl = true;
         }
         leN = strlen (N);
         if (leN > td || !i)
@@ -369,7 +369,7 @@ char* unsigneDiv (char a[], char D[], BOOL MOD)
     return Q;
 }
 
-BOOL strCmpNum (char x[], char b[])
+bool strCmpNum (char x[], char b[])
 {
     char* a = x;
     int ta = strlen (a), tb = strlen (b);
@@ -383,8 +383,8 @@ BOOL strCmpNum (char x[], char b[])
             else if (a[i] < b[i]) return 0;
         }
     }
-    else return 0;
-    return 1;
+    else return false;
+    return true;
 }
 
 int numDigitos (int x)
