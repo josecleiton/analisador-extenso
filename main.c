@@ -60,6 +60,7 @@ int main (void)
             case 'a':
                 clearScreen ();
                 printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultados podem ser encontrados em %s\n", fileParsingInit (), ARQ_SAIDA);
+                printRes();
                 CLRBUF;
                 getchar (); CLRBUF;
                 break;
@@ -113,6 +114,48 @@ int fileParsingInit (void)
     fflush (stdout);
     fclose (entrada);
     return i;
+}
+
+void printRes(void)
+{
+	char ch = '\0';
+	printf("\nDeseja visualizar todas as expressoes resolvidas? (S/N)\n");
+	scanf("%c%*c", &ch);
+	if(ch=='S' || ch=='s' || ch=='\n')
+	{
+		FILE* saida;
+		OPENFILE (saida, ARQ_SAIDA, "rt");
+		size_t s = maiorString(saida) + 1;
+		char* handle = MALLOC(s);
+		*handle='\0';
+		printf("%d\n\n", s);
+		printf("\n\tRESULTADOS (uma expressao por linha):\n\n");
+		while(fgets(handle,s,saida))
+			printf("%s",handle);
+		fclose(saida);
+
+	}
+	else return;
+
+}
+
+size_t maiorString (FILE* stream)
+{
+	size_t k = 0;
+	size_t maior = 1;
+	char c = getc(stream);
+	while(c!=EOF)
+	{
+		k++;
+		if(c=='\n')
+		{
+			maior = (k>maior)?k:maior;
+			k=0;
+		}
+		c=getc(stream);
+	}
+	rewind(stream);
+	return maior;
 }
 
 char* expParsingStart (void)

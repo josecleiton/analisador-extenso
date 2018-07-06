@@ -110,6 +110,16 @@ typedef struct filanum
 int fileParsingInit (void);
 
 /*
+**  MOSTRA O ARQUIVO DE RESULTADO
+*/
+void printRes(void);
+
+/*
+** RETORNA O TAMANHO DA MAIOR STRING NO ARQUIVO
+*/
+size_t maiorString (FILE* stream);
+
+/*
 **  GATILHO DE PARTIDA 
 */
 char* expParsingStart (void);
