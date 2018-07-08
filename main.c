@@ -54,7 +54,7 @@ int main (void)
     {
         clearScreen ();
         puts ("Selecione a entrada:\n a= Arquivo\n t= Teclado\n e= Sair\n\nopcao = ");
-        scanf ("%c", &op);
+        scanf ("%c%*c", &op);
         switch (op)
         {
             case 'a':
@@ -62,24 +62,20 @@ int main (void)
                 printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultados podem ser encontrados em %s\n", fileParsingInit (), ARQ_SAIDA);
                 printRes();
                 CLRBUF;
-                getchar (); CLRBUF;
                 break;
             case 't':
                 clearScreen ();
-                CLRBUF;
                 puts ("Digite uma expressao numerica: ");
-                scanf ("%[^\n]", EXP);
+                scanf ("%[^\n]%*c", EXP);
                 resultado = expParsingStart ();
                 printf ("\n\tResultado: %s\n", resultado);
                 free (_TEXP);
-                getchar (); CLRBUF;
+                CLRBUF;
                 break;
             case 'e': return 0;
             default: 
                 CLRBUF;
                 puts ("Opcao invalida.\n");
-                getchar (); CLRBUF;
-
         }
     }
     return 0;
