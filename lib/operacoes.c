@@ -111,6 +111,7 @@ char* soma (char a[], char b[])
     for (i = ts-1; i >= 0; i--)
     {
         soma[i] = (Op1[i]-'0') + (Op2[i]-'0') + resto;
+        resto = 0;
         if (soma[i] >= 10)
         {
             soma[i] %= 10;
