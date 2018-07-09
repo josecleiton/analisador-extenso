@@ -49,7 +49,7 @@ int main (void)
     EXP = expNum;
     char* resultado, op;
     puts ("\n\t\tANALISADOR DE EXPRESSOES NUMERICAS POR EXTENSO\n");
-    getchar (); CLRBUF;
+    CLRBUF;
     while (1)
     {
         clearScreen ();
