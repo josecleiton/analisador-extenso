@@ -204,7 +204,7 @@ void expResFator (char* resposta)
     while ((op=token) == '*' || op == '/' || op == '%')
     {
         pega_token ();
-        segFator = MALLOC (300);
+        segFator = (char*) MALLOC (300);
         expResFatorial (segFator);
         switch (op)
         {
