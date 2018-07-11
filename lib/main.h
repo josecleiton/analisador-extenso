@@ -45,10 +45,10 @@
 #define ARQ_LOG "logs.txt"
 
 /*
-**  TAM
+**  TAM_DICT
 **  Número de linhas do ARQ_DICT
 */
-#define TAM 57
+#define TAM_DICT 57
 
 /*
 **  INDEL
@@ -61,6 +61,12 @@
 **  número de linhas do ARQ_ERROS
 */
 #define NUM_ERROS 13 
+
+/*
+**  MAX_GEN
+**  tamanhos genéricos de string
+*/
+#define MAX_GEN 1024
 
 /*
 **  MAXWLEN

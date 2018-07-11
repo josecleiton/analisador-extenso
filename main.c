@@ -35,7 +35,7 @@ enum tokens
 Ordem ref; /* struct ordem */
 char *EXP; /* Ponteiro para expNum */
 char *_TEXP; /* guarda a expressão sem modificações, para a possível exibição de erros */
-char expNum[512]; /* Expressão que será analisada */
+char expNum[MAX_GEN]; /* Expressão que será analisada */
 char token; /* guarda o token */
 short tipoToken; /* sinalisa o tipo do token em analise */
 unsigned flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
@@ -93,7 +93,7 @@ int fileParsingInit (void)
     while (count > 0)
     {
         fseek (entrada, indices[i++], SEEK_SET);
-        fgets (EXP, 512, entrada);
+        fgets (EXP, MAX_GEN, entrada);
         char* aux[2];
         aux[0] = strchr (EXP, '\n');
         aux[1] = strchr (EXP, '\r');
@@ -160,7 +160,7 @@ char* expParsingStart (void)
     char *resposta = (char*) MALLOC (1024);
     char *fResposta = resposta;
     OPENFILE (dicionario, ARQ_DICT, "rb");
-    ind = criaIndices (dicionario, TAM, '\n');
+    ind = criaIndices (dicionario, TAM_DICT, '\n');
     _TEXP = EXP;
     pega_token ();
     if (!token) erroSS(3);
@@ -212,10 +212,10 @@ void expResFator (char* resposta)
             strcpy (resposta, multiplica (resposta, segFator));
             break;
             case '/':
-            strcpy (resposta, unsigneDiv (resposta, segFator, 0));
+            strcpy (resposta, unsigneDiv (resposta, segFator, false));
             break;
             case '%':
-            strcpy (resposta, unsigneDiv (resposta, segFator, 1));
+            strcpy (resposta, unsigneDiv (resposta, segFator, true));
             break;
         }
         if (*resposta == 'E') erroSS (13);
@@ -236,8 +236,7 @@ void expResFatorial (char* resposta)
         strcpy (resposta, temp);
         free (proxFator);
         free (temp);
-        if (!*resposta)
-            erroSS (7);
+        if (!*resposta) erroSS (7);
         return;
     }
     expResParenteses (resposta);
@@ -269,8 +268,7 @@ void expResParenteses (char* resposta)
     {
         pega_token ();
         expResTermo (resposta);
-        if (token != ')')
-            erroSS (1);
+        if (token != ')')   erroSS (1);
         pega_token ();
     }
     else atomo (resposta);
@@ -297,7 +295,7 @@ bool analiSemantica (void)
 {
     FilaNum* queueSem = queue;
     if (! queueSem) erroSS (3);
-    if (filaCount() > 43) erroSS (7); /* LIMITE DE DECILHÕES */
+    if (filaCount() > (DECILHAO-NOVECENTOS)*4-1) erroSS (7); /* LIMITE DE DECILHÕES */
     SU ord[2], i = 0;
     while (queueSem)
     {
@@ -479,11 +477,11 @@ void erroSS (int tipoErro)
 {
     FILE* erroS;
     OPENFILE (erroS, ARQ_ERROS, "rb");
-    char strErro[512], *strBump;
+    char strErro[MAX_GEN], *strBump;
     int temp, i = 0, tamErro, tamEXP;
     SU *idc = criaIndices (erroS, NUM_ERROS, '\n');
     fseek (erroS, idc[tipoErro], SEEK_SET);
-    fgets (strErro, 512, erroS);
+    fgets (strErro, MAX_GEN, erroS);
     strcat (strErro, "\n\t");
     strcat (strErro, _TEXP);
     strcat (strErro, "\n\t");
@@ -560,7 +558,7 @@ void pega_token (void)
     trade = EXP[k];
     EXP[k] = '\0';
     ajustaDelim (&k, &trade);
-    while (!feof (dicionario) && i < TAM)
+    while (!feof (dicionario) && i < TAM_DICT)
     {
         fscanf (dicionario, "%[^=]=%[^\n]%*c", ref.nome, ref.valor);
         if (! strcmp (ref.nome, EXP) || resPlural(i, ref.nome))
@@ -624,7 +622,7 @@ bool verificaProxToken (void)
     EXP[k] = '\0';
     int i = 1; /* COMEÇA EM UM PORQUE O PRIMEIRO DELIMITADOR É O 'e' */
     char DEL[20] = {'\0'};
-    while (i < TAM - INDEL+1 && !feof (dicionario))
+    while (i < TAM_DICT - INDEL+1 && !feof (dicionario))
     {
         fseek (dicionario, ind[INDEL+(i++)], SEEK_SET);
         fscanf (dicionario, "%[^=]", DEL);
