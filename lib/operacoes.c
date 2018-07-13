@@ -98,7 +98,7 @@ char* soma (char a[], char b[])
         return b;
     else if (! tb)
         return a;
-    int i, resto = 0;
+    int i, vaium = 0;
     char *soma, *Op2, *Op1, flag = 0;
     Op1 = (ta >= tb) ? a : b;
     Op2 = completaMenor (a, b, &flag);
@@ -110,16 +110,16 @@ char* soma (char a[], char b[])
     soma++;
     for (i = ts-1; i >= 0; i--)
     {
-        soma[i] = (Op1[i]-'0') + (Op2[i]-'0') + resto;
-        resto = 0;
+        soma[i] = (Op1[i]-'0') + (Op2[i]-'0') + vaium;
+        vaium = 0;
         if (soma[i] >= 10)
         {
             soma[i] %= 10;
-            resto = 1;
+            vaium = 1;
         }
         soma[i] += '0';
     }
-    if (resto) *--soma += resto;
+    if (vaium) *--soma += vaium;
     trataZeros (&soma);
     return soma;
 }
@@ -241,17 +241,17 @@ char* multiplica (char a[],char b[])
     int ls = 0, i, j, cursor = 0;
     for (i = tb-1; i >= 0; i--)
     {
-        int resto = 0, k = ls;
+        int carry = 0, k = ls;
         for (j = ta-1; j >= 0; j--)
         {
-            int temp = (a[j] - '0') * (b[i] - '0') + resto;
+            int temp = (a[j] - '0') * (b[i] - '0') + carry;
             if (produto[k])
                 temp += produto[k] - '0';
             produto[k++] = temp%10 + '0';
-            resto = temp/10;
+            carry = temp/10;
         }
-        if (resto > 0)
-            produto[k] = resto + '0';
+        if (carry > 0)
+            produto[k] = carry + '0';
         ls++;
         cursor=k;
     }
