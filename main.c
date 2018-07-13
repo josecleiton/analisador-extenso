@@ -124,7 +124,6 @@ void printRes(void)
 		size_t s = maiorString(saida) + 1;
 		char* handle = MALLOC(s);
 		*handle='\0';
-		printf("%ld\n\n", s);
 		printf("\n\tRESULTADOS (uma expressao por linha):\n\n");
 		while(fgets(handle,s,saida))
 			printf("%s",handle);
