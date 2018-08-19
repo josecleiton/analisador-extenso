@@ -51,6 +51,13 @@
 #define TAM_DICT 58
 
 /*
+**  STR_DEL
+**  String com os caracteres dos delimitadores
+*/
+
+#define STR_DEL "+/%-*!e()^"
+
+/*
 **  INDEL
 **  linha do ARQ_DIC na qual começam os delimitadores
 */

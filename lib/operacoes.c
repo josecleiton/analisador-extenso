@@ -92,18 +92,18 @@ char* soma (char a[], char b[])
     else if (! tb)
         return a;
     int i, vaium = 0;
-    char *soma, *Op2, *Op1, flag = 0;
-    Op1 = (ta >= tb) ? a : b;
-    Op2 = completaMenor (a, b, &flag);
-    if (! Op2)
-        Op2 = (ta >= tb) ? b : a;
+    char *soma, *op2, *op1, flag = 0;
+    op1 = (ta >= tb) ? a : b;
+    op2 = completaMenor (a, b, &flag);
+    if (! op2)
+        op2 = (ta >= tb) ? b : a;
     soma = (char*) MALLOC (ts+2);
     memset (soma, 0, ts+2);
     *soma = '0';
     soma++;
     for (i = ts-1; i >= 0; i--)
     {
-        soma[i] = (Op1[i]-'0') + (Op2[i]-'0') + vaium;
+        soma[i] = (op1[i]-'0') + (op2[i]-'0') + vaium;
         vaium = 0;
         if (soma[i] >= 10)
         {
@@ -328,19 +328,19 @@ char* unsigneDiv (char a[], char D[], bool MOD)
     char *temp = N;
     int i; /* indice de interações do laço para a divisão */
     int j = 0; /* cursor para escrita na string Q */
-    int k; /* conta quantas subtrações foram feitas de N por D */ 
+    size_t k; /* conta quantas subtrações foram feitas de N por D */ 
     int leN; /* guarda o tamanho atualizado (pela subtração) de N */
     bool fl = false; /* Marca se ocorreu ou não uma subtração de N por D */;
     for (i = 0; i < tn-td+1; i++)
     {
         if (i && strlen (Q) == tn-td) 
             break;
-        k = 0;
+        k = 0ull;
         N[td+i%2+fl] = '\0';
         fl = false;
         while (strCmpNum (N,D))
         {
-            N = subtrair (N, D);
+            swap(N, D, subtrair);
             k++;
             fl = true;
         }
@@ -400,16 +400,7 @@ bool strCmpNum (char x[], char b[])
     return true;
 }
 
-int numDigitos (int x)
-{
-    int i = 0;
-    while (x > 0)
-    {
-        x /= 10;
-        i++;
-    }
-    return i;
-}
+int numDigitos (int x) { return (int) floor(log10(x)) + 1; }
 
 char* fatorial (char in[])
 {

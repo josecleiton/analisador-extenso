@@ -578,7 +578,7 @@ void pega_token (void)
                 i = -1;
                 if (verificaProxToken ()) return;
             }
-            else if (strchr ("+/%-*!e()^", valorTk))
+            else if (strchr (STR_DEL, valorTk))
             {
                 tipoToken = CONJUCAO;
                 while (*EXP && (isalpha (*EXP) || *EXP == ' ' || *EXP == '-')) EXP++;
