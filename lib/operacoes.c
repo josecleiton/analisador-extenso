@@ -26,37 +26,9 @@ void trataZeros (char** K);
 /*
 **  GERENCIA MEMORIA ENTRE O RESULTADO E OS OPERADORES DAS FUNÇÕES
 */
+bool swap(char a[], char b[], char* (*f)(char*, char*));
+bool swapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool));
 
-bool swap(char a[], char b[], char* (*f)(char*, char*)) {
-    char* temp = f(a, b);
-    strcpy(a, temp);
-    free(temp);
-    return (a != NULL);
-}
-
-bool swapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool)) {
-    char* temp = f(a, b, mod);
-    strcpy(a, temp);
-    free(temp);
-    return (a != NULL);
-}
-
-/*
-int main (void)
-{
-    char a[MAX];
-    char b[MAX];
-    char *c;
-    printf("Digite o primeiro numero: ");
-    scanf("%s",a);
-    printf("Digite o segundo numero: ");
-    scanf("%s",b);
-    printf("div dos dois numeros: ");
-    c = unsigneDiv (a, b, 0);
-    puts (c);
-    return 0;
-}
-*/
 bool inverte (char a[])
 {
     int i, tam = strlen (a);
@@ -283,11 +255,19 @@ char* multiplica (char a[],char b[])
 
 char* unExpo (char a[], char b[])
 { 
+    if(*b == '0' || *b == '\0'){
+        char* answer = (char*) MALLOC (2);
+        answer[0] = '1'; answer[1] = '\0';
+        return answer;
+    }
+    else if (*b == '-') erroSS(4);
+    size_t lenA = strlen(a);
     char* answer = (char*) MALLOC (1000);
-    char* temp = NULL;
-    while(!(strcmp(b, "") || strcmp(b, "0"))) {
-        swap(a, b, multiplica);
-        subtrair(b, "1");
+    strcpy(answer, a);
+    answer[lenA] = '\0';
+    while(strcmp(b, "1")) {
+        swap(answer, a, multiplica);
+        swap(b, "1", subtrair);
     }
     return answer;
 }
@@ -495,4 +475,18 @@ void trataZeros (char** K)
     strcpy (s, in);
     free (in-x);
     *K = s;
+}
+
+bool swap(char a[], char b[], char* (*f)(char*, char*)) {
+    char* temp = f(a, b);
+    strcpy(a, temp);
+    free(temp);
+    return (a != NULL);
+}
+
+bool swapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool)) {
+    char* temp = f(a, b, mod);
+    strcpy(a, temp);
+    free(temp);
+    return (a != NULL);
 }

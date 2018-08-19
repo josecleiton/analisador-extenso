@@ -200,7 +200,7 @@ void expResFator (char* resposta)
     register char op;
     register char* segFator;
     expResFatorial (resposta);
-    while ((op=token) == '*' || op == '/' || op == '%')
+    while ((op=token) == '*' || op == '/' || op == '%' || op == '^')
     {
         pega_token ();
         segFator = (char*) MALLOC (300);
@@ -578,7 +578,7 @@ void pega_token (void)
                 i = -1;
                 if (verificaProxToken ()) return;
             }
-            else if (strchr ("+/%-*!e()", valorTk))
+            else if (strchr ("+/%-*!e()^", valorTk))
             {
                 tipoToken = CONJUCAO;
                 while (*EXP && (isalpha (*EXP) || *EXP == ' ' || *EXP == '-')) EXP++;
@@ -672,15 +672,20 @@ bool resPlural (int i, char *s)
 
 void ajustaDelim (int* k, char* temp)
 {
-    if (*EXP != 'a' && *EXP != 'f' && *EXP != 'd') return;
-    else if (! strcmp (EXP, (char*) "abre") || ! strcmp (EXP, (char*) "fecha") || ! strcmp (EXP, (char*) "dividido") || ! strcmp (EXP, (char*) "fatorial"))
+    if (*EXP != 'a' && *EXP != 'f' && *EXP != 'd' && *EXP != 'e') return;
+    else if (! strcmp (EXP, (char*) "abre") || ! strcmp (EXP, (char*) "fecha") || \
+             ! strcmp (EXP, (char*) "dividido") || ! strcmp (EXP, (char*) "fatorial") || \
+             ! strcmp (EXP, (char*) "elevado") \
+            )
     {
         int i = 0;
         EXP[*k] = '-';
         while (isalpha(EXP[i]) || EXP[i] == '-') i++;
         *temp = EXP[i];
         EXP[i] = '\0';
-        if (strcmp (&EXP[*k+1], (char*) "parentese") && strcmp (&EXP[*k+1], (char*) "de") && strcmp (&EXP[*k+1], (char*) "por"))
+        if (strcmp (&EXP[*k+1], (char*) "parentese") && strcmp (&EXP[*k+1], (char*) "de") && \
+            strcmp (&EXP[*k+1], (char*) "por") && strcmp(&EXP[*k+1], (char*) "a")
+            )
         {
             EXP[*k] = ' ';
             erroSS(0);
