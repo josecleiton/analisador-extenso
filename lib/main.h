@@ -48,7 +48,7 @@
 **  TAM_DICT
 **  Número de linhas do ARQ_DICT
 */
-#define TAM_DICT 57
+#define TAM_DICT 58
 
 /*
 **  INDEL
