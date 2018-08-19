@@ -185,10 +185,10 @@ void expResTermo (char* resposta)
         switch (op)
         {
             case '-':
-            strcpy (resposta, subtrair (resposta, segTermo));
+            swap(resposta, segTermo, subtrair);
             break;
             case '+':
-            strcpy (resposta, soma (resposta, segTermo));
+            swap(resposta, segTermo, soma);
             break;
         }
         free (segTermo);
@@ -208,13 +208,16 @@ void expResFator (char* resposta)
         switch (op)
         {
             case '*':
-            strcpy (resposta, multiplica (resposta, segFator));
+            swap(resposta, segFator, multiplica);
             break;
             case '/':
-            strcpy (resposta, unsigneDiv (resposta, segFator, false));
+            swapDiv(resposta, segFator, false, unsigneDiv);
             break;
             case '%':
-            strcpy (resposta, unsigneDiv (resposta, segFator, true));
+            swapDiv(resposta, segFator, true, unsigneDiv);
+            break;
+            case '^':
+            swap(resposta, segFator, unExpo);
             break;
         }
         if (*resposta == 'E') erroSS (13);

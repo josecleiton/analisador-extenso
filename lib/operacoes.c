@@ -4,11 +4,13 @@
 #endif
 #include <math.h>
 #define MAX 10000
+
 char* soma (char op1[], char op2[]);
 char* subtrair (char a[], char b[]);
 char* completaMenor (char a[], char b[], char* menor);
 char* multiplica (char a[], char b[]);
 char* unsigneDiv (char a[], char D[], bool MOD);
+char* unExpo (char a[], char b[]);
 char* fatorial (char a[]);
 int strIsDigit (char a[]);
 int fatorial_multiplicador (int a, char fat[], int limit);
@@ -20,6 +22,25 @@ int menor (int a, int b);
 bool strCmpNum (char x[], char b[]);
 int numDigitos (int x);
 void trataZeros (char** K);
+
+/*
+**  GERENCIA MEMORIA ENTRE O RESULTADO E OS OPERADORES DAS FUNÇÕES
+*/
+
+bool swap(char a[], char b[], char* (*f)(char*, char*)) {
+    char* temp = f(a, b);
+    strcpy(a, temp);
+    free(temp);
+    return (a != NULL);
+}
+
+bool swapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool)) {
+    char* temp = f(a, b, mod);
+    strcpy(a, temp);
+    free(temp);
+    return (a != NULL);
+}
+
 /*
 int main (void)
 {
@@ -119,7 +140,7 @@ char* soma (char a[], char b[])
         }
         soma[i] += '0';
     }
-    if (vaium) *--soma += vaium;
+    *--soma += vaium;
     trataZeros (&soma);
     return soma;
 }
@@ -258,6 +279,17 @@ char* multiplica (char a[],char b[])
     produto[++cursor] = '\0';
     inverte (produto);
     return produto;
+}
+
+char* unExpo (char a[], char b[])
+{ 
+    char* answer = (char*) MALLOC (1000);
+    char* temp = NULL;
+    while(!(strcmp(b, "") || strcmp(b, "0"))) {
+        swap(a, b, multiplica);
+        subtrair(b, "1");
+    }
+    return answer;
 }
 
 
