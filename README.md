@@ -33,7 +33,7 @@ Em vista do N ser muito maior do que um `long long`, foi necessário guardar os 
 
 ### Compilação
 
-Por ser uma aplicação em C, você necessita do GCC na sua máquina. Algumas IDEs instalam-no em conjunto, como o DEV C++, mas o seguinte tutorial é para compilá-la no terminal.
+Por ser uma aplicação em C, você necessita de um compilador C na sua máquina, usarei o GCC como exemplo abaixo. Algumas IDEs instalam-no em conjunto, como o DEV C++, mas o seguinte tutorial é para compilá-la no terminal.
 
 - Clone o repositório
 - Abra a pasta *compilha* no seu terminal
@@ -78,9 +78,9 @@ Sugiro que antes da edição do arquivo de dicionário, leia a próxima seção.
     - `TAM`
     - `INDEL`
     - `MAXWLEN`
+    - `STRDEL`
 - Comparação lógica
     - `filaCount() > 43` (limite padrão = decilhões) *
-    - `strchr ("+/%-*!e()", ref->valor[0])` **
 ###### * quantas palavras compõem o maior numero do dicionário
 ###### ** o primeiro parâmetro deve ser modificado, se algum delimitador for adicionado/retirado
 
