@@ -37,8 +37,9 @@ Por ser uma aplicação em C, você necessita de um compilador C na sua máquina
 
 - Clone o repositório
 - Abra a pasta *compilha* no seu terminal
-- Verifique se o GCC está instalado com `gcc --version`
-- Após isso compile com o seguinte código: `gcc main.c -o main -lm`
+- Verifique se o GCC ou o TCC está instalado com `gcc --version` ou `tcc -version`
+- Se não estiver instalado, use o gerenciador de pacotes da sua distribuição para resolver isso.
+- Após isso compile com o seguinte código: `tcc -O2 main.c -o main -lm` ou `gcc -O2 main.c -o main -lm` 
 - Se estiver utilizando Windows, altere o `main` para `main.exe`
 
 ### Do programa
