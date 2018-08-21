@@ -98,7 +98,6 @@ char* soma (char a[], char b[])
     if (! op2)
         op2 = (ta >= tb) ? b : a;
     soma = (char*) MALLOC (ts+2);
-    memset (soma, 0, ts+2);
     *soma = '0';
     soma++;
     for (i = ts-1; i >= 0; i--)
@@ -159,7 +158,6 @@ char* soma (char a[], char b[])
     tamMinuendo = strlen (min);
     tamSubtraendo = strlen (subt);
     char* diferenca = (char*) MALLOC (tamMinuendo+1);
-    memset (diferenca, 0, tamMinuendo+1);
     for (i=tamMinuendo-1; i>=0; i--)
     {
         diferenca[i] = (min[i]-'0') - (subt[i]-'0');
@@ -230,7 +228,6 @@ char* multiplica (char a[],char b[])
     else if ((tb == 0) || (ta == 1 && *a == '1'))
         return b;
     char* produto = (char*) MALLOC (ta+tb+10);
-    memset (produto, 0, ta+tb+10);
     int ls = 0, i, j, cursor = 0;
     for (i = tb-1; i >= 0; i--)
     {
@@ -321,10 +318,8 @@ char* unsigneDiv (char a[], char D[], bool MOD)
     if(!tn) return a;
     /* N, Q e o ponteiro que guarda o inicio da alocação primeira de N */
     char *N = (char*) MALLOC (tn+2);
-    memset (N, 0, tn+2);
     strcpy (N, a);
     char *Q = (char*) MALLOC (tn-td+1); /* O quociente terá pelo menos tn-td digitos */
-    *Q = '\0';
     char *temp = N;
     int i; /* indice de interações do laço para a divisão */
     int j = 0; /* cursor para escrita na string Q */

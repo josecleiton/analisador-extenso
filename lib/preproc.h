@@ -22,6 +22,7 @@ void* MALLOC (size_t size)
 {
     void* ptr;
     ptr = malloc (size);
+    memset(ptr, 0, size);
     if (!ptr)
     {
         fprintf (stderr, "Memoria insuficiente.\n");
