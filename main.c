@@ -50,7 +50,7 @@ int main (void)
     char* resultado, op;
     puts ("\n\t\tANALISADOR DE EXPRESSOES NUMERICAS POR EXTENSO\n");
     CLRBUF;
-    while (1)
+    while(true)
     {
         clearScreen ();
         puts ("Selecione a entrada:\n a= Arquivo\n t= Teclado\n e= Sair\n\nopcao = ");
@@ -78,7 +78,6 @@ int main (void)
                 puts ("Opcao invalida.\n");
         }
     }
-    return 0;
 }
 
 int fileParsingInit (void)
@@ -316,7 +315,7 @@ void pluralOrdem (FilaNum* inicio)
 {
     FilaNum* aux = inicio;
     while (aux && (aux -> classe < MILHAO || aux -> classe == CONJUCAO)) aux = aux -> prox;
-    if (aux && strstr (aux -> info -> nome, (char*) "oes"))
+    if (aux && strstr (aux -> info -> nome, (const char*) "oes"))
     {
         if (inicio -> classe != UM || inicio -> classe == CONJUCAO) return;
     }
@@ -349,7 +348,7 @@ bool semUnidade (FilaNum** inicio)
         }
         else if (fila -> classe >= CEM && fila -> classe <= NOVECENTOS)
         {
-            if (!strcmp (fila -> info -> nome, (char*) "cem") && (fila -> prox && fila -> prox -> classe == CONJUCAO)) erroSS (12);
+            if (!strcmp (fila -> info -> nome, (const char*) "cem") && (fila -> prox && fila -> prox -> classe == CONJUCAO)) erroSS (12);
             if (fila -> prox && (fila -> prox -> classe < MIL || fila -> prox -> classe == CONJUCAO))
             {
                 if (fila -> prox -> classe != CONJUCAO) erroSS (9);
@@ -376,6 +375,7 @@ SU pegaOrdem (FilaNum* inicio)
 char* toNum (void)
 {
     char *resultado = NULL, *aux = NULL, *ext = NULL;
+    FilaNum* handleQueue = queue;
     SU limit = pegaOrdem(queue), ord, proxOrd, proxClasse;
     SU i, flare = 0, flag;
     if (limit) limit = (limit+1-MIL)*3+3;
@@ -392,7 +392,7 @@ char* toNum (void)
             {
                 if (! flare)
                 {
-                    strcpy (aux, (char*) "00");
+                    strcpy (aux, (const char*) "00");
                     aux += 2;
                     flare = 1;
                     flag = 0;
@@ -404,7 +404,7 @@ char* toNum (void)
             {
                 if (! flare)
                 {
-                    strcpy (aux++, (char*) "0");
+                    strcpy (aux++, (const char*) "0");
                     flare = 1;
                     /*flag = 1;*/
                 }
@@ -451,13 +451,13 @@ char* toNum (void)
                     }
                     else
                     {
-                        strcat (aux, (char*) "000");
+                        strcat (aux, (const char*) "000");
                         aux += 3 + flag;
                     }
                 }
                 else
                 {
-                    strcat (aux, (char*) "000");
+                    strcat (aux, (const char*) "000");
                     aux += 3;
                 }
                 proxOrd++;
@@ -472,6 +472,7 @@ char* toNum (void)
     resultado[flare] = '\0';
     free (ext);
     trataZeros (&resultado);
+    queue = handleQueue;
     return resultado;
 }
 
@@ -608,7 +609,7 @@ void pega_token (void)
 void ajustaEXP (void)
 {
     while (*EXP && *EXP == ' ') EXP++;
-    int k = strcspn (EXP, (char*) " ");
+    int k = strcspn (EXP, (const char*) " ");
     EXP[k] = '\0';
 }
 
@@ -674,9 +675,9 @@ bool resPlural (int i, char *s)
 void ajustaDelim (int* k, char* temp)
 {
     if (*EXP != 'a' && *EXP != 'f' && *EXP != 'd' && *EXP != 'e') return;
-    else if (! strcmp (EXP, (char*) "abre") || ! strcmp (EXP, (char*) "fecha") || \
-             ! strcmp (EXP, (char*) "dividido") || ! strcmp (EXP, (char*) "fatorial") || \
-             ! strcmp (EXP, (char*) "elevado") \
+    else if (! strcmp (EXP, (const char*) "abre") || ! strcmp (EXP, (const char*) "fecha") || \
+             ! strcmp (EXP, (const char*) "dividido") || ! strcmp (EXP, (const char*) "fatorial") || \
+             ! strcmp (EXP, (const char*) "elevado") \
             )
     {
         int i = 0;
@@ -684,8 +685,8 @@ void ajustaDelim (int* k, char* temp)
         while (isalpha(EXP[i]) || EXP[i] == '-') i++;
         *temp = EXP[i];
         EXP[i] = '\0';
-        if (strcmp (&EXP[*k+1], (char*) "parentese") && strcmp (&EXP[*k+1], (char*) "de") && \
-            strcmp (&EXP[*k+1], (char*) "por") && strcmp(&EXP[*k+1], (char*) "a")
+        if (strcmp (&EXP[*k+1], (const char*)"parentese") && strcmp (&EXP[*k+1], (const char*) "de") && \
+            strcmp (&EXP[*k+1], (const char*) "por") && strcmp(&EXP[*k+1], (const char*) "a")
             )
         {
             EXP[*k] = ' ';
@@ -700,7 +701,7 @@ void toName (char** resposta)
 {
     if (!**resposta)
     {
-        strcpy (*resposta, (char*) "zero");
+        strcpy (*resposta, (const char*) "zero");
         return;
     }
     SU tam = strlen (*resposta);
@@ -743,7 +744,7 @@ void toName (char** resposta)
             }
             if ((**resposta) && !((tam - 1)/3))
             {
-                strcat (resultado, (char*) " e ");
+                strcat (resultado, (const char*) " e ");
                 flagNUM = false;
             }
             strcat (resultado, " ");
@@ -752,7 +753,7 @@ void toName (char** resposta)
         {
             SU AC = 0, c = 0;
             while ((*resposta)[c]) AC += (*resposta)[c++] - '0';
-            if (AC) strcat (resultado, (char*) " e ");
+            if (AC) strcat (resultado, (const char*) " e ");
         }
     }
     aux = strrchr (resultado, 'e');
@@ -794,19 +795,19 @@ int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural)
             fseek (dicionario, ind[label-1+flagNUM], SEEK_SET);
             tmp = (char*) MALLOC (25);
             fscanf (dicionario, "%[^=]", tmp);
-            if (strstr (tmp, (char*) "cem"))
+            if (strstr (tmp, (const char*)"cem"))
             {
-                strcpy (tmp, (char*) "cento");
+                strcpy (tmp, (const char*)"cento");
                 if (s[1] == '0' && s[2] == '0')
                 {
-                    strcpy (tmp, (char*) "cem");
+                    strcpy (tmp, (const char*) "cem");
                     s += 2;
                     count = 1;
                 }
             }
             strcat (resultado, tmp);
             if (count != 1 && ((count==3 && s[1] + s[2] != '0'+'0') || (count==2 && s[1] != '0')))
-                strcat (resultado, (char*) " e ");
+                strcat (resultado, (const char*) " e ");
             count--;
             s++;
             free (tmp);
@@ -816,7 +817,7 @@ int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural)
     *flagPlural = (cnt == 1 && *(s-1) == '1') ? 0 : 1;
     if (!*s) tam = 0;
     *str = s;
-    if (strcmp (s, (char*) "000"))
+    if (strcmp (s, (const char*) "000"))
     {
         tam -= cnt;
         *size = tam;
@@ -833,13 +834,11 @@ int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural)
 
 void filaInsere (SU i, char* nome, char* valor)
 {
-    FilaNum *no = MALLOC (sizeof (FilaNum));
+    FilaNum *no = (FilaNum*) MALLOC (sizeof (FilaNum));
     FilaNum *aux = queue;
     no -> info = (Ordem*) MALLOC (sizeof (Ordem));
-    int lenNome = strlen (nome), lenValor = strlen (valor);
     strcpy (no->info->nome, nome);
     strcpy (no->info->valor, valor);
-    no->info->nome[lenNome] = no->info->valor[lenValor] = '\0';
     no -> classe = i;
     no -> prox = NULL;
     if (! queue)
@@ -876,14 +875,14 @@ FilaNum* pegaProxNum (FilaNum* inicio)
 
 void filaLibera (void)
 {
-    FilaNum *aux = queue, *aux2 = NULL;
+    FilaNum *aux = queue, *zombie = NULL;
     while (aux)
     {
-        aux2 = aux;
+        zombie = aux;
         aux = aux -> prox;
-        if (aux2->info)
-            free (aux2->info);
-        free (aux2);
+        if (zombie->info)
+            free (zombie->info);
+        free (zombie);
     }
     queue = NULL;
 }

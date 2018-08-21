@@ -1,3 +1,5 @@
+#ifndef _MAIN_H_
+#define _MAIN_H_
 /*
 **  Inclusão do header com as bibliotecas e macros utilizados pelos arquivos:
 **  main.c e operacoes.c
@@ -283,3 +285,4 @@ void clearScreen (void);
 **  CONVERTE POSSÍVEIS CARACTERES MAÍUSCULOS DE EXP PARA MINÚSCULOS
 */
 void strToLower (void);
+#endif

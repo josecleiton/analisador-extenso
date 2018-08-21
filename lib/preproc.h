@@ -1,3 +1,5 @@
+#ifndef _PREPROC_H_
+#define _PREPROC_H_
 /*
 ** ARQUIVO QUE CARREGA TODAS AS BIBLIOTECAS UTILIZADAS
 */
@@ -36,3 +38,4 @@ void* MALLOC (size_t size)
 */
 typedef short int SU;
 typedef long long int LLI;
+#endif
