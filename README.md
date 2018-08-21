@@ -53,7 +53,7 @@ As expressões devem ser formatadas com espaços delimitando as palavras.
 - Divisão 🢥 numero *dividido por* numero
 - Resto da divisão 🢥 numero *mod* numero
 - Fatorial 🢥 *fatorial de* numero
-- __*NEW*__ Potenciação 🢥 numero *elevado a* numero
+- Potenciação 🢥 numero *elevado a* numero __*NEW!*__
 
 ##### OBS: deve-se seguir estritamente as instruções para a analise ocorrer como esperado.
 
