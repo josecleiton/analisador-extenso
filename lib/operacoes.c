@@ -26,8 +26,8 @@ void trataZeros (char** K);
 /*
 **  GERENCIA MEMORIA ENTRE O RESULTADO E OS OPERADORES DAS FUNÇÕES
 */
-bool swap(char a[], char b[], char* (*f)(char*, char*));
-bool swapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool));
+bool memswap(char a[], char b[], char* (*f)(char*, char*));
+bool memswapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool));
 
 bool inverte (char a[])
 {
@@ -95,8 +95,11 @@ char* soma (char a[], char b[])
     char *soma, *op2, *op1, flag = 0;
     op1 = (ta >= tb) ? a : b;
     op2 = completaMenor (a, b, &flag);
-    if (! op2)
+    bool allocated = true;
+    if (! op2) {
+        allocated = false;
         op2 = (ta >= tb) ? b : a;
+    }
     soma = (char*) MALLOC (ts+2);
     *soma = '0';
     soma++;
@@ -113,6 +116,7 @@ char* soma (char a[], char b[])
     }
     *--soma += vaium;
     trataZeros (&soma);
+    if(allocated) free(op2);
     return soma;
 }
 
@@ -120,8 +124,8 @@ char* soma (char a[], char b[])
  {
     char *min = NULL, *subt = NULL, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
     int i;
-
     int tamMinuendo = strlen(a), tamSubtraendo = strlen(b);
+    bool allocated = false;
     if (! tamMinuendo)
         return b;
     else if (! tamSubtraendo)
@@ -129,6 +133,7 @@ char* soma (char a[], char b[])
     if (tamMinuendo != tamSubtraendo)
     {
         subt = completaMenor (a, b, &flagMenor);
+        allocated = true;
         if (flagMenor)
         {
             min = b;
@@ -169,6 +174,7 @@ char* soma (char a[], char b[])
         diferenca[i] += '0';
     }
     trataZeros (&diferenca);
+    if(allocated) free(subt);
     return diferenca;
 }
 
@@ -263,8 +269,8 @@ char* unExpo (char a[], char b[])
     strcpy(answer, a);
     answer[lenA] = '\0';
     while(strcmp(b, "1")) {
-        swap(answer, a, multiplica);
-        swap(b, "1", subtrair);
+        memswap(answer, a, multiplica);
+        memswap(b, "1", subtrair);
     }
     return answer;
 }
@@ -335,7 +341,7 @@ char* unsigneDiv (char a[], char D[], bool MOD)
         fl = false;
         while (strCmpNum (N,D))
         {
-            swap(N, D, subtrair);
+            memswap(N, D, subtrair);
             k++;
             fl = true;
         }
@@ -373,7 +379,7 @@ char* unsigneDiv (char a[], char D[], bool MOD)
         trataZeros (&N);
         return N;
     }
-    free (temp);
+    free (temp); /* libera o N */
     return Q;
 }
 
@@ -401,7 +407,6 @@ char* fatorial (char in[])
 {
     char* a = (char*) MALLOC (strlen(in)+1);
     register char* fat = (char*) MALLOC (900);
-    if (!a || !fat) ERRO;
     strcpy (a, in);
     int i=0,k=1, tamA = strlen (a);
     if (tamA > 3) return NULL;
@@ -423,6 +428,7 @@ char* fatorial (char in[])
         num += (LLI) a[i] * pow (10, i);
         i++;
     }
+    free(a);
     if (num > 400 || num < 0) return NULL;
     for (i=2; i<=num; i++)
         k = fatorial_multiplicador (i, fat, k);
@@ -463,14 +469,14 @@ void trataZeros (char** K)
     *K = s;
 }
 
-bool swap(char a[], char b[], char* (*f)(char*, char*)) {
+bool memswap(char a[], char b[], char* (*f)(char*, char*)) {
     char* temp = f(a, b);
     strcpy(a, temp);
     free(temp);
     return (a != NULL);
 }
 
-bool swapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool)) {
+bool memswapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool)) {
     char* temp = f(a, b, mod);
     strcpy(a, temp);
     free(temp);
