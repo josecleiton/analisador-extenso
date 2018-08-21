@@ -379,7 +379,6 @@ char* toNum (void)
     if (limit) limit = (limit+1-MIL)*3+3;
     else limit+=3;
     ext = (char*) MALLOC (limit*2+1);
-    memset (ext, 0, limit*2+1);
     aux = ext;
     while (queue && limit)
     {
@@ -624,7 +623,7 @@ bool verificaProxToken (void)
     EXP[k] = '\0';
     int i = 1; /* COMEÇA EM UM PORQUE O PRIMEIRO DELIMITADOR É O 'e' */
     char DEL[20] = {'\0'};
-    while (i < TAM_DICT - INDEL+1 && !feof (dicionario))
+    while (i < (TAM_DICT - INDEL+1) && !feof (dicionario))
     {
         fseek (dicionario, ind[INDEL+(i++)], SEEK_SET);
         fscanf (dicionario, "%[^=]", DEL);
@@ -705,7 +704,6 @@ void toName (char** resposta)
     SU tam = strlen (*resposta);
     if (tam > DECILHAO-10) return;
     char *resultado = (char*) MALLOC (tam*20);
-    memset (resultado, 0, tam*20);
     char *aux = NULL;
     SU ord, plural;
     int flag;
@@ -728,7 +726,6 @@ void toName (char** resposta)
             else if (ord)
             {
                 aux = (char*) MALLOC (36);
-                memset (aux, 0, 36);
                 char* tmp = aux;
                 fscanf (dicionario, "%[^=]", ++aux);
                 char* del = strchr (aux, ',');
