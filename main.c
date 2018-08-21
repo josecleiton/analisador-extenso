@@ -106,6 +106,7 @@ int fileParsingInit (void)
         free (_TEXP);
         count--;
     }
+    free(indices);
     fclose (saida);
     fflush (stdout);
     fclose (entrada);
@@ -123,12 +124,11 @@ void printRes(void)
 		OPENFILE (saida, ARQ_SAIDA, "rt");
 		size_t s = maiorString(saida) + 1;
 		char* handle = MALLOC(s);
-		*handle='\0';
 		printf("\n\tRESULTADOS (uma expressao por linha):\n\n");
 		while(fgets(handle,s,saida))
 			printf("%s",handle);
 		fclose(saida);
-
+        free(handle);
 	}
 	else return;
 
@@ -185,10 +185,10 @@ void expResTermo (char* resposta)
         switch (op)
         {
             case '-':
-            swap(resposta, segTermo, subtrair);
+            memswap(resposta, segTermo, subtrair);
             break;
             case '+':
-            swap(resposta, segTermo, soma);
+            memswap(resposta, segTermo, soma);
             break;
         }
         free (segTermo);
@@ -208,16 +208,16 @@ void expResFator (char* resposta)
         switch (op)
         {
             case '*':
-            swap(resposta, segFator, multiplica);
+            memswap(resposta, segFator, multiplica);
             break;
             case '/':
-            swapDiv(resposta, segFator, false, unsigneDiv);
+            memswapDiv(resposta, segFator, false, unsigneDiv);
             break;
             case '%':
-            swapDiv(resposta, segFator, true, unsigneDiv);
+            memswapDiv(resposta, segFator, true, unsigneDiv);
             break;
             case '^':
-            swap(resposta, segFator, unExpo);
+            memswap(resposta, segFator, unExpo);
             break;
         }
         if (*resposta == 'E') erroSS (13);
@@ -282,7 +282,9 @@ void atomo (char* resposta)
     {
         if (analiSemantica ())
         {
-            strcpy (resposta, toNum());
+            char* toNumAnswer = toNum();
+            strcpy (resposta, toNumAnswer);
+            free(toNumAnswer);
             filaLibera ();
             flagNUM = false;
             pega_token ();
