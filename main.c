@@ -375,7 +375,7 @@ SU pegaOrdem (FilaNum* inicio)
 char* toNum (void)
 {
     char *resultado = NULL, *aux = NULL, *ext = NULL;
-    FilaNum* handleQueue = queue;
+    FilaNum* queueHandle = queue;
     SU limit = pegaOrdem(queue), ord, proxOrd, proxClasse;
     SU i, flare = 0, flag;
     if (limit) limit = (limit+1-MIL)*3+3;
@@ -472,7 +472,7 @@ char* toNum (void)
     resultado[flare] = '\0';
     free (ext);
     trataZeros (&resultado);
-    queue = handleQueue;
+    queue = queueHandle;
     return resultado;
 }
 
