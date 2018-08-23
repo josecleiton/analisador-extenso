@@ -82,10 +82,8 @@ int main (void)
 
 int fileParsingInit (void)
 {
-    FILE* entrada;
-    OPENFILE (entrada, ARQ_ENTRADA, "rb");
-    FILE* saida;
-    OPENFILE (saida, ARQ_SAIDA, "wt");
+    FILE* entrada = OPENFILE (entrada, ARQ_ENTRADA, "rb");
+    FILE* saida = OPENFILE (saida, ARQ_SAIDA, "wt");
     int count = fstrcount (entrada), i = 0;
     char *expOut = NULL; /* Resultado da expressão analisada */
     SU* indices = criaIndices (entrada, count, '\n');
@@ -119,8 +117,7 @@ void printRes(void)
 	scanf("%c%*c", &ch);
 	if(ch=='S' || ch=='s' || ch=='\n')
 	{
-		FILE* saida;
-		OPENFILE (saida, ARQ_SAIDA, "rt");
+		FILE* saida = OPENFILE (saida, ARQ_SAIDA, "rt");
 		size_t s = maiorString(saida) + 1;
 		char* handle = MALLOC(s);
 		printf("\n\tRESULTADOS (uma expressao por linha):\n\n");
@@ -157,7 +154,7 @@ char* expParsingStart (void)
     strToLower ();
     char *resposta = (char*) MALLOC (1024);
     char *fResposta = resposta;
-    OPENFILE (dicionario, ARQ_DICT, "rb");
+    dicionario = OPENFILE (dicionario, ARQ_DICT, "rb");
     ind = criaIndices (dicionario, TAM_DICT, '\n');
     _TEXP = EXP;
     pega_token ();
@@ -469,7 +466,6 @@ char* toNum (void)
     flare = strlen (ext);
     resultado = (char*) MALLOC (flare + 1);
     strcpy (resultado, ext);
-    resultado[flare] = '\0';
     free (ext);
     trataZeros (&resultado);
     queue = queueHandle;
@@ -479,8 +475,7 @@ char* toNum (void)
 
 void erroSS (int tipoErro)
 {
-    FILE* erroS;
-    OPENFILE (erroS, ARQ_ERROS, "rb");
+    FILE* erroS = OPENFILE (erroS, ARQ_ERROS, "rb");
     char strErro[MAX_GEN], *strBump;
     int temp, i = 0, tamErro, tamEXP;
     SU *idc = criaIndices (erroS, NUM_ERROS, '\n');
@@ -509,15 +504,13 @@ void erroSS (int tipoErro)
     time (&now);
     timeinfo = localtime (&now);
     toFile = (char*) MALLOC (size_toFile);
-    *toFile = '\0';
     strcpy (toFile, asctime(timeinfo));
     char* needle = strchr (toFile, '\n');
     *++needle = '\0';
     strcat (toFile, strErro);
     needle = strrchr (toFile, '\n');
     *++needle = '\0';
-    FILE* logs;
-    OPENFILE (logs, ARQ_LOG, "at");
+    FILE* logs = OPENFILE (logs, ARQ_LOG, "at");
     fputs (toFile, logs);
     fflush (logs);
     fclose (logs);
@@ -645,17 +638,16 @@ bool verificaProxToken (void)
     return 0;
 }
 
-bool resPlural (int i, char *s)
+bool resPlural (int i, char *currentToken)
 {
-    char *nome = s;
-    if (! strchr ("mbtqdscount", *nome)) return 0;
-    char* del = strchr (nome, ',');
+    if (! strchr ("mbtqdscount", *currentToken)) return 0;
+    char* del = strchr (currentToken, ',');
     bool fl = false;
     if (!del) return 0;
-    int k = del - nome;
-    nome[k] = '\0';
+    int k = del - currentToken;
+    currentToken[k] = '\0';
 
-    if (! strcmp (nome, EXP))
+    if (! strcmp (currentToken, EXP))
         fl = true;
     else
     {
@@ -665,8 +657,8 @@ bool resPlural (int i, char *s)
             char temp[MAXWLEN] = {'\0'};
             fl = true;
             strcpy (temp, del);
-            strcpy (s, temp);
-            s[++k] = '\0';
+            strcpy (currentToken, temp);
+            currentToken[++k] = '\0';
         }
     }
     return fl;
@@ -762,19 +754,19 @@ void toName (char** resposta)
     free (resultado);
 }
 
-int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural)
+int toNameMenOrd (char** numberInput, char* resultado, SU* size, SU* flagPlural)
 {
-    char *s = *str, label = 0, *tmp = NULL;
+    char *currentNumber = *numberInput, label = 0, *tmp = NULL;
     SU tam = *size, count = tam%3;
     if (! count) count += 3;
     const SU cnt = count;
     while (count)
     {
         label = 0;
-        while (count && *s == '0')
+        while (count && *currentNumber == '0')
         {
             count--;
-            s++;
+            currentNumber++;
         }
         if (count)
         {
@@ -784,40 +776,40 @@ int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural)
                 case 2: flagNUM = VINTE; label--; break;
                 case 3: flagNUM = CEM; break;
             }
-            if (count == 2 && *s == '1')
+            if (count == 2 && *currentNumber == '1')
             {
                 label = 10;
-                s++;
+                currentNumber++;
                 flagNUM = UM;
                 count--;
             }
-            label += *s - '0';
+            label += *currentNumber - '0';
             fseek (dicionario, ind[label-1+flagNUM], SEEK_SET);
             tmp = (char*) MALLOC (25);
             fscanf (dicionario, "%[^=]", tmp);
             if (strstr (tmp, (const char*)"cem"))
             {
                 strcpy (tmp, (const char*)"cento");
-                if (s[1] == '0' && s[2] == '0')
+                if (currentNumber[1] == '0' && currentNumber[2] == '0')
                 {
                     strcpy (tmp, (const char*) "cem");
-                    s += 2;
+                    currentNumber += 2;
                     count = 1;
                 }
             }
             strcat (resultado, tmp);
-            if (count != 1 && ((count==3 && s[1] + s[2] != '0'+'0') || (count==2 && s[1] != '0')))
+            if (count != 1 && ((count==3 && currentNumber[1] + currentNumber[2] != '0'+'0') || (count==2 && currentNumber[1] != '0')))
                 strcat (resultado, (const char*) " e ");
             count--;
-            s++;
+            currentNumber++;
             free (tmp);
         }
-        else if (*s) tam = strlen (s);
+        else if (*currentNumber) tam = strlen (currentNumber);
     }
-    *flagPlural = (cnt == 1 && *(s-1) == '1') ? 0 : 1;
-    if (!*s) tam = 0;
-    *str = s;
-    if (strcmp (s, (const char*) "000"))
+    *flagPlural = (cnt == 1 && *(currentNumber-1) == '1') ? 0 : 1;
+    if (!*currentNumber) tam = 0;
+    *numberInput = currentNumber;
+    if (strcmp (currentNumber, (const char*) "000"))
     {
         tam -= cnt;
         *size = tam;
@@ -826,10 +818,10 @@ int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural)
     tam = 0;
     while (count)
     {
-        tam += *(s-count) - '0';
+        tam += *(currentNumber-count) - '0';
         count--;
     }
-    return (*s && tam);
+    return (*currentNumber && tam);
 }
 
 void filaInsere (SU i, char* nome, char* valor)
