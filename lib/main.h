@@ -84,18 +84,6 @@
 #define MAXWLEN 35
 
 /*
-**  OPENFILE
-**  macro para abertura de arquivos
-*/
-#define OPENFILE(ptr_file, file_name, type) { \
-    ptr_file = fopen (file_name, type); \
-    if (! ptr_file) { \
-        fprintf (stderr, "Arquivo %s nao encontrado.\n", file_name); \
-        exit (2718); \
-    } \
-}
-
-/*
 **  CLRBUF
 **  limpeza do buffer de entrada
 */
@@ -285,4 +273,18 @@ void clearScreen (void);
 **  CONVERTE POSSÍVEIS CARACTERES MAÍUSCULOS DE EXP PARA MINÚSCULOS
 */
 void strToLower (void);
+
+/*
+**  OPENFILE
+**  função para abertura de arquivos
+*/
+FILE* OPENFILE(FILE* ptr_file, const char file_name[], const char type[]) {
+    ptr_file = fopen(file_name, type);
+    if(! ptr_file) {
+        fprintf (stderr, "Arquivo %s nao encontrado.\n", file_name);
+        exit (2718);
+    }
+    return ptr_file;
+}
+
 #endif
