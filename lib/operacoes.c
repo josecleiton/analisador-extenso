@@ -21,7 +21,7 @@ int maior (int a, int b);
 int menor (int a, int b);
 bool strCmpNum (char x[], char b[]);
 int numDigitos (int x);
-void trataZeros (char** K);
+void trataZeros (char** ptrNumber);
 
 /*
 **  GERENCIA MEMORIA ENTRE O RESULTADO E OS OPERADORES DAS FUNÇÕES
@@ -198,7 +198,6 @@ char* completaMenor (char a[], char b[], char* menor)
     if (tamMaior + tamMenor)
     {
         char* completaZeros = (char*) MALLOC (tamMaior+1);
-        completaZeros[tamMaior] = '\0';
         while (k < tamMaior-tamMenor)
         {    
             completaZeros[k] = '0';
@@ -251,7 +250,6 @@ char* multiplica (char a[],char b[])
         ls++;
         cursor=k;
     }
-    produto[++cursor] = '\0';
     inverte (produto);
     return produto;
 }
@@ -267,7 +265,6 @@ char* unExpo (char a[], char b[])
     size_t lenA = strlen(a);
     char* answer = (char*) MALLOC (1000);
     strcpy(answer, a);
-    answer[lenA] = '\0';
     while(strcmp(b, "1")) {
         memswap(answer, a, multiplica);
         memswap(b, "1", subtrair);
@@ -331,11 +328,11 @@ char* unsigneDiv (char a[], char D[], bool MOD)
     int j = 0; /* cursor para escrita na string Q */
     size_t k; /* conta quantas subtrações foram feitas de N por D */ 
     int leN; /* guarda o tamanho atualizado (pela subtração) de N */
-    bool fl = false; /* Marca se ocorreu ou não uma subtração de N por D */;
+    bool fl; /* Marca se ocorreu ou não uma subtração de N por D */;
     for (i = 0; i < tn-td+1; i++)
     {
-        if (i && strlen (Q) == tn-td) 
-            break;
+        /*if (i && strlen (Q) == tn-td+1) 
+            break;*/
         k = 0ull;
         N[td+i%2+fl] = '\0';
         fl = false;
@@ -353,7 +350,14 @@ char* unsigneDiv (char a[], char D[], bool MOD)
         if (!strCmpNum (N, D) || fl)
         {
             if (k < 10)
+            {
                 Q[j++] = k + '0';
+                if(!k)
+                {
+                    strcat(N, &a[td]);
+                    fl = true;
+                }
+            }
             else
             {
                 int w = numDigitos (k);
@@ -371,7 +375,7 @@ char* unsigneDiv (char a[], char D[], bool MOD)
         }
     }
     Q[j] = '\0';
-    if (strcmp (N, D) < 0 && Q[j-1] == '0')
+    if (strcmp (N, D) < 0 && Q[j-1] == '0' && !fl)
         Q[--j] = '\0';
     if (MOD) /* Se o paramento for verdadeiro, retorne o resto */
     {
@@ -401,34 +405,26 @@ bool strCmpNum (char x[], char b[])
     return true;
 }
 
-int numDigitos (int x) { return (int) floor(log10(x)) + 1; }
+int numDigitos (int x) { return (int) floor (log10(x)) + 1; }
 
 char* fatorial (char in[])
 {
-    char* a = (char*) MALLOC (strlen(in)+1);
+    char* inTemp = (char*) MALLOC (strlen(in)+1);
     register char* fat = (char*) MALLOC (900);
-    strcpy (a, in);
-    int i=0,k=1, tamA = strlen (a);
+    strcpy (inTemp, in);
+    int i=0,k=1, tamA = strlen (inTemp);
     if (tamA > 3) return NULL;
-    while (i<tamA)
-    {
-        if (! isdigit(a[i]))
-        {
-            a[i]= 0;
-        }
-        i++;
-    }
     i=0;
     *fat = 1;
-    LLI num = 0;
-    inverte (a);
-    char2int (a);
+    LLI num = 0ll;
+    inverte (inTemp);
+    char2int (inTemp);
     while (i<tamA)
     {
-        num += (LLI) a[i] * pow (10, i);
+        num += (LLI) inTemp[i] * pow (10, i);
         i++;
     }
-    free(a);
+    free(inTemp);
     if (num > 400 || num < 0) return NULL;
     for (i=2; i<=num; i++)
         k = fatorial_multiplicador (i, fat, k);
@@ -455,28 +451,29 @@ int fatorial_multiplicador (int a, char fat[], int limit)
     return limit;
 }
 
-void trataZeros (char** K)
+void trataZeros (char** ptrNumber)
 {
-    char* in = *K;
+    char* number = *ptrNumber;
     int x;
-    for (x = 0; *in == '0'; x++) in++;
+    for (x = 0; *number == '0'; x++) number++;
     if (!x) return;
-    int len = strlen (in);
-    char* s = (char*) MALLOC (len+1);
-    s[len] = '\0';
-    strcpy (s, in);
-    free (in-x);
-    *K = s;
+    int len = strlen (number);
+    char* newNumber = (char*) MALLOC (len+1);
+    strcpy (newNumber, number);
+    free (number-x);
+    *ptrNumber = newNumber;
 }
 
-bool memswap(char a[], char b[], char* (*f)(char*, char*)) {
+bool memswap(char a[], char b[], char* (*f)(char*, char*))
+{
     char* temp = f(a, b);
     strcpy(a, temp);
     free(temp);
     return (a != NULL);
 }
 
-bool memswapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool)) {
+bool memswapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool))
+{
     char* temp = f(a, b, mod);
     strcpy(a, temp);
     free(temp);
