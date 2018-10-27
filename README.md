@@ -39,7 +39,7 @@ Por ser uma aplicação em C, você necessita de um compilador C na sua máquina
 - Abra a pasta *compilha* no seu terminal
 - Verifique se o GCC ou o TCC está instalado com `gcc --version` ou `tcc -version`
 - Se não estiver instalado, use o gerenciador de pacotes da sua distribuição para resolver isso.
-- Após isso compile com o seguinte código: `tcc -O2 main.c -o main -lm` ou `gcc -O2 main.c -o main -lm` 
+- Após isso compile com o seguinte código: `tcc -O2 interpretador.c operacoes.c main.c preproc.c -o main -lm` ou `gcc -O2 interpretador.c operacoes.c main.c preproc.c -o main -lm` 
 - Se estiver utilizando Windows, altere o `main` para `main.exe`
 
 ### Do programa
@@ -96,7 +96,7 @@ Foi assumida a padronização LF (GNU/Linux) para os arquivos e não CRLF (Windo
 
 ## Descrição das funções
 
-O funcionamento das funções (e seu algoritmo) estão descritos no arquivo de cabeçalho `lib/main.h`. As funções de operações básicas são "algoritmos clássicos" de soma, subtração, divisão e multiplicação, digito por digito, como aprendido no Ensino Fundamental do Brasil.
+O funcionamento das funções (e seu algoritmo) estão descritos no arquivo de cabeçalho `interpretador.h`. As funções de operações básicas são "algoritmos clássicos" de soma, subtração, divisão e multiplicação, digito por digito, como aprendido no Ensino Fundamental do Brasil.
 
 
 ## Bibliografia
