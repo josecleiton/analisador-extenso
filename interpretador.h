@@ -1,13 +1,11 @@
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef _INTERPRETADOR_H_
+#define _INTERPRETADOR_H_
 /*
 **  Inclusão do header com as bibliotecas e macros utilizados pelos arquivos:
 **  main.c e operacoes.c
 */
-#ifndef INCLUSOS
-    #define INCLUSOS
-    #include "preproc.h"
-#endif
+
+#include "preproc.h"
 
 /*
 **  DICIONÁRIO
@@ -278,13 +276,17 @@ void strToLower (void);
 **  OPENFILE
 **  função para abertura de arquivos
 */
-FILE* OPENFILE(FILE* ptr_file, const char file_name[], const char type[]) {
-    ptr_file = fopen(file_name, type);
-    if(! ptr_file) {
-        fprintf (stderr, "Arquivo %s nao encontrado.\n", file_name);
-        exit (2718);
-    }
-    return ptr_file;
-}
+FILE* OPENFILE(FILE* ptr_file, const char file_name[], const char type[]);
+
+extern Ordem ref; /* struct ordem */
+extern char *EXP; /* Ponteiro para expNum */
+extern char *_TEXP; /* guarda a expressão sem modificações, para a possível exibição de erros */
+extern char expNum[MAX_GEN]; /* Expressão que será analisada */
+extern char token; /* guarda o token */
+extern short tipoToken; /* sinalisa o tipo do token em analise */
+extern unsigned flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
+extern short *ind; /* vetor que guarda as posições das strings no ARQ_DICT */
+extern FILE* dicionario;
+extern FilaNum* queue;
 
 #endif
