@@ -446,15 +446,23 @@ void trataZeros (char** ptrNumber)
 bool memswap(char a[], char b[], char* (*f)(char*, char*))
 {
     char* temp = f(a, b);
-    strcpy(a, temp);
-    free(temp);
+    if(temp){
+        strcpy(a, temp);
+        free(temp);
+    }
+    else 
+        *a = '\0';
     return (a != NULL);
 }
 
 bool memswapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool))
 {
     char* temp = f(a, b, mod);
-    strcpy(a, temp);
-    free(temp);
+    if(temp){
+        strcpy(a, temp);
+        free(temp);
+    }
+    else
+        *a = '\0';
     return (a != NULL);
 }
