@@ -278,15 +278,15 @@ void strToLower (void);
 */
 FILE* OPENFILE(FILE* ptr_file, const char file_name[], const char type[]);
 
-extern Ordem ref; /* struct ordem */
+Ordem ref; /* struct ordem */
 extern char *EXP; /* Ponteiro para expNum */
 extern char *_TEXP; /* guarda a expressão sem modificações, para a possível exibição de erros */
-extern char expNum[MAX_GEN]; /* Expressão que será analisada */
-extern char token; /* guarda o token */
-extern short tipoToken; /* sinalisa o tipo do token em analise */
-extern unsigned flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
-extern short *ind; /* vetor que guarda as posições das strings no ARQ_DICT */
-extern FILE* dicionario;
-extern FilaNum* queue;
+char expNum[MAX_GEN]; /* Expressão que será analisada */
+char token; /* guarda o token */
+short tipoToken; /* sinalisa o tipo do token em analise */
+unsigned flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
+short *ind; /* vetor que guarda as posições das strings no ARQ_DICT */
+FILE* dicionario;
+FilaNum* queue;
 
 #endif

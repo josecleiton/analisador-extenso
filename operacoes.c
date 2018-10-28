@@ -291,7 +291,12 @@ char* unsigneDiv (char a[], char D[], bool MOD)
     }
     if (! td) return (char*) "E"; /* divisão por zero é indeterminada */
     if (*D == '1' && td == 1) return a; /* divisão por um */
-    if (! strcmp (a, D)) return (char*) "1"; /* divisão de numeros iguais */
+    if (! strcmp (a, D)){
+        /* divisão de numeros iguais */
+        char *um = (char*) MALLOC(2);
+        *um = '1';
+        return um;
+    }
     if(!tn) return a;
     /* N, Q e o ponteiro que guarda o inicio da alocação primeira de N */
     char *N = (char*) MALLOC (tn+2);
