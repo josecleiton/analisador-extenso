@@ -362,6 +362,7 @@ char* unsigneDiv (char a[], char D[], bool MOD)
         trataZeros (&N);
         return N;
     }
+    trataZeros(&Q);
     free (temp); /* libera o N */
     return Q;
 }
