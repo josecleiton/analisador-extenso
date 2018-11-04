@@ -96,7 +96,7 @@ Foi assumida a padronização LF (GNU/Linux) para os arquivos e não CRLF (Windo
 
 ## Descrição das funções
 
-O funcionamento das funções (e seu algoritmo) estão descritos no arquivo de cabeçalho `interpretador.h`. As funções de operações básicas são "algoritmos clássicos" de soma, subtração, divisão e multiplicação, digito por digito, como aprendido no Ensino Fundamental do Brasil.
+Os comportamentos das funções (e seu algoritmo) estão descritos no arquivo de cabeçalho `interpretador.h`. As funções de operações básicas são "algoritmos clássicos" de soma, subtração, divisão e multiplicação, digito por digito, como aprendido no Ensino Fundamental do Brasil.
 
 
 ## Bibliografia
