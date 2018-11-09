@@ -105,6 +105,11 @@ typedef struct filanum
     struct filanum *ant, *prox;
 } FilaNum;
 
+typedef struct index{
+    SU* index;
+    int tam;
+} Index;
+
 /*
 **  GATILHO DE PARTIDA A PARTIR DE UM ARQUIVO
 */
@@ -190,10 +195,12 @@ void ajustaDelim (int* k, char* temp);
 */
 void erroSS (int tipoErro); 
 
+Index criaIndices (FILE* in, int limite); 
+
 /*
 **  DEVOLVE EM out UM VETOR COM AS POSIÇÕES DE del NO ARQUIVO in
 */
-SU* criaIndices (FILE* in, int size, int del); 
+SU* _criaIndices (FILE* in, int size, int del); 
 
 /*
 **  ANALISA O SIGNIFICADO DA EXPRESSÃO
@@ -276,17 +283,10 @@ void strToLower (void);
 **  OPENFILE
 **  função para abertura de arquivos
 */
-FILE* OPENFILE(FILE* ptr_file, const char file_name[], const char type[]);
+FILE* OPENFILE(const char file_name[], const char type[]);
 
-Ordem ref; /* struct ordem */
 extern char *EXP; /* Ponteiro para expNum */
 extern char *_TEXP; /* guarda a expressão sem modificações, para a possível exibição de erros */
-char expNum[MAX_GEN]; /* Expressão que será analisada */
-char token; /* guarda o token */
-short tipoToken; /* sinalisa o tipo do token em analise */
-unsigned flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
-short *ind; /* vetor que guarda as posições das strings no ARQ_DICT */
-FILE* dicionario;
-FilaNum* queue;
+extern char expNum[MAX_GEN]; /* Expressão que será analisada */
 
 #endif

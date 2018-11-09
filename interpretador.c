@@ -34,21 +34,20 @@ FilaNum* queue;
 
 int fileParsingInit (void)
 {
-    FILE* entrada = OPENFILE (entrada, ARQ_ENTRADA, "rb");
-    FILE* saida = OPENFILE (saida, ARQ_SAIDA, "wt");
-    int count = fstrcount (entrada), i = 0;
+    FILE* entrada = OPENFILE (ARQ_ENTRADA, "r");
+    FILE* saida = OPENFILE (ARQ_SAIDA, "wt");
+    int i = 0;
     char *expOut = NULL; /* Resultado da expressão analisada */
-    SU* indices = criaIndices (entrada, count, '\n');
+    Index temp = criaIndices (entrada, false);
+    SU* indices = temp.index;
+    int count = temp.tam;
     while (count > 0)
     {
         fseek (entrada, indices[i++], SEEK_SET);
         fgets (EXP, MAX_GEN, entrada);
-        char* aux[2];
-        aux[0] = strchr (EXP, '\n');
-        aux[1] = strchr (EXP, '\r');
-        if (aux[1]) aux[0] = aux[1];
-        if (aux[0]) *(aux[0]) = '\0';
-        expOut = expParsingStart ();
+        char* endline = strpbrk(EXP, "\r\n");
+        if(endline) *endline = '\0';
+        expOut = expParsingStart();
         fputs (expOut, saida);
         fputc ('\n', saida);
         fflush (saida);
@@ -69,7 +68,7 @@ void printRes(void)
 	scanf("%c%*c", &ch);
 	if(ch=='S' || ch=='s' || ch=='\n')
 	{
-		FILE* saida = OPENFILE (saida, ARQ_SAIDA, "rt");
+		FILE* saida = OPENFILE (ARQ_SAIDA, "rt");
 		size_t s = maiorString(saida) + 1;
 		char* handle = MALLOC(s);
 		printf("\n\tRESULTADOS (uma expressao por linha):\n\n");
@@ -78,8 +77,6 @@ void printRes(void)
 		fclose(saida);
         free(handle);
 	}
-	else return;
-
 }
 
 size_t maiorString (FILE* stream)
@@ -106,8 +103,8 @@ char* expParsingStart (void)
     strToLower ();
     char *resposta = (char*) MALLOC (1024);
     char *fResposta = resposta;
-    dicionario = OPENFILE (dicionario, ARQ_DICT, "rb");
-    ind = criaIndices (dicionario, TAM_DICT, '\n');
+    dicionario = OPENFILE (ARQ_DICT, "rb");
+    ind = criaIndices (dicionario, TAM_DICT).index;
     _TEXP = EXP;
     pega_token ();
     if (!token) erroSS(3);
@@ -427,10 +424,10 @@ char* toNum (void)
 
 void erroSS (int tipoErro)
 {
-    FILE* erroS = OPENFILE (erroS, ARQ_ERROS, "rb");
+    FILE* erroS = OPENFILE (ARQ_ERROS, "rb");
     char strErro[MAX_GEN], *strBump;
     int temp, i = 0, tamErro, tamEXP;
-    SU *idc = criaIndices (erroS, NUM_ERROS, '\n');
+    SU *idc = criaIndices (erroS, NUM_ERROS).index;
     fseek (erroS, idc[tipoErro], SEEK_SET);
     fgets (strErro, MAX_GEN, erroS);
     strcat (strErro, "\n\t");
@@ -462,7 +459,7 @@ void erroSS (int tipoErro)
     strcat (toFile, strErro);
     needle = strrchr (toFile, '\n');
     *++needle = '\0';
-    FILE* logs = OPENFILE (logs, ARQ_LOG, "at");
+    FILE* logs = OPENFILE (ARQ_LOG, "at");
     fputs (toFile, logs);
     fflush (logs);
     fclose (logs);
@@ -473,7 +470,37 @@ void erroSS (int tipoErro)
     ERRO;
 }
 
-SU* criaIndices (FILE* in, int size, int del)
+Index criaIndices (FILE* in, int limite){
+    Index resultado;
+    char handle[MAX_GEN];
+    bool rlloc = false;
+    if(!limite){
+        rlloc = true;
+        limite = 32;
+    }
+    int i = 0;
+    SU* index = (SU*) MALLOC(sizeof(SU)*limite);
+    rewind(in);
+    index[i++] = ftell(in);
+    while(fgets(handle, MAX_GEN, in)){
+        index[i++] = ftell(in);
+        if(i == limite && rlloc){
+            limite<<=1;
+            index = (SU*) realloc(index, sizeof(SU)*limite);
+            if(!index){
+                fprintf (stderr, "Memoria insuficiente.\n");
+                ERRO;
+            }
+        }        
+    }
+    index[--i] = 0;
+    rewind(in);
+    resultado.index = index;
+    resultado.tam = i;
+    return resultado;
+}
+
+SU* _criaIndices (FILE* in, int size, int del)
 {
     rewind (in);
     SU *index = (SU*) MALLOC (sizeof(SU)*(size+2));
@@ -868,8 +895,8 @@ void strToLower (void)
             EXP[i] = tolower (EXP[i]);
 }
 
-FILE* OPENFILE(FILE* ptr_file, const char file_name[], const char type[]) {
-    ptr_file = fopen(file_name, type);
+FILE* OPENFILE(const char file_name[], const char type[]) {
+    FILE* ptr_file = fopen(file_name, type);
     if(! ptr_file) {
         fprintf (stderr, "Arquivo %s nao encontrado.\n", file_name);
         exit (2718);
