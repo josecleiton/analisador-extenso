@@ -74,7 +74,7 @@ char* soma (char a[], char b[])
         allocated = false;
         op2 = (ta >= tb) ? b : a;
     }
-    soma = (char*) MALLOC (ts+2);
+    soma = (char*) calloc (ts+2, sizeof(char));
     *soma = '0';
     soma++;
     for (i = ts-1; i >= 0; i--)
@@ -136,7 +136,7 @@ char* soma (char a[], char b[])
     }
     tamMinuendo = strlen (min);
     tamSubtraendo = strlen (subt);
-    char* diferenca = (char*) MALLOC (tamMinuendo+1);
+    char* diferenca = (char*) calloc (tamMinuendo+1, sizeof(char));
     for (i=tamMinuendo-1; i>=0; i--)
     {
         diferenca[i] = (min[i]-'0') - (subt[i]-'0');
@@ -171,7 +171,7 @@ char* completaMenor (char a[], char b[], char* menor)
     }
     if (tamMaior + tamMenor)
     {
-        char* completaZeros = (char*) MALLOC (tamMaior+1);
+        char* completaZeros = (char*) calloc (tamMaior+1, sizeof(char));
         while (k < tamMaior-tamMenor)
         {    
             completaZeros[k] = '0';
@@ -206,7 +206,7 @@ char* multiplica (char a[],char b[])
         return a;
     else if ((tb == 0) || (ta == 1 && *a == '1'))
         return b;
-    char* produto = (char*) MALLOC (ta+tb+10);
+    char* produto = (char*) calloc (ta+tb+10, sizeof(char));
     int ls = 0, i, j, cursor = 0;
     for (i = tb-1; i >= 0; i--)
     {
@@ -231,13 +231,13 @@ char* multiplica (char a[],char b[])
 char* unExpo (char a[], char b[])
 { 
     if(*b == '0' || *b == '\0'){
-        char* answer = (char*) MALLOC (2);
+        char* answer = (char*) calloc (2, sizeof(char));
         answer[0] = '1'; answer[1] = '\0';
         return answer;
     }
     else if (*b == '-') erroSS(4);
     size_t lenA = strlen(a);
-    char* answer = (char*) MALLOC (1000);
+    char* answer = (char*) calloc (1024, sizeof(char));
     strcpy(answer, a);
     while(strcmp(b, "1")) {
         memswap(answer, a, multiplica);
@@ -293,15 +293,15 @@ char* unsigneDiv (char a[], char D[], bool MOD)
     if (*D == '1' && td == 1) return a; /* divisão por um */
     if (! strcmp (a, D)){
         /* divisão de numeros iguais */
-        char *um = (char*) MALLOC(2);
+        char *um = (char*) calloc(2, sizeof(char));
         *um = '1';
         return um;
     }
     if(!tn) return a;
     /* N, Q e o ponteiro que guarda o inicio da alocação primeira de N */
-    char *N = (char*) MALLOC (tn+2);
+    char *N = (char*) calloc (tn+2, sizeof(char));
     strcpy (N, a);
-    char *Q = (char*) MALLOC (tn-td+1); /* O quociente terá pelo menos tn-td digitos */
+    char *Q = (char*) calloc (tn-td+1, sizeof(char)); /* O quociente terá pelo menos tn-td digitos */
     char *temp = N;
     int i; /* indice de interações do laço para a divisão */
     int j = 0; /* cursor para escrita na string Q */
@@ -389,8 +389,8 @@ int numDigitos (int x) { return (int) floor (log10(x)) + 1; }
 
 char* fatorial (char in[])
 {
-    char* inTemp = (char*) MALLOC (strlen(in)+1);
-    register char* fat = (char*) MALLOC (900);
+    char* inTemp = (char*) calloc (strlen(in)+1, sizeof(char));
+    register char* fat = (char*) calloc (900, sizeof(char));
     strcpy (inTemp, in);
     int i=0,k=1, tamA = strlen (inTemp);
     if (tamA > 3) return NULL;
@@ -438,7 +438,7 @@ void trataZeros (char** ptrNumber)
     for (x = 0; *number == '0'; x++) number++;
     if (!x) return;
     int len = strlen (number);
-    char* newNumber = (char*) MALLOC (len+1);
+    char* newNumber = (char*) calloc (len+1, sizeof(char));
     strcpy (newNumber, number);
     free (number-x);
     *ptrNumber = newNumber;

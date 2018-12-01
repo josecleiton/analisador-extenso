@@ -17,12 +17,6 @@
 #define EXCEPTION 61023
 
 /*
-**  MALLOC
-**  função de alocação
-*/
-void* MALLOC (size_t size);
-
-/*
 **  Redefinições de tipo
 */
 typedef short int SU;
