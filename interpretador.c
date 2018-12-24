@@ -1,6 +1,8 @@
 #include "interpretador.h"
-#include <time.h>
 #include "operacoes.h"
+#include "alloc.h"
+#include <time.h>
+
 /* 
 **   Vários tokens que auxiliam na análise (léxica/semântica)
 **   Se esses termos não forem familiares, leia README.md
@@ -27,19 +29,54 @@ char expNum[MAX_GEN]; /* Expressão que será analisada */
 char token; /* guarda o token */
 short tipoToken; /* sinalisa o tipo do token em analise */
 unsigned flagNUM; /* sinaliza se o(s) token(s) em análise são numeros */
-short *ind; /* vetor que guarda as posições das strings no ARQ_DICT */
-FILE* dicionario;
-FilaNum* queue;
-/* OBS: a partir daqui short [int] será usado como SU (olhar typedef em lib/preproc.h) */
+uint16_t* ind; /* vetor que guarda as posições das strings no ARQ_DICT */
+FILE* dicionario; /* lista de tokens */ 
+ListaNum* list; /* guarda o número analisado por casas decimais em uma lista encadeada */
+
+int menu (void)
+{
+    EXP = expNum;
+    char* resultado, op;
+    puts ("\n\t\tANALISADOR DE EXPRESSOES NUMERICAS POR EXTENSO\n");
+    CLRBUF;
+    while(true)
+    {
+        clearScreen ();
+        puts ("Selecione a entrada:\n a= Arquivo\n t= Teclado\n e= Sair\n\nopcao = ");
+        scanf ("%c%*c", &op);
+        switch (op)
+        {
+            case 'a':
+                clearScreen ();
+                printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultado podem ser encontrados em %s\n", fileParsingInit (), ARQ_SAIDA);
+                printRes();
+                CLRBUF;
+                break;
+            case 't':
+                clearScreen ();
+                puts ("Digite uma expressao numerica: ");
+                scanf ("%[^\n]%*c", EXP);
+                resultado = expParsingStart ();
+                printf ("\nResultado: %s\n", resultado);
+                free (_TEXP);
+                CLRBUF;
+                break;
+            case 'e': return 0;
+            default: 
+                CLRBUF;
+                puts ("Opcao invalida.\n");
+        }
+    }
+}
 
 int fileParsingInit (void)
 {
-    FILE* entrada = OPENFILE (ARQ_ENTRADA, "r");
-    FILE* saida = OPENFILE (ARQ_SAIDA, "wt");
+    FILE* entrada = openFile (ARQ_ENTRADA, "r");
+    FILE* saida = openFile (ARQ_SAIDA, "wt");
     int i = 0;
     char *expOut = NULL; /* Resultado da expressão analisada */
     Index temp = criaIndices (entrada, false);
-    SU* indices = temp.index;
+    uint16_t* indices = temp.index;
     int count = temp.tam;
     while (count > 0)
     {
@@ -68,9 +105,9 @@ void printRes(void)
 	scanf("%c%*c", &ch);
 	if(ch=='S' || ch=='s' || ch=='\n')
 	{
-		FILE* saida = OPENFILE (ARQ_SAIDA, "rt");
+		FILE* saida = openFile (ARQ_SAIDA, "rt");
 		size_t s = maiorString(saida) + 1;
-		char* handle = (char*) calloc (s, sizeof(char));
+		char* handle = (char*) alloc (s, sizeof(char));
 		printf("\n\tRESULTADOS (uma expressao por linha):\n\n");
 		while(fgets(handle,s,saida))
 			printf("%s",handle);
@@ -101,12 +138,12 @@ size_t maiorString (FILE* stream)
 char* expParsingStart (void)
 {
     strToLower ();
-    char *resposta = (char*) calloc (1024, sizeof(char));
+    char *resposta = (char*) alloc (1024*4, sizeof(char));
     char *fResposta = resposta;
-    dicionario = OPENFILE (ARQ_DICT, "rb");
+    dicionario = openFile (ARQ_DICT, "rb");
     ind = criaIndices (dicionario, TAM_DICT).index;
     _TEXP = EXP;
-    pega_token ();
+    pegaToken ();
     if (!token) erroSS(3);
     expResTermo (resposta);
     if (token) erroSS (0);
@@ -124,8 +161,8 @@ void expResTermo (char* resposta)
     expResFator (resposta);
     while ((op = token) == '+' || op == '-')
     {
-        pega_token ();
-        segTermo = (char*) calloc (512, sizeof(char));
+        pegaToken ();
+        segTermo = (char*) alloc (512, sizeof(char));
         expResFator (segTermo);
         switch (op)
         {
@@ -147,8 +184,8 @@ void expResFator (char* resposta)
     expResFatorial (resposta);
     while ((op=token) == '*' || op == '/' || op == '%' || op == '^')
     {
-        pega_token ();
-        segFator = (char*) calloc (512, sizeof(char));
+        pegaToken ();
+        segFator = (char*) alloc (512, sizeof(char));
         expResFatorial (segFator);
         switch (op)
         {
@@ -175,8 +212,8 @@ void expResFatorial (char* resposta)
     register char* proxFator;
     if (token == '!')
     {
-        pega_token ();
-        proxFator = (char*) calloc (512, sizeof(char));
+        pegaToken ();
+        proxFator = (char*) alloc (512, sizeof(char));
         expResParenteses (proxFator);
         char* temp = fatorial (proxFator);
         if (! temp) erroSS (8);
@@ -213,26 +250,26 @@ void expResParenteses (char* resposta)
 {
     if (token == '(')
     {
-        pega_token ();
+        pegaToken ();
         expResTermo (resposta);
         if (token != ')')   erroSS (1);
-        pega_token ();
+        pegaToken ();
     }
     else atomo (resposta);
 }
 
 void atomo (char* resposta)
 {
-    if (flagNUM == true)
+    if (flagNUM)
     {
         if (analiSemantica ())
         {
             char* toNumAnswer = toNum();
             strcpy (resposta, toNumAnswer);
             free(toNumAnswer);
-            filaLibera ();
+            listaLibera ();
             flagNUM = false;
-            pega_token ();
+            pegaToken ();
             return;
         }
         erroSS (3);
@@ -242,24 +279,24 @@ void atomo (char* resposta)
 
 bool analiSemantica (void)
 {
-    FilaNum* queueSem = queue;
-    if (! queueSem) erroSS (3);
-    if (filaCount() > (DECILHAO-NOVECENTOS)*4-1) erroSS (7); /* LIMITE DE DECILHÕES */
-    SU ord[2], i = 0;
-    while (queueSem)
+    ListaNum* listSem = list;
+    if (! listSem) erroSS (3);
+    if (listaCount() > (DECILHAO-NOVECENTOS)*4-1) erroSS (7); /* LIMITE DE DECILHÕES */
+    uint16_t ord[2], i = 0;
+    while (listSem)
     {
-        pluralOrdem(queueSem);
-        semUnidade (&queueSem);
-        ord[i%2] = pegaOrdem (queueSem);
+        pluralOrdem(listSem);
+        semUnidade (&listSem);
+        ord[i%2] = pegaOrdem (listSem);
         if (i++%2 && ord[0] <= ord[1]) erroSS (2);
-        if (queueSem) queueSem = queueSem -> prox;
+        if (listSem) listSem = listSem -> prox;
     }
-    return 1;
+    return true;
 }
 
-void pluralOrdem (FilaNum* inicio)
+void pluralOrdem (ListaNum* inicio)
 {
-    FilaNum* aux = inicio;
+    ListaNum* aux = inicio;
     while (aux && (aux -> classe < MILHAO || aux -> classe == CONJUCAO)) aux = aux -> prox;
     if (aux && strstr (aux -> info -> nome, (const char*) "oes"))
     {
@@ -269,50 +306,50 @@ void pluralOrdem (FilaNum* inicio)
     erroSS (12);
 }
 
-bool semUnidade (FilaNum** inicio)
+bool semUnidade (ListaNum** inicio)
 {
-    FilaNum *fila = *inicio;
+    ListaNum *lista = *inicio;
     bool flag = false;
-    while (fila && (fila -> classe < MIL || fila -> classe == CONJUCAO))
+    while (lista && (lista -> classe < MIL || lista -> classe == CONJUCAO))
     {
-        if (fila -> classe < VINTE && fila -> classe != DEZ)
+        if (lista -> classe < VINTE && lista -> classe != DEZ)
         {
-            if (fila -> prox)
+            if (lista -> prox)
             {
-                if (fila -> prox -> classe == CONJUCAO) erroSS (11);
-                if (fila -> prox -> classe < MIL) erroSS (2);
+                if (lista -> prox -> classe == CONJUCAO) erroSS (11);
+                if (lista -> prox -> classe < MIL) erroSS (2);
             }
         }
-        else if (fila -> classe == DEZ || (fila -> classe >= VINTE && fila -> classe <= NOVENTA))
+        else if (lista -> classe == DEZ || (lista -> classe >= VINTE && lista -> classe <= NOVENTA))
         {
-            if (fila -> prox && (fila -> prox -> classe < MIL || fila -> prox -> classe == CONJUCAO))
+            if (lista -> prox && (lista -> prox -> classe < MIL || lista -> prox -> classe == CONJUCAO))
             {
-                if (fila -> prox -> classe != CONJUCAO) erroSS (9);
-                else if (fila -> prox -> prox == NULL) erroSS (10);
-                else if (fila -> prox -> prox -> classe > NOVE) erroSS (2);
+                if (lista -> prox -> classe != CONJUCAO) erroSS (9);
+                else if (lista -> prox -> prox == NULL) erroSS (10);
+                else if (lista -> prox -> prox -> classe > NOVE) erroSS (2);
             }
         }
-        else if (fila -> classe >= CEM && fila -> classe <= NOVECENTOS)
+        else if (lista -> classe >= CEM && lista -> classe <= NOVECENTOS)
         {
-            if (!strcmp (fila -> info -> nome, (const char*) "cem") && (fila -> prox && fila -> prox -> classe == CONJUCAO)) erroSS (12);
-            if (fila -> prox && (fila -> prox -> classe < MIL || fila -> prox -> classe == CONJUCAO))
+            if (!strcmp (lista -> info -> nome, (const char*) "cem") && (lista -> prox && lista -> prox -> classe == CONJUCAO)) erroSS (12);
+            if (lista -> prox && (lista -> prox -> classe < MIL || lista -> prox -> classe == CONJUCAO))
             {
-                if (fila -> prox -> classe != CONJUCAO) erroSS (9);
-                else if (fila -> prox -> prox == NULL) erroSS (10);
-                else if (fila -> prox -> prox -> classe > NOVENTA) erroSS (2);
+                if (lista -> prox -> classe != CONJUCAO) erroSS (9);
+                else if (lista -> prox -> prox == NULL) erroSS (10);
+                else if (lista -> prox -> prox -> classe > NOVENTA) erroSS (2);
             }
         }
-        fila = fila -> prox;
+        lista = lista -> prox;
         flag = true;
     }
-    *inicio = fila;
+    *inicio = lista;
     if (! flag) erroSS (5);
-    return 1;
+    return flag;
 }
 
-SU pegaOrdem (FilaNum* inicio)
+uint16_t pegaOrdem (ListaNum* inicio)
 {
-    FilaNum* aux = inicio;
+    ListaNum* aux = inicio;
     while (aux && (aux -> classe < MIL || aux -> classe == CONJUCAO)) aux = aux -> prox;
     if (! aux) return NOVECENTOS;
     return aux -> classe;
@@ -321,19 +358,19 @@ SU pegaOrdem (FilaNum* inicio)
 char* toNum (void)
 {
     char *resultado = NULL, *aux = NULL, *ext = NULL;
-    FilaNum* queueHandle = queue;
-    SU limit = pegaOrdem(queue), ord, proxOrd, proxClasse;
-    SU i, flare = 0, flag;
+    ListaNum* listHandle = list;
+    uint16_t limit = pegaOrdem(list), ord, proxOrd, proxClasse;
+    uint16_t i, flare = 0, flag;
     if (limit) limit = (limit+1-MIL)*3+3;
     else limit+=3;
-    ext = (char*) calloc (limit*2+1, sizeof(char));
+    ext = (char*) alloc (limit*2+1, sizeof(char));
     aux = ext;
-    while (queue && limit)
+    while (list && limit)
     {
-        i = queue -> classe;
+        i = list -> classe;
         if (i != CONJUCAO && i < MIL)
         {
-            ord = pegaOrdem (queue);
+            ord = pegaOrdem (list);
             if (i < DEZ)
             {
                 if (! flare)
@@ -344,7 +381,7 @@ char* toNum (void)
                     flag = 0;
                 }
                 if (aux - ext && (*(aux-1) != '0' && *aux == '0' && *(aux+1) == '0')) aux++;
-                *aux++ = *(queue -> info -> valor);
+                *aux++ = *(list -> info -> valor);
             }
             else if (i < CEM)
             {
@@ -354,12 +391,12 @@ char* toNum (void)
                     flare = 1;
                     /*flag = 1;*/
                 }
-                strcpy (aux++, queue -> info -> valor);
+                strcpy (aux++, list -> info -> valor);
                 flag = 1;
             }
             else
             {
-                strcpy (aux++, queue -> info -> valor);
+                strcpy (aux++, list -> info -> valor);
                 flare = 1;
                 flag = 2;
             }
@@ -367,18 +404,18 @@ char* toNum (void)
         else if (i != CONJUCAO)
         {
             flare = 0;
-            if (queue -> prox)
-                proxOrd = pegaOrdem (queue -> prox);
+            if (list -> prox)
+                proxOrd = pegaOrdem (list -> prox);
             else proxOrd = NOVECENTOS;
             while (ord - proxOrd >= 1)
             {
                 flare = 1;
                 if (ord - proxOrd == 1)
                 {
-                    proxClasse = pegaProxClasse (queue -> prox);
+                    proxClasse = pegaProxClasse (list -> prox);
                     if (proxClasse >= CEM)
                     {
-                        SU prevClass = queue -> ant -> classe;
+                        uint16_t prevClass = list -> ant -> classe;
                         if (prevClass >= CEM)
                             aux += 2;
                         else if (prevClass >= DEZ)
@@ -409,25 +446,25 @@ char* toNum (void)
                 proxOrd++;
             }
         }
-        queue = queue -> prox;
+        list = list -> prox;
     }
 
     flare = strlen (ext);
-    resultado = (char*) calloc (flare + 1, sizeof(char));
+    resultado = (char*) alloc (flare + 1, sizeof(char));
     strcpy (resultado, ext);
     free (ext);
     trataZeros (&resultado);
-    queue = queueHandle;
+    list = listHandle;
     return resultado;
 }
 
 
 void erroSS (int tipoErro)
 {
-    FILE* erroS = OPENFILE (ARQ_ERROS, "rb");
+    FILE* erroS = openFile (ARQ_ERROS, "rb");
     char strErro[MAX_GEN], *strBump;
     int temp, i = 0, tamErro, tamEXP;
-    SU *idc = criaIndices (erroS, NUM_ERROS).index;
+    uint16_t *idc = criaIndices (erroS, NUM_ERROS).index;
     fseek (erroS, idc[tipoErro], SEEK_SET);
     fgets (strErro, MAX_GEN, erroS);
     strcat (strErro, "\n\t");
@@ -447,19 +484,19 @@ void erroSS (int tipoErro)
     *strBump++ = '\n';
     *strBump++ = '\0';
     char* toFile;
-    SU size_toFile = strlen(strErro)+50;
+    uint16_t size_toFile = strlen(strErro)+50;
     time_t now;
     struct tm *timeinfo;
     time (&now);
     timeinfo = localtime (&now);
-    toFile = (char*) calloc (size_toFile, sizeof(char));
+    toFile = (char*) alloc (size_toFile, sizeof(char));
     strcpy (toFile, asctime(timeinfo));
     char* needle = strchr (toFile, '\n');
     *++needle = '\0';
     strcat (toFile, strErro);
     needle = strrchr (toFile, '\n');
     *++needle = '\0';
-    FILE* logs = OPENFILE (ARQ_LOG, "at");
+    FILE* logs = openFile (ARQ_LOG, "at");
     fputs (toFile, logs);
     fflush (logs);
     fclose (logs);
@@ -467,7 +504,7 @@ void erroSS (int tipoErro)
     puts (strErro);
     free (idc);
     fclose (erroS);
-    ERRO;
+    abortWithLog(false);
 }
 
 Index criaIndices (FILE* in, int limite){
@@ -479,18 +516,16 @@ Index criaIndices (FILE* in, int limite){
         limite = 32;
     }
     int i = 0;
-    SU* index = (SU*) calloc(limite, sizeof(SU));
+    uint16_t* index = (uint16_t*) alloc(limite, sizeof(uint16_t));
     rewind(in);
     index[i++] = ftell(in);
     while(fgets(handle, MAX_GEN, in)){
         index[i++] = ftell(in);
         if(i == limite && rlloc){
             limite<<=1;
-            index = (SU*) realloc(index, sizeof(SU)*limite);
-            if(!index){
-                fprintf (stderr, "Memoria insuficiente.\n");
-                ERRO;
-            }
+            index = (uint16_t*) realloc(index, sizeof(uint16_t)*limite);
+            if(!index)
+                abortWithLog(true);
         }        
     }
     index[--i] = 0;
@@ -500,11 +535,11 @@ Index criaIndices (FILE* in, int limite){
     return resultado;
 }
 
-SU* _criaIndices (FILE* in, int size, int del)
+uint16_t* _criaIndices (FILE* in, int size, int del)
 {
     rewind (in);
-    SU *index = (SU*) calloc (size+2, sizeof(SU));
-    SU i = 1, k = 1;
+    uint16_t *index = (uint16_t*) alloc (size+2, sizeof(uint16_t));
+    uint16_t i = 1, k = 1;
     *index = 0;
     char ch = getc (in);
     while (ch != EOF && i <= size)
@@ -519,11 +554,10 @@ SU* _criaIndices (FILE* in, int size, int del)
 }
 
 
-void pega_token (void)
+void pegaToken (void)
 {
     rewind (dicionario);
-    SU i = 0;
-    int k = 0;
+    int i = 0, k = 0;
     char trade = '\0';
     char valorTk = '\0';
     token = '\0';
@@ -547,7 +581,7 @@ void pega_token (void)
                 *EXP = trade;
                 tipoToken = NUM;
                 flagNUM = true;
-                filaInsere (i, ref.nome, ref.valor);
+                listaInsere (i, ref.nome, ref.valor);
                 rewind (dicionario);
                 i = -1;
                 if (verificaProxToken ()) return;
@@ -566,7 +600,7 @@ void pega_token (void)
                 }
                 else
                 {
-                    filaInsere(i, ref.nome, ref.valor);
+                    listaInsere(i, ref.nome, ref.valor);
                     i = -1;
                     rewind (dicionario);
                 }
@@ -675,11 +709,11 @@ void toName (char** resposta)
         strcpy (*resposta, (const char*) "zero");
         return;
     }
-    SU tam = strlen (*resposta);
+    uint16_t tam = strlen (*resposta);
     if (tam > DECILHAO-10) return;
-    char *resultado = (char*) calloc (tam*20, sizeof(char));
+    char *resultado = (char*) alloc (tam*20, sizeof(char));
     char *aux = NULL;
-    SU ord, plural;
+    uint16_t ord, plural;
     int flag;
     while (tam > 0)
     {
@@ -691,7 +725,7 @@ void toName (char** resposta)
         {
             if (ord == 1)
             {
-                aux = (char*) calloc (5, sizeof(char));
+                aux = (char*) alloc (5, sizeof(char));
                 fscanf (dicionario, "%[^=]", ++aux);
                 *--aux = ' ';
                 strcat (resultado, aux);
@@ -699,7 +733,7 @@ void toName (char** resposta)
             }
             else if (ord)
             {
-                aux = (char*) calloc (36, sizeof(char));
+                aux = (char*) alloc (36, sizeof(char));
                 char* tmp = aux;
                 fscanf (dicionario, "%[^=]", ++aux);
                 char* del = strchr (aux, ',');
@@ -722,7 +756,7 @@ void toName (char** resposta)
         }
         if (ord==1 && flagNUM)
         {
-            SU AC = 0, c = 0;
+            uint16_t AC = 0, c = 0;
             while ((*resposta)[c]) AC += (*resposta)[c++] - '0';
             if (AC) strcat (resultado, (const char*) " e ");
         }
@@ -733,12 +767,12 @@ void toName (char** resposta)
     free (resultado);
 }
 
-int toNameMenOrd (char** numberInput, char* resultado, SU* size, SU* flagPlural)
+int toNameMenOrd (char** numberInput, char* resultado, uint16_t* size, uint16_t* flagPlural)
 {
     char *currentNumber = *numberInput, label = 0, *tmp = NULL;
-    SU tam = *size, count = tam%3;
+    uint16_t tam = *size, count = tam%3;
     if (! count) count += 3;
-    const SU cnt = count;
+    const uint16_t cnt = count;
     while (count)
     {
         label = 0;
@@ -764,7 +798,7 @@ int toNameMenOrd (char** numberInput, char* resultado, SU* size, SU* flagPlural)
             }
             label += *currentNumber - '0';
             fseek (dicionario, ind[label-1+flagNUM], SEEK_SET);
-            tmp = (char*) calloc (25, sizeof(char));
+            tmp = (char*) alloc (25, sizeof(char));
             fscanf (dicionario, "%[^=]", tmp);
             if (strstr (tmp, (const char*)"cem"))
             {
@@ -803,39 +837,39 @@ int toNameMenOrd (char** numberInput, char* resultado, SU* size, SU* flagPlural)
     return (*currentNumber && tam);
 }
 
-void filaInsere (SU i, char* nome, char* valor)
+void listaInsere (uint16_t i, char* nome, char* valor)
 {
-    FilaNum *no = (FilaNum*) calloc (1, sizeof (FilaNum));
-    FilaNum *aux = queue;
-    no -> info = (Ordem*) calloc (1, sizeof (Ordem));
+    ListaNum *no = (ListaNum*) alloc (1, sizeof (ListaNum));
+    ListaNum *aux = list;
+    no -> info = (Ordem*) alloc (1, sizeof (Ordem));
     strcpy (no->info->nome, nome);
     strcpy (no->info->valor, valor);
     no -> classe = i;
     no -> prox = NULL;
-    if (! queue)
+    if (! list)
     {
-        queue = no;
+        list = no;
         no -> ant = NULL;
         return;
     }
     while (aux && aux->prox)
         aux = aux -> prox;
-    no -> ant = pegaProxNum (queue);
+    no -> ant = pegaProxNum (list);
     aux -> prox = no;
 }
 
-SU pegaProxClasse (FilaNum* inicio)
+uint16_t pegaProxClasse (ListaNum* inicio)
 {
-    SU classe = 0;
+    uint16_t classe = 0;
     if (! inicio) return classe;
     while (inicio -> classe >= MIL) inicio = inicio -> prox;
     classe = inicio -> classe;
     return classe;
 }
 
-FilaNum* pegaProxNum (FilaNum* inicio)
+ListaNum* pegaProxNum (ListaNum* inicio)
 {
-    FilaNum* aux = NULL;
+    ListaNum* aux = NULL;
     while (inicio)
     {
         if (inicio -> classe < MIL) aux = inicio;
@@ -844,9 +878,9 @@ FilaNum* pegaProxNum (FilaNum* inicio)
     return aux;
 }
 
-void filaLibera (void)
+void listaLibera (void)
 {
-    FilaNum *aux = queue, *zombie = NULL;
+    ListaNum *aux = list, *zombie = NULL;
     while (aux)
     {
         zombie = aux;
@@ -855,14 +889,14 @@ void filaLibera (void)
             free (zombie->info);
         free (zombie);
     }
-    queue = NULL;
+    list = NULL;
 }
 
-int filaCount (void)
+int listaCount (void)
 {
-    FilaNum* aux;
+    ListaNum* aux;
     int n;
-    for (n = 0, aux = queue; aux; aux = aux -> prox, n++);
+    for (n = 0, aux = list; aux; aux = aux -> prox, n++);
     return n;
 }
 
@@ -889,17 +923,10 @@ void clearScreen (void)
 
 void strToLower (void)
 {
-    int i;
-    for (i=0; EXP[i]; i++)
-        if (isupper (EXP[i]))
-            EXP[i] = tolower (EXP[i]);
+    int i = 0;
+    while(EXP[i]){
+        EXP[i] = tolower (EXP[i]);
+        i++;
+    }
 }
 
-FILE* OPENFILE(const char file_name[], const char type[]) {
-    FILE* ptr_file = fopen(file_name, type);
-    if(! ptr_file) {
-        fprintf (stderr, "Arquivo %s nao encontrado.\n", file_name);
-        exit (2718);
-    }
-    return ptr_file;
-}

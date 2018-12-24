@@ -5,7 +5,13 @@
 **  main.c e operacoes.c
 */
 
-#include "preproc.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <ctype.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 /*
 **  DICIONÁRIO
@@ -92,23 +98,30 @@
 *   Struct para guardar temporariamente uma linha do ARQ_DICT
 *   Lista encadeada que carregara todo o número a ser analisado semanticamente
 */
+
 typedef struct ordem
 {
     char nome[MAXWLEN];
     char valor[MAXWLEN];
 } Ordem;
 
-typedef struct filanum 
+typedef struct ListaNum 
 {
     short classe;
     Ordem *info;
-    struct filanum *ant, *prox;
-} FilaNum;
+    struct ListaNum *ant, *prox;
+} ListaNum;
 
 typedef struct index{
-    SU* index;
+    uint16_t* index;
     int tam;
 } Index;
+
+/*
+** MENU QUE DA INICIO A ANALISE
+*/
+
+int menu (void);
 
 /*
 **  GATILHO DE PARTIDA A PARTIR DE UM ARQUIVO
@@ -118,7 +131,7 @@ int fileParsingInit (void);
 /*
 **  MOSTRA O ARQUIVO DE RESULTADO
 */
-void printRes(void);
+void printRes (void);
 
 /*
 ** RETORNA O TAMANHO DA MAIOR STRING NO ARQUIVO
@@ -160,7 +173,7 @@ void atomo (char* resposta);
 /*
 **  VERIFICA A EXISTENCIA DA PALAVRA NA EXPRESSÃO COM ALGUMA DO DICIONÁRIO, SE EXISTIR, GUARDA EM TOKEN O PRIMEIRO CARACTER DA MESMA
 */
-void pega_token (void);
+void pegaToken (void);
 
 /*
 **  PULA A PALAVRA EM ANALISE
@@ -200,7 +213,7 @@ Index criaIndices (FILE* in, int limite);
 /*
 **  DEVOLVE EM out UM VETOR COM AS POSIÇÕES DE del NO ARQUIVO in
 */
-SU* _criaIndices (FILE* in, int size, int del); 
+uint16_t* _criaIndices (FILE* in, int size, int del); 
 
 /*
 **  ANALISA O SIGNIFICADO DA EXPRESSÃO
@@ -210,17 +223,17 @@ bool analiSemantica (void);
 /*
 **  ANALISA O SIGNIFICADO DA CENTENA/DEZENA/UNIDADE NA EXPRESSÃO
 */
-bool semUnidade (FilaNum** inicio); 
+bool semUnidade (ListaNum** inicio); 
 
 /*
 **  ANALISA O SIGNIFICADO DO PLURAL DE ORDENS (>= MIL) NA EXPRESSÃO
 */
-void pluralOrdem (FilaNum* inicio); 
+void pluralOrdem (ListaNum* inicio); 
 
 /*
 **  RETORNA A ORDEM DO NUMERO APONTADO POR INICIO
 */
-SU pegaOrdem (FilaNum* inicio); 
+uint16_t pegaOrdem (ListaNum* inicio); 
 
 /*
 **  CONVERTE DE EXTENSO PARA UMA STRING DE DIGITOS
@@ -237,32 +250,32 @@ void toName (char** resposta);
 /*
 **  CONVERTE A C/D/U PARA EXTENSO
 */
-int toNameMenOrd (char** str, char* resultado, SU* size, SU* flagPlural); 
+int toNameMenOrd (char** str, char* resultado, uint16_t* size, uint16_t* flagPlural); 
 
 /*
 **  INSERÇÃO COMO FILA NUMA LISTA ENCADEADA
 */
-void filaInsere (SU i, char* nome, char* valor); 
+void listaInsere (uint16_t i, char* nome, char* valor); 
 
 /*
 **  DEVOLVE O NÓ DO PROXIMO NUMERO NA FILA APONTADA POR INICIO
 */
-FilaNum* pegaProxNum (FilaNum* inicio); 
+ListaNum* pegaProxNum (ListaNum* inicio); 
 
 /*
-**  DEVOLVE A PROXIMA CLASSE APONTADA POR INICIO
+**  DEVOLVE A PROXIMA "CLASSE" APONTADA POR INICIO
 */
-SU pegaProxClasse (FilaNum* inicio); 
+uint16_t pegaProxClasse (ListaNum* inicio); 
 
 /*
 **  LIBERA A LISTA
 */
-void filaLibera (void); 
+void listaLibera (void); 
 
 /*
 **  CONTA OS NÓS DA LISTA
 */
-int filaCount (void); 
+int listaCount (void); 
 
 /*
 **  CONTA QUANTAS LINHAS TEM O ARQUIVO IN
@@ -278,15 +291,4 @@ void clearScreen (void);
 **  CONVERTE POSSÍVEIS CARACTERES MAÍUSCULOS DE EXP PARA MINÚSCULOS
 */
 void strToLower (void);
-
-/*
-**  OPENFILE
-**  função para abertura de arquivos
-*/
-FILE* OPENFILE(const char file_name[], const char type[]);
-
-extern char *EXP; /* Ponteiro para expNum */
-extern char *_TEXP; /* guarda a expressão sem modificações, para a possível exibição de erros */
-extern char expNum[MAX_GEN]; /* Expressão que será analisada */
-
 #endif
