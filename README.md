@@ -37,9 +37,9 @@ Por ser uma aplicação em C, você necessita de um compilador C na sua máquina
 
 - Clone o repositório
 - Abra a pasta *compilha* no seu terminal
-- Verifique se o GCC ou o TCC está instalado com `gcc --version` ou `tcc -version`
+- Verifique se o GCC ou o TCC está instalado com `gcc --version` ou `clang --version`
 - Se não estiver instalado, use o gerenciador de pacotes da sua distribuição para resolver isso.
-- Após isso compile com o seguinte código: `tcc -O2 interpretador.c operacoes.c main.c preproc.c -o main -lm` ou `gcc -O2 interpretador.c operacoes.c main.c preproc.c -o main -lm` 
+- Após isso compile com o seguinte código: `clang -O2 *.c -o main -lm` ou `gcc -O2 *.c -o main -lm` 
 - Se estiver utilizando Windows, altere o `main` para `main.exe`
 
 ### Do programa
@@ -65,38 +65,9 @@ As expressões devem ser formatadas com espaços delimitando as palavras.
 - Correto = sete trilhoes e oitenta milhoes
 - Incorreto = ~~sete trilhoes, e oitenta milhoes~~
 
-### Da adição de ordens e delimitadores no dicionário
-
-Sugiro que antes da edição do arquivo de dicionário, leia a próxima seção. Se o dicionário foi aumentado, cuide com a alocação de alguns ponteiros, o tamanho de algumas variáveis e definição de constantes, no arquivo principal `main.c`. No caso dos ponteiros, acrescente adequadamente o parâmetro `size` da macro `MALLOC`. Alguns pontos para tomar cuidado:
-
-- Variável global `expNum`
-- Alocações
-    - `resposta`
-    - `segFator`
-    - `segTermo`
-    - `proxFator`
-    - `strErro`
-- Constantes
-    - `TAM`
-    - `INDEL`
-    - `MAXWLEN`
-    - `STRDEL`
-- Comparação lógica
-    - `filaCount() > 43` (limite padrão = decilhões) *
-###### * quantas palavras compõem o maior numero do dicionário
-###### ** o primeiro parâmetro deve ser modificado, se algum delimitador for adicionado/retirado
-
-### Da adição de erros
-
-Atente para a constante `NUM_ERROS`, que numera a quantidade de linhas do arquivo **erros.cfg**, cada linha com um erro diferente. É bom ter cuidado com a alocação do ponteiro `strErro`, o qual guarda a string formatada com o erro e um cursor que indica a ocorrencia do erro. Novamente, é só adequar o parâmetro `size` da macro `MALLOC`.
-
-## Tratamento dos arquivos *erros.cfg* e *dicionario.cfg*
-
-Foi assumida a padronização LF (GNU/Linux) para os arquivos e não CRLF (Windows) ou CR (macOS), porque eu, desenvolvi o projeto em uma distribuição **GNU/Linux**. Portanto, se você utilizar um daqueles SO proprietários e decidir alterar qualquer um desses arquivos, sugiro a utilização do **Notepad++** para a conversão deles de volta para LF, senão o comportamento da saída (resultado das expressões) é indefinido.
-
 ## Descrição das funções
 
-Os comportamentos das funções (e seu algoritmo) estão descritos no arquivo de cabeçalho `interpretador.h`. As funções de operações básicas são "algoritmos clássicos" de soma, subtração, divisão e multiplicação, digito por digito, como aprendido no Ensino Fundamental do Brasil.
+Os comportamentos das funções (e seu algoritmo) estão descritos no arquivo de cabeçalho `interpretador.h`. As funções de operações básicas são "algoritmos clássicos" de soma, subtração, divisão e multiplicação.
 
 
 ## Bibliografia
