@@ -1,6 +1,4 @@
-#include "preproc.h"
 #include "operacoes.h"
-#include "interpretador.h"
 #include <math.h>
 
 bool inverte (char a[])
@@ -74,7 +72,7 @@ char* soma (char a[], char b[])
         allocated = false;
         op2 = (ta >= tb) ? b : a;
     }
-    soma = (char*) calloc (ts+2, sizeof(char));
+    soma = (char*) alloc (ts+2, sizeof(char));
     *soma = '0';
     soma++;
     for (i = ts-1; i >= 0; i--)
@@ -136,7 +134,7 @@ char* soma (char a[], char b[])
     }
     tamMinuendo = strlen (min);
     tamSubtraendo = strlen (subt);
-    char* diferenca = (char*) calloc (tamMinuendo+1, sizeof(char));
+    char* diferenca = (char*) alloc (tamMinuendo+1, sizeof(char));
     for (i=tamMinuendo-1; i>=0; i--)
     {
         diferenca[i] = (min[i]-'0') - (subt[i]-'0');
@@ -171,7 +169,7 @@ char* completaMenor (char a[], char b[], char* menor)
     }
     if (tamMaior + tamMenor)
     {
-        char* completaZeros = (char*) calloc (tamMaior+1, sizeof(char));
+        char* completaZeros = (char*) alloc (tamMaior+1, sizeof(char));
         while (k < tamMaior-tamMenor)
         {    
             completaZeros[k] = '0';
@@ -200,13 +198,13 @@ char* completaMenor (char a[], char b[], char* menor)
 
 char* multiplica (char a[],char b[])
 {
-    SU ta = strlen (a);
-    SU tb = strlen (b);
+    uint16_t ta = strlen (a);
+    uint16_t tb = strlen (b);
     if ((ta == 0) || (tb == 1 && *b == '1'))
         return a;
     else if ((tb == 0) || (ta == 1 && *a == '1'))
         return b;
-    char* produto = (char*) calloc (ta+tb+10, sizeof(char));
+    char* produto = (char*) alloc (ta+tb+10, sizeof(char));
     int ls = 0, i, j, cursor = 0;
     for (i = tb-1; i >= 0; i--)
     {
@@ -230,14 +228,15 @@ char* multiplica (char a[],char b[])
 
 char* unExpo (char a[], char b[])
 { 
+    char* answer = NULL;
     if(*b == '0' || *b == '\0'){
-        char* answer = (char*) calloc (2, sizeof(char));
+        answer = (char*) alloc (2, sizeof(char));
         answer[0] = '1'; answer[1] = '\0';
         return answer;
     }
-    else if (*b == '-') erroSS(4);
-    size_t lenA = strlen(a);
-    char* answer = (char*) calloc (1024, sizeof(char));
+    else if (*b == '-') answer; // NULL
+    size_t lenA = strlen(a), lenB = strlen(b);
+    answer = (char*) alloc (lenB*10*lenA*2, sizeof(char));
     strcpy(answer, a);
     while(strcmp(b, "1")) {
         memswap(answer, a, multiplica);
@@ -261,7 +260,7 @@ char* unExpo (char a[], char b[])
 **      39           -- Não
 **                  Então pegue o proximo numero de N e coloque em 15
 **                  -- 154
-**                  Subtraia 154 por 58 até que gerar um resultado negativo
+**                  subtraia 154 por 58 até que gerar um resultado negativo
 **                  -- 154 - 58 = 96
 **                  -- 96 - 58 = 38
 **                  Coloque em Q quantas vezes a subtração ocorreu
@@ -293,15 +292,15 @@ char* unsigneDiv (char a[], char D[], bool MOD)
     if (*D == '1' && td == 1) return a; /* divisão por um */
     if (! strcmp (a, D)){
         /* divisão de numeros iguais */
-        char *um = (char*) calloc(2, sizeof(char));
+        char *um = (char*) alloc(2, sizeof(char));
         *um = '1';
         return um;
     }
     if(!tn) return a;
     /* N, Q e o ponteiro que guarda o inicio da alocação primeira de N */
-    char *N = (char*) calloc (tn+2, sizeof(char));
+    char *N = (char*) alloc (tn+2, sizeof(char));
     strcpy (N, a);
-    char *Q = (char*) calloc (tn-td+1, sizeof(char)); /* O quociente terá pelo menos tn-td digitos */
+    char *Q = (char*) alloc (tn-td+1, sizeof(char)); /* O quociente terá pelo menos tn-td digitos */
     char *temp = N;
     int i; /* indice de interações do laço para a divisão */
     int j = 0; /* cursor para escrita na string Q */
@@ -389,31 +388,31 @@ int numDigitos (int x) { return (int) floor (log10(x)) + 1; }
 
 char* fatorial (char in[])
 {
-    char* inTemp = (char*) calloc (strlen(in)+1, sizeof(char));
-    register char* fat = (char*) calloc (900, sizeof(char));
+    char* inTemp = (char*) alloc (strlen(in)+1, sizeof(char));
+    register char* fat = (char*) alloc (900, sizeof(char));
     strcpy (inTemp, in);
     int i=0,k=1, tamA = strlen (inTemp);
     if (tamA > 3) return NULL;
     i=0;
     *fat = 1;
-    LLI num = 0ll;
+    long long num = 0ll;
     inverte (inTemp);
     char2int (inTemp);
     while (i<tamA)
     {
-        num += (LLI) inTemp[i] * pow (10, i);
+        num += (long long) inTemp[i] * pow (10, i);
         i++;
     }
     free(inTemp);
     if (num > 400 || num < 0) return NULL;
     for (i=2; i<=num; i++)
-        k = fatorial_multiplicador (i, fat, k);
+        k = fatorialMultiplicador (i, fat, k);
     int2char (fat, k+1);
     inverte (fat);
     return fat;
 }
 
-int fatorial_multiplicador (int a, char fat[], int limit)
+int fatorialMultiplicador (int a, char fat[], int limit)
 {
     int count, produto, resto = 0;
     for (count = 0; count<limit; count++)
@@ -438,7 +437,7 @@ void trataZeros (char** ptrNumber)
     for (x = 0; *number == '0'; x++) number++;
     if (!x) return;
     int len = strlen (number);
-    char* newNumber = (char*) calloc (len+1, sizeof(char));
+    char* newNumber = (char*) alloc (len+1, sizeof(char));
     strcpy (newNumber, number);
     free (number-x);
     *ptrNumber = newNumber;
@@ -447,7 +446,8 @@ void trataZeros (char** ptrNumber)
 bool memswap(char a[], char b[], char* (*f)(char*, char*))
 {
     char* temp = f(a, b);
-    if(temp){
+    if(temp)
+    {
         strcpy(a, temp);
         free(temp);
     }
@@ -459,7 +459,8 @@ bool memswap(char a[], char b[], char* (*f)(char*, char*))
 bool memswapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool))
 {
     char* temp = f(a, b, mod);
-    if(temp){
+    if(temp)
+    {
         strcpy(a, temp);
         free(temp);
     }
