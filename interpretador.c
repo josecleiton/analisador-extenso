@@ -33,7 +33,7 @@ uint16_t* ind; /* vetor que guarda as posições das strings no ARQ_DICT */
 FILE* dicionario; /* lista de tokens */ 
 ListaNum* list; /* guarda o número analisado por casas decimais em uma lista encadeada */
 
-int menu (void)
+int interpretador (void)
 {
     EXP = expNum;
     char* resultado, op;
@@ -42,7 +42,7 @@ int menu (void)
     while(true)
     {
         clearScreen ();
-        puts ("Selecione a entrada:\n a= Arquivo\n t= Teclado\n e= Sair\n\nopcao = ");
+        puts ("Selecione a entrada:\n a= Arquivo\n t= Teclado\n h= Ajuda\n e= Sair\n\nopcao = ");
         scanf ("%c%*c", &op);
         switch (op)
         {
@@ -61,12 +61,35 @@ int menu (void)
                 free (_TEXP);
                 CLRBUF;
                 break;
+            case 'h':
+                clearScreen ();
+                handBook ();
+                CLRBUF;
+                break;
             case 'e': return 0;
             default: 
                 CLRBUF;
                 puts ("Opcao invalida.\n");
         }
     }
+}
+
+void handBook (void)
+{
+    puts("A analise ocorre a partir de regras bem definidas, entao segue uma lista de comandos validos e instrucoes de uso:");
+    puts("\n\nNUMEROS: \n");
+    puts("A ordem e o plural importam. Nao utilize acentos nem pontuacao.");
+    puts("dois milhoes = correto");
+    puts("dois milhao = incorreto");
+    puts("tres mil e quatro milhoes = incorreto");
+    puts("quatro milhoes e tres mil = correto");
+    puts("\n\nFORMATO DAS OPERACOES:\n");
+    puts("Somar: numero mais numero");
+    puts("Subtrair: numero menos numero");
+    puts("Multiplicar: numero vezes numero");
+    puts("Dividir: numero dividido por numero");
+    puts("Resto: numero mod numero");
+    puts("Exponencial: numero elevado a numero");
 }
 
 int fileParsingInit (void)
@@ -107,7 +130,7 @@ void printRes(void)
 	{
 		FILE* saida = openFile (ARQ_SAIDA, "rt");
 		size_t s = maiorString(saida) + 1;
-		char* handle = (char*) alloc (s, sizeof(char));
+		char* handle = (char*) alloc (s, sizeof (char));
 		printf("\n\tRESULTADOS (uma expressao por linha):\n\n");
 		while(fgets(handle,s,saida))
 			printf("%s",handle);
@@ -138,7 +161,7 @@ size_t maiorString (FILE* stream)
 char* expParsingStart (void)
 {
     strToLower ();
-    char *resposta = (char*) alloc (1024*4, sizeof(char));
+    char *resposta = (char*) alloc (4*_1KB, sizeof (char));
     char *fResposta = resposta;
     dicionario = openFile (ARQ_DICT, "rb");
     ind = criaIndices (dicionario, TAM_DICT).index;
@@ -162,7 +185,7 @@ void expResTermo (char* resposta)
     while ((op = token) == '+' || op == '-')
     {
         pegaToken ();
-        segTermo = (char*) alloc (512, sizeof(char));
+        segTermo = (char*) alloc (_1KB, sizeof (char));
         expResFator (segTermo);
         switch (op)
         {
@@ -170,7 +193,7 @@ void expResTermo (char* resposta)
             memswap(resposta, segTermo, subtrair);
             break;
             case '+':
-            memswap(resposta, segTermo, soma);
+            memswap(resposta, segTermo, somar);
             break;
         }
         free (segTermo);
@@ -185,12 +208,12 @@ void expResFator (char* resposta)
     while ((op=token) == '*' || op == '/' || op == '%' || op == '^')
     {
         pegaToken ();
-        segFator = (char*) alloc (512, sizeof(char));
+        segFator = (char*) alloc (_1KB, sizeof (char));
         expResFatorial (segFator);
         switch (op)
         {
             case '*':
-            memswap(resposta, segFator, multiplica);
+            memswap(resposta, segFator, multiplicar);
             break;
             case '/':
             memswapDiv(resposta, segFator, false, unsigneDiv);
@@ -213,7 +236,7 @@ void expResFatorial (char* resposta)
     if (token == '!')
     {
         pegaToken ();
-        proxFator = (char*) alloc (512, sizeof(char));
+        proxFator = (char*) alloc (_1KB, sizeof (char));
         expResParenteses (proxFator);
         char* temp = fatorial (proxFator);
         if (! temp) erroSS (8);
@@ -363,7 +386,7 @@ char* toNum (void)
     uint16_t i, flare = 0, flag;
     if (limit) limit = (limit+1-MIL)*3+3;
     else limit+=3;
-    ext = (char*) alloc (limit*2+1, sizeof(char));
+    ext = (char*) alloc (limit*2+1, sizeof (char));
     aux = ext;
     while (list && limit)
     {
@@ -450,7 +473,7 @@ char* toNum (void)
     }
 
     flare = strlen (ext);
-    resultado = (char*) alloc (flare + 1, sizeof(char));
+    resultado = (char*) alloc (flare + 1, sizeof (char));
     strcpy (resultado, ext);
     free (ext);
     trataZeros (&resultado);
@@ -489,7 +512,7 @@ void erroSS (int tipoErro)
     struct tm *timeinfo;
     time (&now);
     timeinfo = localtime (&now);
-    toFile = (char*) alloc (size_toFile, sizeof(char));
+    toFile = (char*) alloc (size_toFile, sizeof (char));
     strcpy (toFile, asctime(timeinfo));
     char* needle = strchr (toFile, '\n');
     *++needle = '\0';
@@ -516,14 +539,14 @@ Index criaIndices (FILE* in, int limite){
         limite = 32;
     }
     int i = 0;
-    uint16_t* index = (uint16_t*) alloc(limite, sizeof(uint16_t));
+    uint16_t* index = (uint16_t*) alloc(limite, sizeof (uint16_t));
     rewind(in);
     index[i++] = ftell(in);
     while(fgets(handle, MAX_GEN, in)){
         index[i++] = ftell(in);
         if(i == limite && rlloc){
             limite<<=1;
-            index = (uint16_t*) realloc(index, sizeof(uint16_t)*limite);
+            index = (uint16_t*) realloc(index, sizeof (uint16_t)*limite);
             if(!index)
                 abortWithLog(true);
         }        
@@ -538,7 +561,7 @@ Index criaIndices (FILE* in, int limite){
 uint16_t* _criaIndices (FILE* in, int size, int del)
 {
     rewind (in);
-    uint16_t *index = (uint16_t*) alloc (size+2, sizeof(uint16_t));
+    uint16_t *index = (uint16_t*) alloc (size+2, sizeof  (uint16_t));
     uint16_t i = 1, k = 1;
     *index = 0;
     char ch = getc (in);
@@ -563,15 +586,15 @@ void pegaToken (void)
     token = '\0';
     tipoToken = 0;
     if (!*EXP) return;
-    while (isspace(*EXP)) ++EXP;
-    while (EXP[k] && isalpha(EXP[k])) k++;
+    while (isspace (*EXP)) ++EXP;
+    while (EXP[k] && isalpha (EXP[k])) k++;
     trade = EXP[k];
     EXP[k] = '\0';
     ajustaDelim (&k, &trade);
     while (!feof (dicionario) && i < TAM_DICT)
     {
         fscanf (dicionario, "%[^=]=%[^\n]%*c", ref.nome, ref.valor);
-        if (! strcmp (ref.nome, EXP) || resPlural(i, ref.nome))
+        if (! strcmp (ref.nome, EXP) || resPlural (i, ref.nome))
         {
             valorTk = *(ref.valor);
             if (isdigit (valorTk))
@@ -600,13 +623,13 @@ void pegaToken (void)
                 }
                 else
                 {
-                    listaInsere(i, ref.nome, ref.valor);
+                    listaInsere (i, ref.nome, ref.valor);
                     i = -1;
                     rewind (dicionario);
                 }
             }
         }
-        else ajustaEXP();
+        else ajustaEXP ();
         i++;
     }
     erroSS (0);
@@ -711,7 +734,7 @@ void toName (char** resposta)
     }
     uint16_t tam = strlen (*resposta);
     if (tam > DECILHAO-10) return;
-    char *resultado = (char*) alloc (tam*20, sizeof(char));
+    char *resultado = (char*) alloc (tam*20, sizeof (char));
     char *aux = NULL;
     uint16_t ord, plural;
     int flag;
@@ -725,7 +748,7 @@ void toName (char** resposta)
         {
             if (ord == 1)
             {
-                aux = (char*) alloc (5, sizeof(char));
+                aux = (char*) alloc (5, sizeof (char));
                 fscanf (dicionario, "%[^=]", ++aux);
                 *--aux = ' ';
                 strcat (resultado, aux);
@@ -733,7 +756,7 @@ void toName (char** resposta)
             }
             else if (ord)
             {
-                aux = (char*) alloc (36, sizeof(char));
+                aux = (char*) alloc (36, sizeof (char));
                 char* tmp = aux;
                 fscanf (dicionario, "%[^=]", ++aux);
                 char* del = strchr (aux, ',');
@@ -798,7 +821,7 @@ int toNameMenOrd (char** numberInput, char* resultado, uint16_t* size, uint16_t*
             }
             label += *currentNumber - '0';
             fseek (dicionario, ind[label-1+flagNUM], SEEK_SET);
-            tmp = (char*) alloc (25, sizeof(char));
+            tmp = (char*) alloc (25, sizeof (char));
             fscanf (dicionario, "%[^=]", tmp);
             if (strstr (tmp, (const char*)"cem"))
             {

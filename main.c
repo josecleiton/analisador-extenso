@@ -13,5 +13,5 @@
 
 int main (void)
 {
-    return menu();
+    return interpretador();
 }

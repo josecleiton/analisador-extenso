@@ -3,8 +3,8 @@
 
 bool inverte (char a[])
 {
-    int i, tam = strlen (a);
     char c;
+    int i, tam = strlen (a);
     for (i=0; i<tam/2; i++)
     {
         c = a[i];
@@ -44,19 +44,19 @@ int menor (int a, int b)
     return (a<=b)*a + (b<a)*b;
 }
 
-int strIsDigit (char a[])
+bool strIsDigit (char a[])
 {
     int i = 0;
     while (a[i])
     {
         if (!isdigit (a[i]) && !(a[i] >= 0 && a[i] <= 9)) 
-            return 0;
+            return false;
         i++;
     }
-    return i;
+    return true;
 }
 
-char* soma (char a[], char b[])
+char* somar (char a[], char b[])
 {
     int ta = strlen (a), tb = strlen (b), ts = maior (ta, tb);
     if (! ta)
@@ -72,7 +72,7 @@ char* soma (char a[], char b[])
         allocated = false;
         op2 = (ta >= tb) ? b : a;
     }
-    soma = (char*) alloc (ts+2, sizeof(char));
+    soma = (char*) alloc (ts+2, sizeof (char));
     *soma = '0';
     soma++;
     for (i = ts-1; i >= 0; i--)
@@ -134,7 +134,7 @@ char* soma (char a[], char b[])
     }
     tamMinuendo = strlen (min);
     tamSubtraendo = strlen (subt);
-    char* diferenca = (char*) alloc (tamMinuendo+1, sizeof(char));
+    char* diferenca = (char*) alloc (tamMinuendo+1, sizeof (char));
     for (i=tamMinuendo-1; i>=0; i--)
     {
         diferenca[i] = (min[i]-'0') - (subt[i]-'0');
@@ -169,7 +169,7 @@ char* completaMenor (char a[], char b[], char* menor)
     }
     if (tamMaior + tamMenor)
     {
-        char* completaZeros = (char*) alloc (tamMaior+1, sizeof(char));
+        char* completaZeros = (char*) alloc (tamMaior+1, sizeof (char));
         while (k < tamMaior-tamMenor)
         {    
             completaZeros[k] = '0';
@@ -196,7 +196,7 @@ char* completaMenor (char a[], char b[], char* menor)
     }
 }
 
-char* multiplica (char a[],char b[])
+char* multiplicar (char a[],char b[])
 {
     uint16_t ta = strlen (a);
     uint16_t tb = strlen (b);
@@ -204,7 +204,7 @@ char* multiplica (char a[],char b[])
         return a;
     else if ((tb == 0) || (ta == 1 && *a == '1'))
         return b;
-    char* produto = (char*) alloc (ta+tb+10, sizeof(char));
+    char* produto = (char*) alloc (ta+tb+10, sizeof (char));
     int ls = 0, i, j, cursor = 0;
     for (i = tb-1; i >= 0; i--)
     {
@@ -229,17 +229,19 @@ char* multiplica (char a[],char b[])
 char* unExpo (char a[], char b[])
 { 
     char* answer = NULL;
-    if(*b == '0' || *b == '\0'){
-        answer = (char*) alloc (2, sizeof(char));
+    if (*b == '0' || *b == '\0')
+    {
+        answer = (char*) alloc (2, sizeof (char));
         answer[0] = '1'; answer[1] = '\0';
         return answer;
     }
-    else if (*b == '-') answer; // NULL
-    size_t lenA = strlen(a), lenB = strlen(b);
-    answer = (char*) alloc (lenB*10*lenA*2, sizeof(char));
+    else if (*b == '-') return answer; // NULL
+    int lenA = strlen(a), lenB = strlen(b);
+    answer = (char*) alloc (lenB*10*lenA*2, sizeof (char));
     strcpy(answer, a);
-    while(strcmp(b, "1")) {
-        memswap(answer, a, multiplica);
+    while (strcmp(b, "1"))
+    {
+        memswap(answer, a, multiplicar);
         memswap(b, "1", subtrair);
     }
     return answer;
@@ -280,7 +282,7 @@ char* unExpo (char a[], char b[])
 **  Q sempre terá len(N) - len(D) digitos 
 **  
 */
-char* unsigneDiv (char a[], char D[], bool MOD)
+char* unsigneDiv (char a[], char D[], bool MOD) // TRATAR OS ZEROS 500000/20
 {
     const int tn = strlen (a), td = strlen (D); /* len(N) e len(D) respectivamente */
     if (td > tn)
@@ -290,108 +292,92 @@ char* unsigneDiv (char a[], char D[], bool MOD)
     }
     if (! td) return (char*) "E"; /* divisão por zero é indeterminada */
     if (*D == '1' && td == 1) return a; /* divisão por um */
-    if (! strcmp (a, D)){
+    if (! strcmp (a, D))
+    {
         /* divisão de numeros iguais */
         char *um = (char*) alloc(2, sizeof(char));
         *um = '1';
         return um;
     }
-    if(!tn) return a;
+    if (! tn) return a;
     /* N, Q e o ponteiro que guarda o inicio da alocação primeira de N */
-    char *N = (char*) alloc (tn+2, sizeof(char));
+    char *N = (char*) alloc (tn+1, sizeof (char));
     strcpy (N, a);
-    char *Q = (char*) alloc (tn-td+1, sizeof(char)); /* O quociente terá pelo menos tn-td digitos */
+    char *Q = (char*) alloc (tn-td+2, sizeof (char)); /* O quociente terá pelo menos tn-td+1 digitos */
     char *temp = N;
     int i; /* indice de interações do laço para a divisão */
-    int j = 0; /* cursor para escrita na string Q */
-    size_t k; /* conta quantas subtrações foram feitas de N por D */ 
+    int j = 0, k = 0; /* cursor para escrita na string N e Q*/
+    int l = 0; /* cursor na string de entrada a */
+    size_t countSub; /* conta quantas subtrações foram feitas de N por D */ 
     int leN; /* guarda o tamanho atualizado (pela subtração) de N */
-    bool fl; /* Marca se ocorreu ou não uma subtração de N por D */;
-    for (i = 0; i < tn-td+1; i++)
+    //bool fl = false; /* Marca se ocorreu ou não uma subtração de N por D */;
+    char handle;
+    for (i=0; k < tn-td+1 && j < tn-td+1; i++)
     {
-        /*if (i && strlen (Q) == tn-td+1) 
-            break;*/
-        k = 0ull;
-        N[td+i%2+fl] = '\0';
-        fl = false;
+        handle = '\0';
+        charswap (&N[td+j], &handle);
+        leN = strlen (N);
+        countSub = 0ull;
         while (strCmpNum (N,D))
         {
-            memswap(N, D, subtrair);
-            k++;
-            fl = true;
+            memswap (N, D, subtrair);
+            countSub++;
         }
-        leN = strlen (N);
-        if (leN > td || !i)
-            strcpy (&N[td], &a[td+i]);
-        else if (fl && a[td+1])
-            strcpy (&N[leN], &a[td+1]);
-        if (!strCmpNum (N, D) || fl)
+        if (countSub)
         {
-            if (k < 10)
-            {
-                Q[j++] = k + '0';
-                if(!k)
-                {
-                    strcat(N, &a[td]);
-                    fl = true;
-                }
-            }
+            if (j) k--; /* SE A MOVIMENTAÇÃO NÃO GEROU UM 0, RETIRE-O */
+            if (countSub < 10)
+                Q[k++] = countSub + '0';
             else
             {
-                int w = numDigitos (k);
+                int w = countDigits (countSub);  
                 for (w--; w >= 0; w--)
                 {
-                    Q[j++] = k / (int) pow (10, w) + '0';
-                    k %= (int) pow (10, w);
-                }
-                if (j > tn - td)
-                {
-                    Q[--j] = '\0';
-                    N[td] = '\0';
+                    Q[k++] = (countSub / (int) pow (10, w)) + '0';
+                    countSub %= (int) pow (10, w);
                 }
             }
+            strcpy (&N[td+j+strlen(N)-leN], &a[td+1+l++]);
+            j=0;
+        }
+        else
+        {
+            Q[k++] = '0';
+            charswap (&N[td+j++], &handle);
         }
     }
-    Q[j] = '\0';
-    if (strcmp (N, D) < 0 && Q[j-1] == '0' && !fl)
-        Q[--j] = '\0';
-    if (MOD) /* Se o paramento for verdadeiro, retorne o resto */
-    {
-        free (Q);
-        trataZeros (&N);
-        return N;
-    }
-    trataZeros(&Q);
-    free (temp); /* libera o N */
+    if (MOD) strcpy (Q, N);
+    free (temp);
     return Q;
 }
 
-bool strCmpNum (char x[], char b[])
+bool strCmpNum (char x[], char y[])
 {
-    char* a = x;
+    char* a = x, *b = y;
+    ignoraZero (2, &a, &b);
     int ta = strlen (a), tb = strlen (b);
-    if (ta > tb) return 1;
+    if (ta > tb) return true;
     if (ta == tb)
     {
         int i;
-        for (i = 0; a[i] != '\0' && b[i] != '\0'; i++)
+        for (i = 0; a[i]; i++)
         {
-            if (a[i] > b[i]) return 1;
-            else if (a[i] < b[i]) return 0;
+            if (a[i] > b[i]) return true;
+            else if (a[i] < b[i]) return false;
         }
     }
     else return false;
     return true;
 }
 
-int numDigitos (int x) { return (int) floor (log10(x)) + 1; }
+int countDigits (long long x) { return (int) floor (log10 (x)) + 1; }
 
 char* fatorial (char in[])
 {
-    char* inTemp = (char*) alloc (strlen(in)+1, sizeof(char));
-    register char* fat = (char*) alloc (900, sizeof(char));
+    char* inTemp = (char*) alloc (strlen (in)+1, sizeof (char));
+    register char* fat = (char*) alloc (_1KB, sizeof (char));
     strcpy (inTemp, in);
-    int i=0,k=1, tamA = strlen (inTemp);
+    int i=0, k=1, tamA = strlen (inTemp);
     if (tamA > 3) return NULL;
     i=0;
     *fat = 1;
@@ -437,19 +423,32 @@ void trataZeros (char** ptrNumber)
     for (x = 0; *number == '0'; x++) number++;
     if (!x) return;
     int len = strlen (number);
-    char* newNumber = (char*) alloc (len+1, sizeof(char));
+    char* newNumber = (char*) alloc (len+1, sizeof (char));
     strcpy (newNumber, number);
     free (number-x);
     *ptrNumber = newNumber;
 }
 
-bool memswap(char a[], char b[], char* (*f)(char*, char*))
-{
-    char* temp = f(a, b);
-    if(temp)
+void ignoraZero (int narg, ...){
+    va_list argList;
+    va_start (argList, narg);
+    char** arg;
+    while (narg--)
     {
-        strcpy(a, temp);
-        free(temp);
+        arg = va_arg (argList, char**);
+        while (**arg == '0')
+            (*arg)++;
+    }
+    va_end (argList);
+}
+
+bool memswap (char a[], char b[], char* (*f)(char*, char*))
+{
+    char* temp = f (a, b);
+    if (temp)
+    {
+        strcpy (a, temp);
+        free (temp);
     }
     else 
         *a = '\0';
@@ -458,13 +457,20 @@ bool memswap(char a[], char b[], char* (*f)(char*, char*))
 
 bool memswapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool))
 {
-    char* temp = f(a, b, mod);
+    char* temp = f (a, b, mod);
     if(temp)
     {
-        strcpy(a, temp);
-        free(temp);
+        strcpy (a, temp);
+        free (temp);
     }
     else
         *a = '\0';
     return (a != NULL);
+}
+
+void charswap (char* a, char* b)
+{
+    register char h = *a;
+    *a = *b;
+    *b = h;
 }

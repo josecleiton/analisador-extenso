@@ -11,8 +11,10 @@
 #include <string.h>
 #include <errno.h>
 
-void* alloc (size_t count, size_t blockSize);
-FILE* openFile (const char file_name[], const char type[]);
-int abortWithLog (bool msg);
+#define _1KB 1024 /* 2^10 BYTES */
+
+void* alloc (const size_t count, const size_t blockSize);
+FILE* openFile (const char filename[], const char type[]);
+int abortWithLog (const bool msg);
 
 #endif
