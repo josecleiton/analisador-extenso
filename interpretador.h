@@ -120,8 +120,12 @@ typedef struct index{
 /*
 ** MENU QUE DA INICIO A ANALISE
 */
+int interpretador (void);
 
-int menu (void);
+/*
+**
+*/
+void handBook (void);
 
 /*
 **  GATILHO DE PARTIDA A PARTIR DE UM ARQUIVO
