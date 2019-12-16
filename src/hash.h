@@ -1,31 +1,35 @@
 typedef struct bucket_list {
    struct bucket_list* next;
-   int length;
-   char* key;
+   unsigned length;
+   char *key, *value;
+   int vcapacity;  // value capacity
 } BucketList;
 
 typedef struct bucket_hash {
    BucketList** heads;
-   int length;
+   unsigned length, size;
 } BucketHash;
 
-unsigned long hash(const char *in);
+unsigned long hash(const char* in);
 
 BucketHash* bucketInit(const int length);
 
-int bucketPush(BucketHash* h, const char* str);
+int bucketPush(BucketHash* h, const char* key, const char* value);
 
 int bucketPop(BucketHash* h, const char* key);
 
-int bucketFind(BucketHash* h, const char* key);
-
-int bucketUpdate(BucketHash* h, const char* oldK, const char* newK);
+const char* bucketFind(BucketHash* h, const char* key);
 
 void bucketFree(BucketHash**);
 
-int bucketListPush(BucketList** list, const char* str);
+int bucketListPush(BucketList** list, const char* str, const char* value,
+                   int* pushed);
 
-int bucketListPop(BucketList** list, const char* str);
+BucketList* bucketListPop(BucketList** list, const char* str, int* removed);
+
+BucketList* bucketListFree(BucketList* list);
 
 BucketList* bucketListAlloc(const char* str);
+
+const char* bucketListFind(BucketList* list, const char* key);
 
