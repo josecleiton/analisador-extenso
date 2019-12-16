@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "alloc.h"
+#include "hash.h"
 
 unsigned long hash(const char* in) {
    unsigned long hash = 5381;
@@ -22,19 +24,30 @@ BucketHash* bucketInit(const int length) {
 
 int bucketPush(BucketHash *h, const char* str) {
    int idx = hash(str) % h->length;
-   bucketListPush(&h->heads[idx], str);
+   h->length += bucketListPush(&h->heads[idx], str);
 }
 
 int bucketListPush(BucketList** l, const char* str) {
    BucketList* list = *l;
-   while(list && list->next) {
-      list = list->next;
-   }
    if(list) {
-      list->next = bucketListAlloc(str);
-   } else {
-      *l = bucketListAlloc(str);
+      return bucketListPush(&list->next, str) + 1;
    }
-   return ((*l)->length++);
+   list = *l = (BucketList*) alloc(1, sizeof(BucketList));
+   list->key = (char*) alloc(strlen(str), sizeof(char));
+   strcpy(list->key, str);
+   return 1;
+}
+
+int bucketPop(BucketHash *h, const char* str) {
+   int idx = hash(str) % h->length;
+   return bucketListPop(&h->heads[idx], str);
+}
+
+int bucketListPop(BucketList** l, const char* str) {
+   BucketList *list = *l;
+   if(!strcmp(list->key, str)) {
+      // achou
+      
+   }
 }
 

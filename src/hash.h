@@ -1,10 +1,10 @@
-struct bucket_list {
-   struct BucketList* next;
+typedef struct bucket_list {
+   struct bucket_list* next;
    int length;
    char* key;
 } BucketList;
 
-struct bucket_hash {
+typedef struct bucket_hash {
    BucketList** heads;
    int length;
 } BucketHash;
@@ -22,6 +22,10 @@ int bucketFind(BucketHash* h, const char* key);
 int bucketUpdate(BucketHash* h, const char* oldK, const char* newK);
 
 void bucketFree(BucketHash**);
+
+int bucketListPush(BucketList** list, const char* str);
+
+int bucketListPop(BucketList** list, const char* str);
 
 BucketList* bucketListAlloc(const char* str);
 
