@@ -125,7 +125,7 @@ void handBook(void);
 /*
 **  GATILHO DE PARTIDA A PARTIR DE UM ARQUIVO
 */
-int fileParsingInit(void);
+int fileParsingInit(char bucket[]);
 
 /*
 **  MOSTRA O ARQUIVO DE RESULTADO
@@ -135,7 +135,7 @@ void printRes(void);
 /*
 **  GATILHO DE PARTIDA
 */
-char* expParsingStart(void);
+void expParsingStart(char resposta[]);
 
 /*
 **  ROTINA QUE SOMA OU SUBTRAI TERMOS
@@ -197,7 +197,7 @@ bool resPlural(int i, char* s);
 **  abre-parentese
 **  fecha-parentese
 */
-void ajustaDelim(int* k, char* temp);
+void ajustaDelim(int k, char* temp);
 
 /*
 **  TODOS OS POSSÍVEIS ERROS (CHECAR ARQ_ERROS)
@@ -241,7 +241,7 @@ char* toNum(void);
 /*
 **  CONVERTE DE UMA STRING DE DIGITOS PARA EXTENSO
 */
-void toName(char** resposta);
+void toName(char* resposta);
 
 /*
 **  CONVERTE A C/D/U PARA EXTENSO

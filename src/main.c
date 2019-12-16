@@ -13,7 +13,8 @@
 
 int main(void) {
   EXP = expNum;
-  char *resultado, op;
+  char op;
+  char expBucket[BUFSIZ] = {'\0'};
   puts("\n\t\tANALISADOR DE EXPRESSOES NUMERICAS POR EXTENSO\n");
   CLRBUF;
   while (true) {
@@ -26,7 +27,7 @@ int main(void) {
       clearScreen();
       printf("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultado "
              "podem ser encontrados em %s\n",
-             fileParsingInit(), ARQ_SAIDA);
+             fileParsingInit(expBucket), ARQ_SAIDA);
       printRes();
       CLRBUF;
       break;
@@ -34,8 +35,8 @@ int main(void) {
       clearScreen();
       puts("Digite uma expressao numerica: ");
       scanf("%[^\n]%*c", EXP);
-      resultado = expParsingStart();
-      printf("\nResultado: %s\n", resultado);
+      expParsingStart(expBucket);
+      printf("\nResultado: %s\n", expBucket);
       CLRBUF;
       break;
     case 'h':

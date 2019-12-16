@@ -68,8 +68,8 @@ enum tokens {
 **       VARIAVEIS GLOBAIS
 **
 */
-char* EXP; /* Ponteiro para expNum */
-char* _TEXP; /* guarda a expressão sem modificações, para a possível exibição de
+char* EXP = NULL; /* Ponteiro para expNum */
+char* _TEXP = NULL; /* guarda a expressão sem modificações, para a possível exibição de
                 erros */
 char expNum[BUFSIZ]; /* Expressão que será analisada */
 char token;          /* guarda o token */
@@ -164,22 +164,21 @@ void handBook(void) {
        "Exponencial: numero elevado a numero\n");
 }
 
-int fileParsingInit(void) {
+int fileParsingInit(char expOut[]) {
    FILE* entrada = openFile(ARQ_ENTRADA, "rt");
    FILE* saida = openFile(ARQ_SAIDA, "wt");
-   char* expOut = NULL; /* Resultado da expressão analisada */
    int count = 0;
    while (fgets(EXP, MAX_GEN, entrada)) {
       char* endline = strpbrk(EXP, "\r\n");
       if (endline) *endline = '\0';
-      expOut = expParsingStart();
+      // expOut = expParsingStart();
+      expParsingStart(expOut);
       fprintf(saida, "%s\n", expOut);
       fflush(saida);
       count += 1;
    }
    fclose(entrada);
    fclose(saida);
-   /* fflush(stdout); */
    return count;
 }
 
@@ -198,26 +197,18 @@ void printRes(void) {
    }
 }
 
-char* expParsingStart(void) {
-   strToLower();
-   char* resposta = (char*)alloc(BUFSIZ * 2, sizeof(char));
-   char* backupPtrResposta = resposta;
-   /* dicionario = openFile(ARQ_DICT, "rb"); */
-   /* ind = criaIndices(dicionario, TAM_DICT).index; */
+void expParsingStart(char resposta[]) {
    _TEXP = EXP;
+   strToLower();
    pegaToken();
    if (!token) erroSS(3);
    expResTermo(resposta);
    if (token) erroSS(0);
-   toName(&resposta);
-   // _TEXP = backupPtrResposta;
+   toName(resposta);
    free(ind);
-   /* fclose(dicionario); */
-   // free(_TEXP);
-   return resposta;
 }
 
-void expResTermo(char* resposta) {
+void expResTermo(char resposta[]) {
    register char op;
    register char* segTermo;
    expResFator(resposta);
@@ -237,7 +228,7 @@ void expResTermo(char* resposta) {
    }
 }
 
-void expResFator(char* resposta) {
+void expResFator(char resposta[]) {
    register char op;
    register char* segFator;
    expResFatorial(resposta);
@@ -264,7 +255,7 @@ void expResFator(char* resposta) {
    }
 }
 
-void expResFatorial(char* resposta) {
+void expResFatorial(char resposta[]) {
    register char* proxFator;
    if (token == '!') {
       pegaToken();
@@ -281,7 +272,7 @@ void expResFatorial(char* resposta) {
    expResParenteses(resposta);
 }
 /* IMPLEMENTAR ISSO DEPOIS
-void expAvalSinal (char* resposta)
+void expAvalSinal (char resposta[])
 {
     register char op = 0;
     char* proxToken;
@@ -301,7 +292,7 @@ void expAvalSinal (char* resposta)
 }
 */
 
-void expResParenteses(char* resposta) {
+void expResParenteses(char resposta[]) {
    if (token == '(') {
       pegaToken();
       expResTermo(resposta);
@@ -311,7 +302,7 @@ void expResParenteses(char* resposta) {
       atomo(resposta);
 }
 
-void atomo(char* resposta) {
+void atomo(char resposta[]) {
    if (flagNUM) {
       if (analiSemantica()) {
          char* toNumAnswer = toNum();
@@ -588,7 +579,7 @@ void pegaToken(void) {
    while (EXP[cursorExp] && isalpha(EXP[cursorExp])) cursorExp++;
    trade = EXP[cursorExp];
    EXP[cursorExp] = '\0';
-   ajustaDelim(&cursorExp, &trade);
+   ajustaDelim(cursorExp, &trade);
    /* while (!feof(dicionario) && i < TAM_DICT) { */
    /*   fscanf(dicionario, "%[^=]=%[^\n]%*c", ref.nome, ref.valor); */
    char key[MAXWLEN] = {'\0'}, value[MAXWLEN]= {'\0'};
@@ -681,7 +672,7 @@ bool resPlural(int i, char* currentToken) {
    return fl;
 }
 
-void ajustaDelim(int* k, char* temp) {
+void ajustaDelim(int k, char* temp) {
    if (*EXP != 'a' && *EXP != 'f' && *EXP != 'd' && *EXP != 'e')
       return;
    else if (!strcmp(EXP, (const char*)"abre") ||
@@ -690,45 +681,48 @@ void ajustaDelim(int* k, char* temp) {
             !strcmp(EXP, (const char*)"fatorial") ||
             !strcmp(EXP, (const char*)"elevado")) {
       int i = 0;
-      EXP[*k] = '-';
+      EXP[k] = '-';
       while (isalpha(EXP[i]) || EXP[i] == '-') i++;
       *temp = EXP[i];
       EXP[i] = '\0';
-      if (strcmp(&EXP[*k + 1], (const char*)"parentese") &&
-          strcmp(&EXP[*k + 1], (const char*)"de") &&
-          strcmp(&EXP[*k + 1], (const char*)"por") &&
-          strcmp(&EXP[*k + 1], (const char*)"a")) {
-         EXP[*k] = ' ';
+      if (strcmp(&EXP[k + 1], (const char*)"parentese") &&
+          strcmp(&EXP[k + 1], (const char*)"de") &&
+          strcmp(&EXP[k + 1], (const char*)"por") &&
+          strcmp(&EXP[k + 1], (const char*)"a")) {
+         EXP[k] = ' ';
          erroSS(0);
          return;
       }
    }
 }
 
-void toName(char** resposta) {
-   if (!**resposta) {
-      strcpy(*resposta, (const char*)"zero");
+void toName(char resposta[]) {
+   if (!resposta[0]) {
+      strcpy(resposta, (const char*)"zero");
       return;
    }
-   uint16_t tam = strlen(*resposta);
+   uint16_t tam = strlen(resposta);
    if (tam > DECILHAO - 10) return;
-   char* resultado = (char*)alloc(tam * 20, sizeof(char));
-   char aux[40] = {'\0'};
+   if(tam * 20 > BUFSIZ) {
+      puts("expBucket muito pequeno para essa expressao.");
+      exit(1);
+   }
+   char *resultado = (char*)alloc(tam * 20, sizeof(char)),
+         *respInput = resposta;
+   char aux[MAXWLEN + 5] = {'\0'};
    uint16_t ord, plural;
    int flag;
    while (tam > 0) {
       ord = (tam - 1) / 3;
-      flag = toNameMenOrd(resposta, resultado, &tam, &plural);
-      tam = strlen(*resposta);
+      flag = toNameMenOrd(&respInput, resultado, &tam, &plural);
+      tam = strlen(respInput);
       /* fseek (dicionario, ind[ord-1+MIL], SEEK_SET); */
       if (flag) {
          if (ord == 1) {
-            /* aux = (char*) alloc (5, sizeof (char)); */
             /* fscanf (dicionario, "%[^=]", ++aux); */
             sprintf(aux, " %s", dicionario[ord - 1 + MIL].key);
             strcat(resultado, aux);
          } else if (ord) {
-            /* aux = (char*) alloc (36, sizeof (char)); */
             sprintf(aux, " %s", dicionario[ord - 1 + MIL].key);
             char* tmp = aux;
             /* fscanf (dicionario, "%[^=]", ++aux); */
@@ -741,15 +735,15 @@ void toName(char** resposta) {
             *--tmp = ' ';
             strcat(resultado, tmp);
          }
-         if ((**resposta) && !((tam - 1) / 3)) {
+         if (respInput[0] && !((tam - 1) / 3)) {
             strcat(resultado, (const char*)" e ");
             flagNUM = false;
          }
          strcat(resultado, " ");
       }
       if (ord == 1 && flagNUM) {
-         uint16_t AC = 0, c = 0;
-         while ((*resposta)[c]) AC += (*resposta)[c++] - '0';
+         uint16_t AC = 0, i = 0;
+         while (respInput[i]) AC +=respInput[i++] - '0';
          if (AC) strcat(resultado, (const char*)" e ");
       }
    }
@@ -758,7 +752,7 @@ void toName(char** resposta) {
        (*(tmp + 2) == ' ' || *(tmp + 2) == '\0') &&
        (*(tmp + 3) == ' ' || *(tmp + 3) == '\0'))
       *tmp = '\0';
-   strcpy(*resposta, resultado);
+   strcpy(resposta, resultado);
    free(resultado);
 }
 
@@ -833,7 +827,6 @@ int toNameMenOrd(char** numberInput, char* resultado, uint16_t* size,
 void listaInsere(uint16_t i, const char* nome, const char* valor) {
    ListaNum* no = (ListaNum*)alloc(1, sizeof(ListaNum));
    ListaNum* aux = list;
-   // no->info = (Ordem*)alloc(1, sizeof(Ordem));
    strcpy(no->info.nome, nome);
    strcpy(no->info.valor, valor);
    no->classe = i;
