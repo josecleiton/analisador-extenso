@@ -173,7 +173,7 @@ int fileParsingInit(void) {
       char* endline = strpbrk(EXP, "\r\n");
       if (endline) *endline = '\0';
       expOut = expParsingStart();
-      fscanf(saida, "%s\n", expOut);
+      fprintf(saida, "%s\n", expOut);
       fflush(saida);
       count += 1;
    }
@@ -645,23 +645,16 @@ bool verificaProxToken(void) {
    }
    int k = needle - EXP;
    EXP[k] = '\0';
-   int i = 1; /* COMEÇA EM UM PORQUE O PRIMEIRO DELIMITADOR É O 'e' */
-   /* char DEL[20] = {'\0'}; */
-   while (i < (TAM_DICT - INDEL + 1)) {
-      const char* DEL = dicionario[INDEL+(i++)].key;
-      /* fseek (dicionario, ind[INDEL+(i++)], SEEK_SET); */
-      /* fscanf (dicionario, "%[^=]", DEL); */
-      char* needle =
-          strchr(DEL, '-'); /* TRATA O HIFEN NO DELIMITADOR COMPOSTO */
-      if (needle) *needle = '\0';
+   char DEL[MAXWLEN] ={'\0'};
+   for (int cursor = INDEL + 1; cursor < TAM_DICT; cursor++) {
+      strcpy(DEL, dicionario[cursor].key);
+      if ((needle = strchr(DEL, '-'))) *needle = '\0';
       if (!strcmp(DEL, EXP)) {
          EXP[k] = ' ';
-         /* rewind (dicionario); */
          return 1;
       }
    }
    EXP[k] = ' ';
-   /* rewind (dicionario); */
    return 0;
 }
 
