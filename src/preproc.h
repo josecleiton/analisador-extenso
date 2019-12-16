@@ -3,17 +3,17 @@
 /*
 ** ARQUIVO QUE CARREGA TODAS AS BIBLIOTECAS UTILIZADAS
 */
+#include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <stdbool.h>
 
 /*
 **  ERRO E EXCEPTION
 **  macros para termíno abrupto do programa
 */
-#define ERRO exit (3141592)
+#define ERRO exit(3141592)
 #define EXCEPTION 61023
 
 /*

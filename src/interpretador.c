@@ -68,9 +68,9 @@ enum tokens {
 **       VARIAVEIS GLOBAIS
 **
 */
-char* EXP = NULL; /* Ponteiro para expNum */
-char* _TEXP = NULL; /* guarda a expressão sem modificações, para a possível exibição de
-                erros */
+char* EXP = NULL;    /* Ponteiro para expNum */
+char* _TEXP = NULL;  /* guarda a expressão sem modificações, para a possível
+                 exibição de  erros */
 char expNum[BUFSIZ]; /* Expressão que será analisada */
 char token;          /* guarda o token */
 short tipoToken;     /* sinalisa o tipo do token em analise */
@@ -582,7 +582,7 @@ void pegaToken(void) {
    ajustaDelim(cursorExp, &trade);
    /* while (!feof(dicionario) && i < TAM_DICT) { */
    /*   fscanf(dicionario, "%[^=]=%[^\n]%*c", ref.nome, ref.valor); */
-   char key[MAXWLEN] = {'\0'}, value[MAXWLEN]= {'\0'};
+   char key[MAXWLEN] = {'\0'}, value[MAXWLEN] = {'\0'};
    for (int cursorDict = 0; cursorDict < dictLen; cursorDict += 1) {
       strcpy(key, dicionario[cursorDict].key);
       strcpy(value, dicionario[cursorDict].value);
@@ -636,7 +636,7 @@ bool verificaProxToken(void) {
    }
    int k = needle - EXP;
    EXP[k] = '\0';
-   char DEL[MAXWLEN] ={'\0'};
+   char DEL[MAXWLEN] = {'\0'};
    for (int cursor = INDEL + 1; cursor < TAM_DICT; cursor++) {
       strcpy(DEL, dicionario[cursor].key);
       if ((needle = strchr(DEL, '-'))) *needle = '\0';
@@ -703,12 +703,12 @@ void toName(char resposta[]) {
    }
    uint16_t tam = strlen(resposta);
    if (tam > DECILHAO - 10) return;
-   if(tam * 20 > BUFSIZ) {
+   if (tam * 20 > BUFSIZ) {
       puts("expBucket muito pequeno para essa expressao.");
       exit(1);
    }
    char *resultado = (char*)alloc(tam * 20, sizeof(char)),
-         *respInput = resposta;
+        *respInput = resposta;
    char aux[MAXWLEN + 5] = {'\0'};
    uint16_t ord, plural;
    int flag;
@@ -743,7 +743,7 @@ void toName(char resposta[]) {
       }
       if (ord == 1 && flagNUM) {
          uint16_t AC = 0, i = 0;
-         while (respInput[i]) AC +=respInput[i++] - '0';
+         while (respInput[i]) AC += respInput[i++] - '0';
          if (AC) strcat(resultado, (const char*)" e ");
       }
    }
