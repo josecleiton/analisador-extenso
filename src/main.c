@@ -12,6 +12,7 @@
 #include "interpretador.h"
 
 int main(void) {
+   dict = initDict();
    EXP = expNum;
    char op;
    char expBucket[BUFSIZ] = {'\0'};
@@ -48,6 +49,7 @@ int main(void) {
             CLRBUF;
             break;
          case 'e':
+            bucketFree(&dict);
             return 0;
          default:
             CLRBUF;

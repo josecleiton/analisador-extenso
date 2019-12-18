@@ -81,65 +81,68 @@ struct dict {
    const char key[MAXWLEN];
    const char value[MAXWLEN];
 };
-const struct dict dicionario[] = {
-    {"zero", "0"},
-    {"um", "1"},
-    {"dois", "2"},
-    {"tres", "3"},
-    {"quatro", "4"},
-    {"cinco", "5"},
-    {"seis", "6"},
-    {"sete", "7"},
-    {"oito", "8"},
-    {"nove", "9"},
-    {"dez", "10"},
-    {"onze", "11"},
-    {"doze", "12"},
-    {"treze", "13"},
-    {"catorze", "14"},
-    {"quinze", "15"},
-    {"dezesseis", "16"},
-    {"dezessete", "17"},
-    {"dezoito", "18"},
-    {"dezenove", "19"},
-    {"vinte", "20"},
-    {"trinta", "30"},
-    {"quarenta", "40"},
-    {"cinquenta", "50"},
-    {"sessenta", "60"},
-    {"setenta", "70"},
-    {"oitenta", "80"},
-    {"noventa", "90"},
-    {"cem", "100"},
-    {"duzentos", "200"},
-    {"trezentos", "300"},
-    {"quatrocentos", "400"},
-    {"quinhentos", "500"},
-    {"seiscentos", "600"},
-    {"setecentos", "700"},
-    {"oitocentos", "800"},
-    {"novecentos", "900"},
-    {"mil", "1000"},
-    {"milhao,milhoes", "1000000"},
-    {"bilhao,bilhoes", "1000000000"},
-    {"trilhao,trilhoes", "1000000000000"},
-    {"quatrilhao,quatrilhoes", "1000000000000000"},
-    {"quintilhao,quintilhoes", "1000000000000000000"},
-    {"sextilhao,sextilhoes", "1000000000000000000000"},
-    {"setilhao,setilhoes", "1000000000000000000000000"},
-    {"octilhao,octilhoes", "1000000000000000000000000000"},
-    {"nonilhao,nonilhoes", "1000000000000000000000000000000"},
-    {"decilhao,decilhoes", "1000000000000000000000000000000000"},
-    {"e", "e"},
-    {"abre-parentese", "("},
-    {"fecha-parentese", ")"},
-    {"mais", "+"},
-    {"menos", "-"},
-    {"vezes", "*"},
-    {"dividido-por", "/"},
-    {"mod", "%"},
-    {"fatorial-de", "!"},
-    {"elevado-a", "^"}};
+
+BucketHash* dict = NULL;
+/* const struct */
+/* const struct dict dicionario[] = { */
+/*     {"zero", "0"}, */
+/*     {"um", "1"}, */
+/*     {"dois", "2"}, */
+/*     {"tres", "3"}, */
+/*     {"quatro", "4"}, */
+/*     {"cinco", "5"}, */
+/*     {"seis", "6"}, */
+/*     {"sete", "7"}, */
+/*     {"oito", "8"}, */
+/*     {"nove", "9"}, */
+/*     {"dez", "10"}, */
+/*     {"onze", "11"}, */
+/*     {"doze", "12"}, */
+/*     {"treze", "13"}, */
+/*     {"catorze", "14"}, */
+/*     {"quinze", "15"}, */
+/*     {"dezesseis", "16"}, */
+/*     {"dezessete", "17"}, */
+/*     {"dezoito", "18"}, */
+/*     {"dezenove", "19"}, */
+/*     {"vinte", "20"}, */
+/*     {"trinta", "30"}, */
+/*     {"quarenta", "40"}, */
+/*     {"cinquenta", "50"}, */
+/*     {"sessenta", "60"}, */
+/*     {"setenta", "70"}, */
+/*     {"oitenta", "80"}, */
+/*     {"noventa", "90"}, */
+/*     {"cem", "100"}, */
+/*     {"duzentos", "200"}, */
+/*     {"trezentos", "300"}, */
+/*     {"quatrocentos", "400"}, */
+/*     {"quinhentos", "500"}, */
+/*     {"seiscentos", "600"}, */
+/*     {"setecentos", "700"}, */
+/*     {"oitocentos", "800"}, */
+/*     {"novecentos", "900"}, */
+/*     {"mil", "1000"}, */
+/*     {"milhao,milhoes", "1000000"}, */
+/*     {"bilhao,bilhoes", "1000000000"}, */
+/*     {"trilhao,trilhoes", "1000000000000"}, */
+/*     {"quatrilhao,quatrilhoes", "1000000000000000"}, */
+/*     {"quintilhao,quintilhoes", "1000000000000000000"}, */
+/*     {"sextilhao,sextilhoes", "1000000000000000000000"}, */
+/*     {"setilhao,setilhoes", "1000000000000000000000000"}, */
+/*     {"octilhao,octilhoes", "1000000000000000000000000000"}, */
+/*     {"nonilhao,nonilhoes", "1000000000000000000000000000000"}, */
+/*     {"decilhao,decilhoes", "1000000000000000000000000000000000"}, */
+/*     {"e", "e"}, */
+/*     {"abre-parentese", "("}, */
+/*     {"fecha-parentese", ")"}, */
+/*     {"mais", "+"}, */
+/*     {"menos", "-"}, */
+/*     {"vezes", "*"}, */
+/*     {"dividido-por", "/"}, */
+/*     {"mod", "%"}, */
+/*     {"fatorial-de", "!"}, */
+/*     {"elevado-a", "^"}}; */
 ListaNum* list; /* guarda o número analisado por casas decimais em uma lista
                    encadeada */
 
@@ -574,7 +577,7 @@ void pegaToken(void) {
    char valorTk = '\0';
    token = '\0';
    tipoToken = 0;
-   if (!*EXP) return;
+   if (!EXP[0]) return;
    while (isspace(*EXP)) ++EXP;
    while (EXP[cursorExp] && isalpha(EXP[cursorExp])) cursorExp++;
    trade = EXP[cursorExp];
@@ -582,7 +585,22 @@ void pegaToken(void) {
    ajustaDelim(cursorExp, &trade);
    /* while (!feof(dicionario) && i < TAM_DICT) { */
    /*   fscanf(dicionario, "%[^=]=%[^\n]%*c", ref.nome, ref.valor); */
-   char key[MAXWLEN] = {'\0'}, value[MAXWLEN] = {'\0'};
+   /* char key[MAXWLEN] = {'\0'}, value[MAXWLEN] = {'\0'}; */
+   const char* value = bucketFind(dict, EXP);
+   if(value) {
+      valorTk = value[0];
+      if (isdigit(valorTk)) {
+         token = valorTk;
+         while (EXP[0] && (isalpha(EXP[0]) || EXP[0] == ' ')) EXP++;
+         EXP[0] = trade;
+         tipoToken = NUM;
+         flagNUM = true;
+         listaInsere(cursorDict, EXP, value);
+         cursorDict = -1;
+         if (verificaProxToken()) return;
+      }
+   }
+
    for (int cursorDict = 0; cursorDict < dictLen; cursorDict += 1) {
       strcpy(key, dicionario[cursorDict].key);
       strcpy(value, dicionario[cursorDict].value);
@@ -680,19 +698,19 @@ void ajustaDelim(int k, char* temp) {
             !strcmp(EXP, (const char*)"dividido") ||
             !strcmp(EXP, (const char*)"fatorial") ||
             !strcmp(EXP, (const char*)"elevado")) {
-      int i = 0;
+      /* int i = 0; */
       EXP[k] = '-';
-      while (isalpha(EXP[i]) || EXP[i] == '-') i++;
-      *temp = EXP[i];
-      EXP[i] = '\0';
-      if (strcmp(&EXP[k + 1], (const char*)"parentese") &&
-          strcmp(&EXP[k + 1], (const char*)"de") &&
-          strcmp(&EXP[k + 1], (const char*)"por") &&
-          strcmp(&EXP[k + 1], (const char*)"a")) {
-         EXP[k] = ' ';
-         erroSS(0);
-         return;
-      }
+      /* while (isalpha(EXP[i]) || EXP[i] == '-') i++; */
+      /* *temp = EXP[i]; */
+      /* EXP[i] = '\0'; */
+      /* if (strcmp(&EXP[k + 1], (const char*)"parentese") && */
+      /*     strcmp(&EXP[k + 1], (const char*)"de") && */
+      /*     strcmp(&EXP[k + 1], (const char*)"por") && */
+      /*     strcmp(&EXP[k + 1], (const char*)"a")) { */
+      /*    EXP[k] = ' '; */
+      /*    erroSS(0); */
+      /*    return; */
+      /* } */
    }
 }
 
@@ -902,3 +920,22 @@ void strToLower(void) {
    }
 }
 
+BucketHash* initDict(void) {
+   FILE* f = fopen("./lib/dicionario.cfg", "rt");
+   char key[MAXWLEN], value[MAXWLEN], line[128];
+   int len = 0;
+   while (fgets(line, 128, f)) len++;
+   rewind(f);
+   BucketHash* h = bucketInit(len);
+   while (fscanf(f, "%[^=]=%[^\n]%*c", key, value) != EOF) {
+      char *pKey = key, *pValue = value, *pComma = NULL;
+      if ((pComma = strchr(pKey, ','))) {
+         bucketPush(h, pComma + 1, pValue);
+         *pComma = '\0';
+      }
+      bucketPush(h, pKey, pValue);
+   }
+   /* puts(bucketFind(h, "decilhoes")); */
+   fclose(f);
+   return h;
+}

@@ -12,9 +12,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "hash.h"
 
 extern char* EXP;
 extern char expNum[BUFSIZ]; /* Expressão que será analisada */
+extern BucketHash* dict;
 
 /*
 **  DICIONÁRIO
@@ -288,4 +290,9 @@ void clearScreen(void);
 **  CONVERTE POSSÍVEIS CARACTERES MAÍUSCULOS DE EXP PARA MINÚSCULOS
 */
 void strToLower(void);
+/*
+ * INIT DAT
+ */
+BucketHash* initDict(void);
+
 #endif
