@@ -12,21 +12,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "hash.h"
+#include "dict.h"
 
 extern char* EXP;
 extern char expNum[BUFSIZ]; /* Expressão que será analisada */
-extern BucketHash* dict;
-
-/*
-**  DICIONÁRIO
-**  <chave>=<valor>
-**
-**  chave é o número por extenso aceito
-**  valor é o número cardinal em linguagem matemática
-**  Exemplo: trezentos=300
-*/
-#define ARQ_DICT "lib/dicionario.cfg"
 
 /*
 **  ERROS
@@ -79,12 +68,6 @@ extern BucketHash* dict;
 **  número de linhas do ARQ_ERROS
 */
 #define NUM_ERROS 13
-
-/*
-**  MAXWLEN
-**  tamanho maximo das palavras no ARQ_DICT (antes e depois do '=')
-*/
-#define MAXWLEN 35
 
 /*
 **  CLRBUF
@@ -290,9 +273,4 @@ void clearScreen(void);
 **  CONVERTE POSSÍVEIS CARACTERES MAÍUSCULOS DE EXP PARA MINÚSCULOS
 */
 void strToLower(void);
-/*
- * INIT DAT
- */
-BucketHash* initDict(void);
-
 #endif

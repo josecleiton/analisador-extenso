@@ -19,38 +19,50 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "hash.h"
 
 #define MAXWLEN 40
 
+typedef struct value_classe {
+   char valor[MAXWLEN];
+   unsigned classe;
+} BucketValueDS;
+
 BucketHash* initDict(void) {
    FILE* f = fopen("./lib/dicionario.cfg", "rt");
-   char key[MAXWLEN], value[MAXWLEN], line[128];
+   char key[MAXWLEN], line[128];
+   BucketValue container;
+   BucketValueDS valueDS;
    int len = 0;
-   while(fgets(line, 128, f)) len++;
+   while (fgets(line, 128, f)) len++;
    rewind(f);
-   BucketHash *h = bucketInit(len);
-   while(fscanf(f, "%[^=]=%[^\n]%*c", key, value) != EOF) {
-      char *pKey = key, *pValue = value, *comma = NULL;
-      if((comma = strchr(pKey, ','))) {
-         bucketPush(h, comma + 1, pValue);
-         *comma = '\0';
+   BucketHash* h = bucketInit(len);
+   for (valueDS.classe = 0;
+        fscanf(f, "%[^=]=%[^\n]%*c", key, valueDS.valor) != EOF;
+        valueDS.classe++) {
+      char *pKey = key, *pComma = NULL;
+      container.data = (void*)&valueDS;
+      container.capacity = (strlen(valueDS.valor) + 1) + sizeof valueDS.classe;
+      if ((pComma = strchr(pKey, ','))) {
+         bucketPush(h, pComma + 1, &container);
+         *pComma = '\0';
       }
-      bucketPush(h, pKey, pValue);
+      bucketPush(h, pKey, &container);
    }
-   puts(bucketFind(h, "decilhoes"));
-   puts(bucketFind(h, "decilhao"));
-   if(bucketFind(h, "fatorial")) {
-      puts("QUE VIAGE");
-   }
-   puts(bucketFind(h, "fatorial-de"));
+   /* puts(bucketFind(h, "decilhoes")); */
    fclose(f);
    return h;
 }
 
-
 int main() {
    BucketHash* d = initDict();
+   printf("length: %d\nsize: %d\n", d->length, d->size);
+   for (unsigned i = 0; i < d->length; i++) {
+      if (!d->heads[i]) {
+         printf("head %d is empty\n", i);
+      }
+   }
    bucketFree(&d);
    return 0;
 }

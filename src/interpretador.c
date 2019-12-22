@@ -5,6 +5,12 @@
 #include "alloc.h"
 #include "operacoes.h"
 
+#define GENERAL_EXP_SKIP \
+   while (EXP[0] && (isalpha(EXP[0]) || EXP[0] == ' ')) EXP++
+
+#define HIFEN_EXP_SKIP \
+   while (EXP[0] && (isalpha(EXP[0]) || EXP[0] == ' ' || EXP[0] == '-')) EXP++
+
 /*
 **   Vários tokens que auxiliam na análise (léxica/semântica)
 **   Se esses termos não forem familiares, leia README.md
@@ -77,72 +83,7 @@ short tipoToken;     /* sinalisa o tipo do token em analise */
 unsigned flagNUM;    /* sinaliza se o(s) token(s) em análise são numeros */
 uint16_t* ind; /* vetor que guarda as posições das strings no ARQ_DICT */
 /* FILE* dicionario; /1* lista de tokens *1/ */
-struct dict {
-   const char key[MAXWLEN];
-   const char value[MAXWLEN];
-};
 
-BucketHash* dict = NULL;
-/* const struct */
-/* const struct dict dicionario[] = { */
-/*     {"zero", "0"}, */
-/*     {"um", "1"}, */
-/*     {"dois", "2"}, */
-/*     {"tres", "3"}, */
-/*     {"quatro", "4"}, */
-/*     {"cinco", "5"}, */
-/*     {"seis", "6"}, */
-/*     {"sete", "7"}, */
-/*     {"oito", "8"}, */
-/*     {"nove", "9"}, */
-/*     {"dez", "10"}, */
-/*     {"onze", "11"}, */
-/*     {"doze", "12"}, */
-/*     {"treze", "13"}, */
-/*     {"catorze", "14"}, */
-/*     {"quinze", "15"}, */
-/*     {"dezesseis", "16"}, */
-/*     {"dezessete", "17"}, */
-/*     {"dezoito", "18"}, */
-/*     {"dezenove", "19"}, */
-/*     {"vinte", "20"}, */
-/*     {"trinta", "30"}, */
-/*     {"quarenta", "40"}, */
-/*     {"cinquenta", "50"}, */
-/*     {"sessenta", "60"}, */
-/*     {"setenta", "70"}, */
-/*     {"oitenta", "80"}, */
-/*     {"noventa", "90"}, */
-/*     {"cem", "100"}, */
-/*     {"duzentos", "200"}, */
-/*     {"trezentos", "300"}, */
-/*     {"quatrocentos", "400"}, */
-/*     {"quinhentos", "500"}, */
-/*     {"seiscentos", "600"}, */
-/*     {"setecentos", "700"}, */
-/*     {"oitocentos", "800"}, */
-/*     {"novecentos", "900"}, */
-/*     {"mil", "1000"}, */
-/*     {"milhao,milhoes", "1000000"}, */
-/*     {"bilhao,bilhoes", "1000000000"}, */
-/*     {"trilhao,trilhoes", "1000000000000"}, */
-/*     {"quatrilhao,quatrilhoes", "1000000000000000"}, */
-/*     {"quintilhao,quintilhoes", "1000000000000000000"}, */
-/*     {"sextilhao,sextilhoes", "1000000000000000000000"}, */
-/*     {"setilhao,setilhoes", "1000000000000000000000000"}, */
-/*     {"octilhao,octilhoes", "1000000000000000000000000000"}, */
-/*     {"nonilhao,nonilhoes", "1000000000000000000000000000000"}, */
-/*     {"decilhao,decilhoes", "1000000000000000000000000000000000"}, */
-/*     {"e", "e"}, */
-/*     {"abre-parentese", "("}, */
-/*     {"fecha-parentese", ")"}, */
-/*     {"mais", "+"}, */
-/*     {"menos", "-"}, */
-/*     {"vezes", "*"}, */
-/*     {"dividido-por", "/"}, */
-/*     {"mod", "%"}, */
-/*     {"fatorial-de", "!"}, */
-/*     {"elevado-a", "^"}}; */
 ListaNum* list; /* guarda o número analisado por casas decimais em uma lista
                    encadeada */
 
@@ -571,7 +512,7 @@ uint16_t* _criaIndices(FILE* in, int size, int del) {
 }
 
 void pegaToken(void) {
-   const int dictLen = sizeof(dicionario) / sizeof(*dicionario);
+   /* const int dictLen = sizeof(dicionario) / sizeof(*dicionario); */
    int cursorExp = 0;
    char trade = '\0';
    char valorTk = '\0';
@@ -586,56 +527,76 @@ void pegaToken(void) {
    /* while (!feof(dicionario) && i < TAM_DICT) { */
    /*   fscanf(dicionario, "%[^=]=%[^\n]%*c", ref.nome, ref.valor); */
    /* char key[MAXWLEN] = {'\0'}, value[MAXWLEN] = {'\0'}; */
-   const char* value = bucketFind(dict, EXP);
-   if(value) {
-      valorTk = value[0];
-      if (isdigit(valorTk)) {
-         token = valorTk;
-         while (EXP[0] && (isalpha(EXP[0]) || EXP[0] == ' ')) EXP++;
-         EXP[0] = trade;
-         tipoToken = NUM;
-         flagNUM = true;
-         listaInsere(cursorDict, EXP, value);
-         cursorDict = -1;
-         if (verificaProxToken()) return;
+   while (true) {
+      const BucketValue* bValue = bucketFind(dict, EXP);
+      if (bValue) {
+      const BucketValueDS* valueDS = bValue->data;
+         const char* valor = valueDS->valor;
+         const unsigned classe = valueDS->classe;
+         if (valor) {
+            valorTk = valor[0];
+            if (isdigit(valorTk)) {
+               token = valorTk;
+               GENERAL_EXP_SKIP;
+               EXP[0] = trade;
+               tipoToken = NUM;
+               flagNUM = true;
+               listaInsere(classe, EXP, valor);
+               if (verificaProxToken()) return;
+            } else if (strchr(STR_DEL, valorTk)) {
+               tipoToken = CONJUCAO;
+               GENERAL_EXP_SKIP;
+               token = valorTk;
+               EXP[0] = trade;
+               if (classe != CONJUCAO) {
+                  tipoToken = DELIMITADOR;
+                  flagNUM = false;
+                  return;
+               } else {
+                  listaInsere(classe, EXP, valor);
+               }
+            }
+         }
+      } else {
+         erroSS(0);
       }
    }
 
-   for (int cursorDict = 0; cursorDict < dictLen; cursorDict += 1) {
-      strcpy(key, dicionario[cursorDict].key);
-      strcpy(value, dicionario[cursorDict].value);
-      if (!strcmp(key, EXP) || resPlural(cursorDict, key)) {
-         valorTk = value[0];
-         if (isdigit(valorTk)) {
-            token = valorTk;
-            while (EXP[0] && (isalpha(EXP[0]) || EXP[0] == ' ')) EXP++;
-            EXP[0] = trade;
-            tipoToken = NUM;
-            flagNUM = true;
-            listaInsere(cursorDict, key, value);
-            cursorDict = -1;
-            if (verificaProxToken()) return;
-         } else if (strchr(STR_DEL, valorTk)) {
-            tipoToken = CONJUCAO;
-            while (EXP[0] &&
-                   (isalpha(EXP[0]) || EXP[0] == ' ' || EXP[0] == '-'))
-               EXP++;
-            token = valorTk;
-            EXP[0] = trade;
-            if (cursorDict != CONJUCAO) {
-               tipoToken = DELIMITADOR;
-               flagNUM = false;
-               return;
-            } else {
-               listaInsere(cursorDict, key, value);
-               cursorDict = -1;
-               /* rewind(dicionario); */
-            }
-         }
-      } else
-         ajustaEXP();
-   }
-   erroSS(0);
+   /* for (int cursorDict = 0; cursorDict < dictLen; cursorDict += 1) { */
+   /*    strcpy(key, dicionario[cursorDict].key); */
+   /*    strcpy(value, dicionario[cursorDict].value); */
+   /*    if (!strcmp(key, EXP) || resPlural(cursorDict, key)) { */
+   /*       valorTk = value[0]; */
+   /*       if (isdigit(valorTk)) { */
+   /*          token = valorTk; */
+   /*          while (EXP[0] && (isalpha(EXP[0]) || EXP[0] == ' ')) EXP++; */
+   /*          EXP[0] = trade; */
+   /*          tipoToken = NUM; */
+   /*          flagNUM = true; */
+   /*          listaInsere(cursorDict, key, value); */
+   /*          cursorDict = -1; */
+   /*          if (verificaProxToken()) return; */
+   /*       } else if (strchr(STR_DEL, valorTk)) { */
+   /*          tipoToken = CONJUCAO; */
+   /*          while (EXP[0] && */
+   /*                 (isalpha(EXP[0]) || EXP[0] == ' ' || EXP[0] == '-')) */
+   /*             EXP++; */
+   /*          token = valorTk; */
+   /*          EXP[0] = trade; */
+   /*          if (cursorDict != CONJUCAO) { */
+   /*             tipoToken = DELIMITADOR; */
+   /*             flagNUM = false; */
+   /*             return; */
+   /*          } else { */
+   /*             listaInsere(cursorDict, key, value); */
+   /*             cursorDict = -1; */
+   /*             /1* rewind(dicionario); *1/ */
+   /*          } */
+   /*       } */
+   /*    } else */
+   /*       ajustaEXP(); */
+   /* } */
+   /* erroSS(0); */
 }
 
 void ajustaEXP(void) {
@@ -654,17 +615,20 @@ bool verificaProxToken(void) {
    }
    int k = needle - EXP;
    EXP[k] = '\0';
-   char DEL[MAXWLEN] = {'\0'};
-   for (int cursor = INDEL + 1; cursor < TAM_DICT; cursor++) {
-      strcpy(DEL, dicionario[cursor].key);
-      if ((needle = strchr(DEL, '-'))) *needle = '\0';
-      if (!strcmp(DEL, EXP)) {
-         EXP[k] = ' ';
-         return 1;
-      }
-   }
+   const BucketValueDS* valueDS = bucketFind(dict, EXP)->data;
    EXP[k] = ' ';
-   return 0;
+   return valueDS && valueDS->classe > INDEL + 1;
+   /* char DEL[MAXWLEN] = {'\0'}; */
+   /* for (int cursor = INDEL + 1; cursor < TAM_DICT; cursor++) { */
+   /*    strcpy(DEL, dicionario[cursor].key); */
+   /*    if ((needle = strchr(DEL, '-'))) *needle = '\0'; */
+   /*    if (!strcmp(DEL, EXP)) { */
+   /*       EXP[k] = ' '; */
+   /*       return 1; */
+   /*    } */
+   /* } */
+   /* EXP[k] = ' '; */
+   /* return 0; */
 }
 
 bool resPlural(int i, char* currentToken) {
@@ -698,9 +662,11 @@ void ajustaDelim(int k, char* temp) {
             !strcmp(EXP, (const char*)"dividido") ||
             !strcmp(EXP, (const char*)"fatorial") ||
             !strcmp(EXP, (const char*)"elevado")) {
-      /* int i = 0; */
-      EXP[k] = '-';
-      /* while (isalpha(EXP[i]) || EXP[i] == '-') i++; */
+      /* *temp = EXP[k]; */
+      EXP[k++] = *temp;
+      while (isalpha(EXP[k]) || EXP[k] == '-') k++;
+      *temp = EXP[k];
+      EXP[k] = '\0';
       /* *temp = EXP[i]; */
       /* EXP[i] = '\0'; */
       /* if (strcmp(&EXP[k + 1], (const char*)"parentese") && */
@@ -920,22 +886,3 @@ void strToLower(void) {
    }
 }
 
-BucketHash* initDict(void) {
-   FILE* f = fopen("./lib/dicionario.cfg", "rt");
-   char key[MAXWLEN], value[MAXWLEN], line[128];
-   int len = 0;
-   while (fgets(line, 128, f)) len++;
-   rewind(f);
-   BucketHash* h = bucketInit(len);
-   while (fscanf(f, "%[^=]=%[^\n]%*c", key, value) != EOF) {
-      char *pKey = key, *pValue = value, *pComma = NULL;
-      if ((pComma = strchr(pKey, ','))) {
-         bucketPush(h, pComma + 1, pValue);
-         *pComma = '\0';
-      }
-      bucketPush(h, pKey, pValue);
-   }
-   /* puts(bucketFind(h, "decilhoes")); */
-   fclose(f);
-   return h;
-}

@@ -16,3 +16,43 @@
  * =====================================================================================
  */
 
+#ifndef DICT
+#define DICT
+
+#include "hash.h"
+
+/*
+**  DICIONÁRIO
+**  <chave>=<valor>
+**
+**  chave é o número por extenso aceito
+**  valor é o número cardinal em linguagem matemática
+**  Exemplo: trezentos=300
+*/
+#define ARQ_DICT "lib/dicionario.cfg"
+
+/*
+**  MAXWLEN
+**  tamanho maximo das palavras no ARQ_DICT (antes e depois do '=')
+*/
+#define MAXWLEN 35
+
+struct dict {
+   const char key[MAXWLEN];
+   const char value[MAXWLEN];
+};
+
+typedef struct classe_value {
+   char valor[MAXWLEN];
+   short classe;
+} BucketValueDS;
+
+extern const struct dict dicionario[];
+extern BucketHash* dict;
+
+/*
+ * INIT DAT
+ */
+BucketHash* initDict(void);
+
+#endif
