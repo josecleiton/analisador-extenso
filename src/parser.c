@@ -10,6 +10,7 @@
 
 char *expParsingStart (Context *ctx)
 {
+    ctx->flagNUM = false; /* estado limpo (importante ao continuar após um erro) */
     strToLower (ctx);
     char *resposta = (char*) alloc (4*_1KB, sizeof (char));
     char *fResposta = resposta;

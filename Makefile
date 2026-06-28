@@ -49,6 +49,7 @@ build/release build/debug:
 test: $(BIN)
 	./tests/run_golden.sh
 	./tests/run_cases.sh
+	./tests/run_errors.sh
 
 clean:
 	rm -rf build

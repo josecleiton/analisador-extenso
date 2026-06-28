@@ -85,5 +85,9 @@ void erroSS (Context *ctx, int tipoErro)
     fclose (logs);
     free (toFile);
     puts (strErro);
-    abortWithLog(false);
+    /* Erro de entrada do usuário: volta ao handler por-expressão (o programa
+    ** segue para a próxima expressão) em vez de abortar. Se não houver handler
+    ** ativo, aborta como antes. */
+    if (ctx->error_protected) longjmp (ctx->on_error, tipoErro + 1);
+    abortWithLog (false);
 }
