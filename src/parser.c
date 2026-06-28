@@ -11,9 +11,10 @@
 char *
 evalExpr (Context *ctx)
 {
+    arenaReset (ctx);      /* free the previous expression's scratch buffers */
     ctx->isNumber = false; /* clean state (important when continuing after an error) */
     lowercaseExpr (ctx);
-    char *answer = (char *)alloc (4 * _1KB, sizeof (char));
+    char *answer = (char *)arenaAlloc (ctx, 4 * _1KB);
     char *fResposta = answer;
     ctx->exprStart = ctx->cursor;
     nextToken (ctx);
@@ -36,7 +37,7 @@ parseTerm (Context *ctx, char *answer)
     while ((op = ctx->token) == '+' || op == '-')
         {
             nextToken (ctx);
-            segTermo = (char *)alloc (_1KB, sizeof (char));
+            segTermo = (char *)arenaAlloc (ctx, _1KB);
             parseFactor (ctx, segTermo);
             switch (op)
                 {
@@ -47,7 +48,6 @@ parseTerm (Context *ctx, char *answer)
                     applyInto (answer, segTermo, bigAdd);
                     break;
                 }
-            free (segTermo);
         }
 }
 
@@ -60,7 +60,7 @@ parseFactor (Context *ctx, char *answer)
     while ((op = ctx->token) == '*' || op == '/' || op == '%' || op == '^')
         {
             nextToken (ctx);
-            segFator = (char *)alloc (_1KB, sizeof (char));
+            segFator = (char *)arenaAlloc (ctx, _1KB);
             parseFactorial (ctx, segFator);
             switch (op)
                 {
@@ -79,7 +79,6 @@ parseFactor (Context *ctx, char *answer)
                 }
             if (*answer == 'E')
                 reportError (ctx, 13);
-            free (segFator);
         }
 }
 
@@ -90,13 +89,12 @@ parseFactorial (Context *ctx, char *answer)
     if (ctx->token == '!')
         {
             nextToken (ctx);
-            proxFator = (char *)alloc (_1KB, sizeof (char));
+            proxFator = (char *)arenaAlloc (ctx, _1KB);
             parseParen (ctx, proxFator);
             char *temp = bigFactorial (proxFator);
             if (!temp)
                 reportError (ctx, 8);
             strcpy (answer, temp);
-            free (proxFator);
             free (temp);
             if (!*answer)
                 reportError (ctx, 7);

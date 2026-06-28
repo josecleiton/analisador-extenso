@@ -1,4 +1,37 @@
 #include "extenso/util.h"
+#include "extenso/context.h"
+
+void *
+arenaAlloc (Context *ctx, size_t n)
+{
+    void *p = alloc (n, 1);
+    if (ctx->arena_count == ctx->arena_cap)
+        {
+            ctx->arena_cap = ctx->arena_cap ? ctx->arena_cap * 2 : 16;
+            ctx->arena = (void **)realloc (ctx->arena, ctx->arena_cap * sizeof (void *));
+            if (!ctx->arena)
+                abortWithLog (true);
+        }
+    ctx->arena[ctx->arena_count++] = p;
+    return p;
+}
+
+void
+arenaReset (Context *ctx)
+{
+    for (size_t i = 0; i < ctx->arena_count; i++)
+        free (ctx->arena[i]);
+    ctx->arena_count = 0;
+}
+
+void
+arenaFree (Context *ctx)
+{
+    arenaReset (ctx);
+    free (ctx->arena);
+    ctx->arena = NULL;
+    ctx->arena_cap = 0;
+}
 
 void *
 alloc (const size_t count, const size_t blockSize)

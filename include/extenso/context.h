@@ -5,9 +5,6 @@
 **  Context: state of an analysis, threaded through the lexer/parser/semantics/
 **  conversion. Replaces the old global variables. The `cli` owns one Context
 **  per run.
-**
-**  (The field names mirror the old globals; they will be translated to English
-**  in Phase 8.)
 */
 #include "extenso/config.h"
 #include "extenso/dictionary.h"
@@ -30,6 +27,22 @@ typedef struct Context
 
     jmp_buf on_error;     /* longjmp target on expression error */
     bool error_protected; /* is there an active setjmp handler? */
+
+    /* Per-expression scratch arena: buffers allocated while evaluating one
+    ** expression. Freed in bulk by arenaReset() at the start of each
+    ** expression and by arenaFree() at shutdown, so a longjmp out of the parser
+    ** never leaks them. */
+    void **arena;
+    size_t arena_count, arena_cap;
 } Context;
+
+/* Allocates a per-expression scratch buffer tracked by the context arena. */
+void *arenaAlloc (Context *ctx, size_t n);
+
+/* Frees every buffer in the arena (kept for reuse). */
+void arenaReset (Context *ctx);
+
+/* Frees the arena and its backing storage. */
+void arenaFree (Context *ctx);
 
 #endif
