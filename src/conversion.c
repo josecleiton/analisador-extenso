@@ -5,6 +5,33 @@
 #include "extenso/bignum.h"
 #include "extenso/util.h"
 
+/*
+**  Normaliza o espaçamento da saída in-place: colapsa sequências de espaços em
+**  um só e remove espaços no início e no fim. Garante saída limpa
+**  independentemente dos separadores ad-hoc montados em toName/toNameMenOrd.
+*/
+static void normalizaEspacos (char *s)
+{
+    char *r = s, *w = s;
+    int pendente = 0;
+    while (*r == ' ') r++;          /* pula espaços iniciais */
+    while (*r)
+    {
+        if (*r == ' ')
+        {
+            pendente = 1;
+            r++;
+        }
+        else
+        {
+            if (pendente && w != s) *w++ = ' ';
+            pendente = 0;
+            *w++ = *r++;
+        }
+    }
+    *w = '\0';                       /* descarta espaços finais pendentes */
+}
+
 char *toNum (Context *ctx)
 {
     char *resultado = NULL, *aux = NULL, *ext = NULL;
@@ -170,6 +197,7 @@ void toName (Context *ctx, char **resposta)
     }
     aux = strrchr (resultado, 'e');
     if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ') && (*(aux+2) == ' ' || *(aux+2) == '\0') && (*(aux+3) == ' ' || *(aux+3) == '\0') ) *aux = '\0';
+    normalizaEspacos (resultado);
     strcpy (*resposta, resultado);
     free (resultado);
 }
