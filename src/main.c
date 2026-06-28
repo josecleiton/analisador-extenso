@@ -48,7 +48,6 @@ main (int argc, char **argv)
                 {
                     char *r = evalExpr (&ctx);
                     printf ("%s\n", r);
-                    free (ctx.exprStart);
                     rc = 0;
                 }
             else
@@ -57,6 +56,7 @@ main (int argc, char **argv)
     else
         rc = runMenu (&ctx);
 
+    arenaFree (&ctx);
     dictionary_free (d);
     error_table_free (e);
     return rc;

@@ -33,7 +33,6 @@ runMenu (Context *ctx)
                         {
                             result = evalExpr (ctx);
                             printf ("\nResultado: %s\n", result);
-                            free (ctx->exprStart);
                         }
                     else
                         listFree (ctx); /* error already shown; clears partial state */
@@ -99,7 +98,6 @@ runFile (Context *ctx, const char *inPath, const char *outPath)
                     expOut = evalExpr (ctx);
                     fputs (expOut, saida);
                     fputc ('\n', saida);
-                    free (ctx->exprStart);
                 }
             else
                 {
