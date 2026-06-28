@@ -9,9 +9,17 @@
 **  | Saída: expressão resolvida por extenso        |
 **  #################################################
 */
-#include "interpretador.h"
+#include <string.h>
+#include "extenso/cli.h"
 
-int main (void)
+int main (int argc, char **argv)
 {
-    return interpretador();
+    /* Modo batch não-interativo (usado pelo teste de regressão):
+    ** lê ARQ_ENTRADA, escreve ARQ_SAIDA e sai, sem o menu. */
+    if (argc > 1 && strcmp (argv[1], "--batch") == 0)
+    {
+        fileParsingInit ();
+        return 0;
+    }
+    return interpretador ();
 }

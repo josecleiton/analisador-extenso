@@ -1,4 +1,4 @@
-#include "operacoes.h"
+#include "extenso/bignum.h"
 #include <math.h>
 
 bool inverte (char a[])
@@ -29,7 +29,7 @@ bool int2char (char a[], int tam)
     {
         a[i] += '0';
     }
-    if (! isdigit(a[i-1])) a[i-1] = '\0'; 
+    if (! isdigit(a[i-1])) a[i-1] = '\0';
     a[i] = '\0';
     return true;
 }
@@ -49,7 +49,7 @@ bool strIsDigit (char a[])
     int i = 0;
     while (a[i])
     {
-        if (!isdigit (a[i]) && !(a[i] >= 0 && a[i] <= 9)) 
+        if (!isdigit (a[i]) && !(a[i] >= 0 && a[i] <= 9))
             return false;
         i++;
     }
@@ -142,7 +142,7 @@ char* somar (char a[], char b[])
         {
             if (i) min[i-1]--;
             diferenca[i] += 10;
-        }  
+        }
         diferenca[i] += '0';
     }
     trataZeros (&diferenca);
@@ -171,14 +171,14 @@ char* completaMenor (char a[], char b[], char* menor)
     {
         char* completaZeros = (char*) alloc (tamMaior+1, sizeof (char));
         while (k < tamMaior-tamMenor)
-        {    
+        {
             completaZeros[k] = '0';
             k++;
         }
         completaZeros[tamMaior-tamMenor] = '\0';
 
         if (__menor)
-        {    
+        {
             strcat (completaZeros, a);
             *menor = __menor;
         }
@@ -222,12 +222,13 @@ char* multiplicar (char a[],char b[])
         ls++;
         cursor=k;
     }
+    (void) cursor;
     inverte (produto);
     return produto;
 }
 
 char* unExpo (char a[], char b[])
-{ 
+{
     char* answer = NULL;
     if (*b == '0' || *b == '\0')
     {
@@ -235,7 +236,7 @@ char* unExpo (char a[], char b[])
         answer[0] = '1'; answer[1] = '\0';
         return answer;
     }
-    else if (*b == '-') return answer; // NULL
+    else if (*b == '-') return answer; /* NULL */
     int lenA = strlen(a), lenB = strlen(b);
     answer = (char*) alloc (lenB*10*lenA*2, sizeof (char));
     strcpy(answer, a);
@@ -250,7 +251,7 @@ char* unExpo (char a[], char b[])
 
 /*
 **  DIVISÃO POSITIVA
-**  
+**
 **  N = Numerador
 **  Q = Quociente
 **
@@ -278,11 +279,11 @@ char* unExpo (char a[], char b[])
 **                        39 em N (RESTO)
 **
 **
-**  A função abaixo aplica o algoritmo acima, nele podemos visualizar que 
-**  Q sempre terá len(N) - len(D) digitos 
-**  
+**  A função abaixo aplica o algoritmo acima, nele podemos visualizar que
+**  Q sempre terá len(N) - len(D) digitos
+**
 */
-char* unsigneDiv (char a[], char D[], bool MOD) // TRATAR OS ZEROS 500000/20
+char* unsigneDiv (char a[], char D[], bool MOD) /* TRATAR OS ZEROS 500000/20 */
 {
     const int tn = strlen (a), td = strlen (D); /* len(N) e len(D) respectivamente */
     if (td > tn)
@@ -308,9 +309,8 @@ char* unsigneDiv (char a[], char D[], bool MOD) // TRATAR OS ZEROS 500000/20
     int i; /* indice de interações do laço para a divisão */
     int j = 0, k = 0; /* cursor para escrita na string N e Q*/
     int l = 0; /* cursor na string de entrada a */
-    size_t countSub; /* conta quantas subtrações foram feitas de N por D */ 
+    size_t countSub; /* conta quantas subtrações foram feitas de N por D */
     int leN; /* guarda o tamanho atualizado (pela subtração) de N */
-    //bool fl = false; /* Marca se ocorreu ou não uma subtração de N por D */;
     char handle;
     for (i=0; k < tn-td+1 && j < tn-td+1; i++)
     {
@@ -330,7 +330,7 @@ char* unsigneDiv (char a[], char D[], bool MOD) // TRATAR OS ZEROS 500000/20
                 Q[k++] = countSub + '0';
             else
             {
-                int w = countDigits (countSub);  
+                int w = countDigits (countSub);
                 for (w--; w >= 0; w--)
                 {
                     Q[k++] = (countSub / (int) pow (10, w)) + '0';
@@ -450,7 +450,7 @@ bool memswap (char a[], char b[], char* (*f)(char*, char*))
         strcpy (a, temp);
         free (temp);
     }
-    else 
+    else
         *a = '\0';
     return (a != NULL);
 }

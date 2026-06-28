@@ -3,7 +3,7 @@
 ## Introdução
 
 Este é um **analisador de expressões númericas por __extenso__**, em português, seguindo algumas regras bem definidas.
-A linguagem de programação utilizada: ISO C90 ou apenas **C**.
+A linguagem de programação utilizada: ISO **C11** (o código usa `stdbool.h`, `stdint.h`, declarações no meio do bloco, etc.).
 ## Da motivação
 
 Este projeto foi proposto como trabalho final da disciplina Linguagem de Programação I, pelo professor [**Jorge Sampaio Farias**](http://lattes.cnpq.br/6683499592786376), referente ao período 2 do curso de [Sistemas de Informação](http://www.csi.uneb.br/) na [**Universidade do Estado da Bahia (UNEB)**](https://portal.uneb.br/).
@@ -39,8 +39,9 @@ Por ser uma aplicação em C, você necessita de um compilador C na sua máquina
 - Abra a pasta *compilha* no seu terminal
 - Verifique se o GCC ou o TCC está instalado com `gcc --version` ou `clang --version`
 - Se não estiver instalado, use o gerenciador de pacotes da sua distribuição para resolver isso.
-- Após isso compile com o seguinte código: `clang -O2 *.c -o main -lm` ou `gcc -O2 *.c -o main -lm` 
-- Se estiver utilizando Windows, altere o `main` para `main.exe`
+- Compile com `make` (gera `build/analisador`). Para uma build instrumentada (ASan/UBSan) use `make debug`.
+- Alternativamente, sem o Makefile: `clang -std=c11 -O2 *.c -o main -lm` ou `gcc -std=c11 -O2 *.c -o main -lm`
+- Para rodar o teste de regressão golden: `make test`
 
 ### Do programa
 
