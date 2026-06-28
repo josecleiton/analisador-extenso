@@ -242,16 +242,137 @@ mulSchool (const char *a, const char *b)
     return product;
 }
 
+#define KARATSUBA_CUT 40
+
+static char *bnDup (const char *s); /* defined below */
+
+/* Duplicates the first `len` chars of `s` into its own buffer. */
+static char *
+bnDupN (const char *s, int len)
+{
+    char *r = (char *)alloc (len + 1, sizeof (char));
+    memcpy (r, s, len);
+    r[len] = '\0';
+    return r;
+}
+
+/* x * 10^k in its own buffer. */
+static char *
+bnShift (const char *x, int k)
+{
+    if (!*x || (x[0] == '0' && !x[1]))
+        {
+            char *z = (char *)alloc (2, sizeof (char));
+            z[0] = '0';
+            return z;
+        }
+    int lx = strlen (x);
+    char *r = (char *)alloc (lx + k + 1, sizeof (char));
+    memcpy (r, x, lx);
+    memset (r + lx, '0', k);
+    r[lx + k] = '\0';
+    return r;
+}
+
+/* Sum returning an owned buffer (bigAdd may return an operand alias). */
+static char *
+bnAdd (char *x, char *y)
+{
+    char *t = bigAdd (x, y);
+    if (t == x || t == y)
+        return bnDup (t);
+    return t;
+}
+
+/* Difference returning an owned buffer (assumes x >= y, so x - y >= 0). */
+static char *
+bnSub (char *x, char *y)
+{
+    char *t = bigSub (x, y);
+    if (t == x || t == y)
+        return bnDup (t);
+    return t;
+}
+
+/*
+**  Single-level (non-recursive) Karatsuba: one split plus three schoolbook
+**  products instead of four:
+**    a*b = z2*10^(2m) + (z1 - z2 - z0)*10^m + z0
+**  with z2 = aH*bH, z0 = aL*bL, z1 = (aH+aL)*(bH+bL). Below KARATSUBA_CUT
+**  digits the plain schoolbook product is used.
+*/
 char *
 bigMul (char a[], char b[])
 {
-    uint16_t ta = strlen (a);
-    uint16_t tb = strlen (b);
+    int ta = strlen (a);
+    int tb = strlen (b);
     if ((ta == 0) || (tb == 1 && *b == '1'))
         return a;
-    else if ((tb == 0) || (ta == 1 && *a == '1'))
+    if ((tb == 0) || (ta == 1 && *a == '1'))
         return b;
-    return mulSchool (a, b);
+    if (ta <= KARATSUBA_CUT || tb <= KARATSUBA_CUT)
+        return mulSchool (a, b);
+
+    int m = (ta > tb ? ta : tb) / 2; /* split point counted from the right */
+
+    char *aH, *aL, *bH, *bL;
+    if (ta > m)
+        {
+            aH = bnDupN (a, ta - m);
+            aL = bnDup (a + ta - m);
+        }
+    else
+        {
+            aH = bnDup ("0");
+            aL = bnDup (a);
+        }
+    if (tb > m)
+        {
+            bH = bnDupN (b, tb - m);
+            bL = bnDup (b + tb - m);
+        }
+    else
+        {
+            bH = bnDup ("0");
+            bL = bnDup (b);
+        }
+    bnStrip (aH);
+    bnStrip (aL);
+    bnStrip (bH);
+    bnStrip (bL);
+
+    char *z2 = mulSchool (aH, bH);
+    char *z0 = mulSchool (aL, bL);
+    char *sa = bnAdd (aL, aH);
+    char *sb = bnAdd (bL, bH);
+    char *z1 = mulSchool (sa, sb);
+
+    char *t = bnSub (z1, z2); /* z1 -= z2 */
+    free (z1);
+    z1 = t;
+    t = bnSub (z1, z0); /* z1 -= z0 */
+    free (z1);
+    z1 = t;
+
+    char *r2 = bnShift (z2, 2 * m);
+    char *r1 = bnShift (z1, m);
+    char *acc = bnAdd (r2, r1);
+    char *res = bnAdd (acc, z0);
+
+    free (aH);
+    free (aL);
+    free (bH);
+    free (bL);
+    free (sa);
+    free (sb);
+    free (z0);
+    free (z1);
+    free (z2);
+    free (r1);
+    free (r2);
+    free (acc);
+    bnStrip (res);
+    return res;
 }
 
 /* Duplicates a string into its own heap buffer. */
