@@ -1,0 +1,27 @@
+dez mais cinco
+cem menos um
+mil vezes mil
+um milhao dividido por mil
+vinte dividido por seis
+dez mod tres
+tres dividido por dez
+tres mod dez
+dois mais tres vezes quatro
+abre parentese dois mais tres fecha parentese vezes quatro
+fatorial de zero
+fatorial de um
+fatorial de dez
+fatorial de cinquenta
+dez elevado a zero
+dez elevado a um
+dois elevado a dez
+dois elevado a cem
+nove vezes nove
+novecentos e noventa e nove vezes novecentos e noventa e nove
+um bilhao menos um
+fatorial de cinco vezes fatorial de cinco
+dez elevado a vinte
+sete elevado a trinta
+fatorial de cem
+mil e duzentos menos novecentos e noventa e nove
+abre parentese dez mais dois fecha parentese vezes abre parentese dez menos dois fecha parentese

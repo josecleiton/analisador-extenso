@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [master, "refactor/**"]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cc: [gcc, clang]
+    env:
+      CC: ${{ matrix.cc }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Compiler version
+        run: ${{ matrix.cc }} --version
+
+      - name: Build (release)
+        run: make
+
+      - name: Run tests (golden + cases + error recovery)
+        run: make test
+
+      - name: Build (debug)
+        run: make debug
+
+  memcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install valgrind
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+
+      - name: Build
+        run: make
+
+      - name: Memory check (valgrind)
+        run: make memcheck

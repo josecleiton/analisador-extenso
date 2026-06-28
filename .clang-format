@@ -1,0 +1,17 @@
+# Estilo de formatação consistente do projeto.
+# Aplique com `make format`; verifique com `make format-check`.
+# Requer clang-format instalado (ex.: brew install clang-format).
+---
+Language: Cpp
+BasedOnStyle: GNU      # chaves estilo Allman + espaço antes de parênteses (como o código já usa)
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 0         # não reflui linhas longas (cadeias de strcmp/printf existentes)
+PointerAlignment: Right
+SpaceBeforeParens: Always
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+...
