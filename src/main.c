@@ -11,15 +11,29 @@
 */
 #include <string.h>
 #include "extenso/cli.h"
+#include "extenso/config.h"
+#include "extenso/state.h"
+#include "extenso/dictionary.h"
+#include "extenso/errors.h"
 
 int main (int argc, char **argv)
 {
+    Dictionary *d = dictionary_load (ARQ_DICT);
+    ErrorTable *e = error_table_load (ARQ_ERROS);
+    dict = d;
+    errtab = e;
+
+    int rc;
     /* Modo batch não-interativo (usado pelo teste de regressão):
     ** lê ARQ_ENTRADA, escreve ARQ_SAIDA e sai, sem o menu. */
     if (argc > 1 && strcmp (argv[1], "--batch") == 0)
     {
         fileParsingInit ();
-        return 0;
+        rc = 0;
     }
-    return interpretador ();
+    else rc = interpretador ();
+
+    dictionary_free (d);
+    error_table_free (e);
+    return rc;
 }

@@ -6,7 +6,7 @@
 
 void pegaToken (void)
 {
-    rewind (dicionario);
+    Ordem ref;
     int i = 0, k = 0;
     char trade = '\0';
     char valorTk = '\0';
@@ -18,9 +18,10 @@ void pegaToken (void)
     trade = EXP[k];
     EXP[k] = '\0';
     ajustaDelim (&k, &trade);
-    while (!feof (dicionario) && i < TAM_DICT)
+    while (i < (int) dict->n)
     {
-        fscanf (dicionario, "%[^=]=%[^\n]%*c", ref.nome, ref.valor);
+        strcpy (ref.nome, dict->items[i].nome);
+        strcpy (ref.valor, dict->items[i].valor);
         if (! strcmp (ref.nome, EXP) || resPlural (i, ref.nome))
         {
             valorTk = *(ref.valor);
@@ -32,7 +33,6 @@ void pegaToken (void)
                 tipoToken = NUM;
                 flagNUM = true;
                 listaInsere (i, ref.nome, ref.valor);
-                rewind (dicionario);
                 i = -1;
                 if (verificaProxToken ()) return;
             }
@@ -52,7 +52,6 @@ void pegaToken (void)
                 {
                     listaInsere (i, ref.nome, ref.valor);
                     i = -1;
-                    rewind (dicionario);
                 }
             }
         }
@@ -80,24 +79,21 @@ bool verificaProxToken (void)
     }
     int k = needle - EXP;
     EXP[k] = '\0';
-    int i = 1; /* COMEÇA EM UM PORQUE O PRIMEIRO DELIMITADOR É O 'e' */
-    char DEL[20] = {'\0'};
-    while (i < (TAM_DICT - INDEL+1) && !feof (dicionario))
+    char DEL[MAXWLEN] = {'\0'};
+    size_t j = dict->delim_start + 1; /* PULA O 'e' (PRIMEIRO DELIMITADOR) */
+    while (j < dict->n)
     {
-        fseek (dicionario, ind[INDEL+(i++)], SEEK_SET);
-        fscanf (dicionario, "%[^=]", DEL);
+        strcpy (DEL, dict->items[j++].nome);
         char* needle2 = strchr (DEL, '-'); /* TRATA O HIFEN NO DELIMITADOR COMPOSTO */
         if (needle2)
             *needle2 = '\0';
         if (!strcmp (DEL, EXP))
         {
             EXP[k] = ' ';
-            rewind (dicionario);
             return 1;
         }
     }
     EXP[k] = ' ';
-    rewind (dicionario);
     return 0;
 }
 

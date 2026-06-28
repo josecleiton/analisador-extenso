@@ -4,15 +4,53 @@
 #include "extenso/util.h"
 #include <time.h>
 
+ErrorTable *error_table_load (const char *path)
+{
+    FILE *f = openFile (path, "r");
+    size_t cap = 16, n = 0;
+    char **msgs = (char**) alloc (cap, sizeof (char*));
+    char line[MAX_GEN];
+    while (fgets (line, sizeof line, f))
+    {
+        line[strcspn (line, "\r\n")] = '\0';
+        if (n == cap)
+        {
+            cap <<= 1;
+            msgs = (char**) realloc (msgs, cap * sizeof (char*));
+            if (!msgs) abortWithLog (true);
+        }
+        msgs[n] = (char*) alloc (strlen (line) + 1, sizeof (char));
+        strcpy (msgs[n], line);
+        n++;
+    }
+    fclose (f);
+
+    ErrorTable *t = (ErrorTable*) alloc (1, sizeof (ErrorTable));
+    t->mensagens = msgs;
+    t->n = n;
+    return t;
+}
+
+void error_table_free (ErrorTable *t)
+{
+    if (!t) return;
+    for (size_t i = 0; i < t->n; i++) free (t->mensagens[i]);
+    free (t->mensagens);
+    free (t);
+}
+
+const char *error_message (const ErrorTable *t, int tipo)
+{
+    if (tipo < 0 || (size_t) tipo >= t->n) return "erro desconhecido";
+    return t->mensagens[tipo];
+}
+
 void erroSS (int tipoErro)
 {
-    FILE* erroS = openFile (ARQ_ERROS, "rb");
     char strErro[MAX_GEN], *strBump;
     int temp, i = 0, tamErro, tamEXP;
-    uint16_t *idc = criaIndices (erroS, NUM_ERROS).index;
-    fseek (erroS, idc[tipoErro], SEEK_SET);
-    fgets (strErro, MAX_GEN, erroS);
-    strcat (strErro, "\n\t");
+    strcpy (strErro, error_message (errtab, tipoErro));
+    strcat (strErro, "\n\n\t");
     strcat (strErro, _TEXP);
     strcat (strErro, "\n\t");
     temp = EXP - _TEXP;
@@ -47,7 +85,5 @@ void erroSS (int tipoErro)
     fclose (logs);
     free (toFile);
     puts (strErro);
-    free (idc);
-    fclose (erroS);
     abortWithLog(false);
 }

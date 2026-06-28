@@ -127,13 +127,13 @@ void toName (char **resposta)
         ord = (tam - 1)/3;
         flag = toNameMenOrd (resposta, resultado, &tam, &plural);
         tam = strlen (*resposta);
-        fseek (dicionario, ind[ord-1+MIL], SEEK_SET);
         if (flag)
         {
             if (ord == 1)
             {
                 aux = (char*) alloc (5, sizeof (char));
-                fscanf (dicionario, "%[^=]", ++aux);
+                ++aux;
+                strcpy (aux, dict->items[ord-1+MIL].nome);
                 *--aux = ' ';
                 strcat (resultado, aux);
                 free (aux);
@@ -142,7 +142,8 @@ void toName (char **resposta)
             {
                 aux = (char*) alloc (36, sizeof (char));
                 char* tmp = aux;
-                fscanf (dicionario, "%[^=]", ++aux);
+                ++aux;
+                strcpy (aux, dict->items[ord-1+MIL].nome);
                 char* del = strchr (aux, ',');
                 aux[del - aux] = '\0';
                 if (plural)
@@ -204,9 +205,8 @@ int toNameMenOrd (char **numberInput, char *resultado, uint16_t *size, uint16_t 
                 count--;
             }
             label += *currentNumber - '0';
-            fseek (dicionario, ind[label-1+flagNUM], SEEK_SET);
             tmp = (char*) alloc (25, sizeof (char));
-            fscanf (dicionario, "%[^=]", tmp);
+            strcpy (tmp, dict->items[label-1+flagNUM].nome);
             if (strstr (tmp, (const char*)"cem"))
             {
                 strcpy (tmp, (const char*)"cento");

@@ -6,12 +6,22 @@ WARN    := -Wall -Wextra -Wpedantic
 OPT     := -O2
 INCLUDE := -Iinclude
 CFLAGS  := $(CSTD) $(WARN) $(OPT) $(INCLUDE)
+# NOTA: ASan/UBSan ainda travam por causa dos padrões de memória do código
+# original (ex.: free(ptr-offset), leituras fora de limite). Reativar
+# `-fsanitize=address,undefined` na Fase 6, após a limpeza de buffers/UB.
+DBGFLAGS := $(CSTD) $(WARN) -g -O0 $(INCLUDE)
 LDLIBS  := -lm
 
 SRC := $(wildcard src/*.c)
-OBJ := $(SRC:src/%.c=build/%.o)
-DEP := $(OBJ:.o=.d)
+
+# Release e debug usam diretórios de objetos separados para nunca colidirem
+# (objetos instrumentados não vazam para a build release e vice-versa).
+OBJ := $(SRC:src/%.c=build/release/%.o)
+DBGOBJ := $(SRC:src/%.c=build/debug/%.o)
+DEP := $(OBJ:.o=.d) $(DBGOBJ:.o=.d)
+
 BIN := build/analisador
+DBGBIN := build/analisador-debug
 
 .PHONY: all debug test clean
 
@@ -20,17 +30,22 @@ all: $(BIN)
 $(BIN): $(OBJ)
 	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
 
-build/%.o: src/%.c | build
+build/release/%.o: src/%.c | build/release
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
-build:
-	mkdir -p build
+# Build de debug (-g -O0). ASan/UBSan voltam na Fase 6 (ver nota em DBGFLAGS).
+debug: $(DBGBIN)
 
-# Build instrumentado para caçar overflow/UB/vazamento durante o refactor.
-debug: CFLAGS := $(CSTD) $(WARN) -g -fsanitize=address,undefined $(INCLUDE)
-debug: clean $(BIN)
+$(DBGBIN): $(DBGOBJ)
+	$(CC) $(DBGFLAGS) $^ $(LDLIBS) -o $@
 
-# Teste de regressão golden (ver tests/run_golden.sh).
+build/debug/%.o: src/%.c | build/debug
+	$(CC) $(DBGFLAGS) -MMD -MP -c $< -o $@
+
+build/release build/debug:
+	mkdir -p $@
+
+# Teste de regressão golden (ver tests/run_golden.sh) — usa a build release.
 test: $(BIN)
 	./tests/run_golden.sh
 

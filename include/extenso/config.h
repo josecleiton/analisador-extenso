@@ -19,11 +19,6 @@
 #define ARQ_SAIDA   "resultados.txt"      /* resultado das expressões */
 #define ARQ_LOG     "logs.txt"            /* data + descrição de cada erro */
 
-/* TAM_DICT/INDEL/NUM_ERROS: contagens acopladas aos .cfg (removidos na Fase 3). */
-#define TAM_DICT  58   /* número de linhas do ARQ_DICT */
-#define INDEL     48   /* linha do ARQ_DICT onde começam os delimitadores */
-#define NUM_ERROS 13   /* número de linhas do ARQ_ERROS */
-
 /* STR_DEL: caracteres delimitadores. */
 #define STR_DEL "+/%-*!e()^"
 

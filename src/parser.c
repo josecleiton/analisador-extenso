@@ -14,8 +14,6 @@ char *expParsingStart (void)
     strToLower ();
     char *resposta = (char*) alloc (4*_1KB, sizeof (char));
     char *fResposta = resposta;
-    dicionario = openFile (ARQ_DICT, "rb");
-    ind = criaIndices (dicionario, TAM_DICT).index;
     _TEXP = EXP;
     pegaToken ();
     if (!token) erroSS(3);
@@ -23,8 +21,6 @@ char *expParsingStart (void)
     if (token) erroSS (0);
     toName (&resposta);
     _TEXP = fResposta;
-    free (ind);
-    fclose (dicionario);
     return resposta;
 }
 
