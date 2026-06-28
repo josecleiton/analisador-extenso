@@ -3,14 +3,14 @@
 # Roda o modo arquivo de forma não-interativa (lê lib/expressoes.txt, escreve
 # resultados.txt) e compara byte-a-byte contra o baseline vigente.
 #
-# Baseline padrão: tests/resultados.frozen.txt (com os defeitos de espaçamento,
-# usado nas fases puramente estruturais). A partir da fase de correção de
-# espaçamento, aponte para o golden limpo via:
-#   GOLDEN_BASELINE=tests/resultados.golden.txt make test
+# Baseline padrão: tests/resultados.golden.txt (saída limpa, sem os defeitos de
+# espaçamento, conferida à mão na Fase 5). O tests/resultados.frozen.txt guarda
+# a saída original (com os defeitos) como referência histórica; para comparar
+# contra ele use: GOLDEN_BASELINE=tests/resultados.frozen.txt make test
 set -eu
 
 BIN="${BIN:-build/analisador}"
-BASELINE="${GOLDEN_BASELINE:-tests/resultados.frozen.txt}"
+BASELINE="${GOLDEN_BASELINE:-tests/resultados.golden.txt}"
 
 if [ ! -x "$BIN" ]; then
     echo "binário não encontrado: $BIN (rode 'make' antes)" >&2
