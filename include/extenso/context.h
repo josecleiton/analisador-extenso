@@ -9,6 +9,7 @@
 **  (Os nomes dos campos espelham as antigas globais; serão traduzidos para
 **  inglês na Fase 8.)
 */
+#include <setjmp.h>
 #include "extenso/config.h"
 #include "extenso/types.h"
 #include "extenso/dictionary.h"
@@ -26,6 +27,9 @@ typedef struct Context
 
     const Dictionary *dict;   /* dicionário em memória (compartilhado) */
     const ErrorTable *errtab; /* tabela de erros em memória (compartilhada) */
+
+    jmp_buf on_error;     /* destino do longjmp em erro de expressão */
+    bool error_protected; /* há um handler setjmp ativo? */
 } Context;
 
 #endif

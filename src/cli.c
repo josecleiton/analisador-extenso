@@ -1,5 +1,6 @@
 #include "extenso/cli.h"
 #include "extenso/parser.h"
+#include "extenso/num_list.h"
 #include "extenso/util.h"
 
 int interpretador (Context *ctx)
@@ -12,12 +13,12 @@ int interpretador (Context *ctx)
     {
         clearScreen ();
         puts ("Selecione a entrada:\n a= Arquivo\n t= Teclado\n h= Ajuda\n e= Sair\n\nopcao = ");
-        scanf ("%c%*c", &op);
+        if (scanf ("%c%*c", &op) == EOF) return 0; /* fim da entrada: sai limpo */
         switch (op)
         {
             case 'a':
                 clearScreen ();
-                printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultado podem ser encontrados em %s\n", fileParsingInit (ctx), ARQ_SAIDA);
+                printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultado podem ser encontrados em %s\n", fileParsingInit (ctx, ARQ_ENTRADA, ARQ_SAIDA), ARQ_SAIDA);
                 printRes();
                 CLRBUF;
                 break;
@@ -25,9 +26,16 @@ int interpretador (Context *ctx)
                 clearScreen ();
                 puts ("Digite uma expressao numerica: ");
                 scanf ("%[^\n]%*c", ctx->EXP);
-                resultado = expParsingStart (ctx);
-                printf ("\nResultado: %s\n", resultado);
-                free (ctx->_TEXP);
+                ctx->error_protected = true;
+                if (setjmp (ctx->on_error) == 0)
+                {
+                    resultado = expParsingStart (ctx);
+                    printf ("\nResultado: %s\n", resultado);
+                    free (ctx->_TEXP);
+                }
+                else
+                    listaLibera (ctx); /* erro já exibido; limpa estado parcial */
+                ctx->error_protected = false;
                 CLRBUF;
                 break;
             case 'h':
@@ -61,11 +69,11 @@ void handBook (void)
     puts("Exponencial: numero elevado a numero");
 }
 
-int fileParsingInit (Context *ctx)
+int fileParsingInit (Context *ctx, const char *inPath, const char *outPath)
 {
     ctx->EXP = ctx->expNum; /* garante o buffer mesmo quando chamado fora do menu (--batch) */
-    FILE* entrada = openFile (ARQ_ENTRADA, "r");
-    FILE* saida = openFile (ARQ_SAIDA, "wt");
+    FILE* entrada = openFile (inPath, "r");
+    FILE* saida = openFile (outPath, "wt");
     int i = 0;
     char *expOut = NULL; /* Resultado da expressão analisada */
     Index temp = criaIndices (entrada, false);
@@ -77,11 +85,22 @@ int fileParsingInit (Context *ctx)
         fgets (ctx->EXP, MAX_GEN, entrada);
         char* endline = strpbrk(ctx->EXP, "\r\n");
         if(endline) *endline = '\0';
-        expOut = expParsingStart(ctx);
-        fputs (expOut, saida);
-        fputc ('\n', saida);
+        ctx->error_protected = true;
+        if (setjmp (ctx->on_error) == 0)
+        {
+            expOut = expParsingStart(ctx);
+            fputs (expOut, saida);
+            fputc ('\n', saida);
+            free (ctx->_TEXP);
+        }
+        else
+        {
+            /* expressão inválida: erro já reportado; segue para a próxima */
+            fputs ("(erro)\n", saida);
+            listaLibera (ctx);
+        }
+        ctx->error_protected = false;
         fflush (saida);
-        free (ctx->_TEXP);
         count--;
     }
     free(indices);

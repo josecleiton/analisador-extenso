@@ -13,8 +13,8 @@ int interpretador (Context *ctx);
 /* Imprime o manual de uso. */
 void handBook (void);
 
-/* Dispara a análise a partir de ARQ_ENTRADA, escreve em ARQ_SAIDA. */
-int fileParsingInit (Context *ctx);
+/* Dispara a análise lendo de inPath e escrevendo em outPath. */
+int fileParsingInit (Context *ctx, const char *inPath, const char *outPath);
 
 /* Mostra o arquivo de resultado. */
 void printRes (void);

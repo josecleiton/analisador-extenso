@@ -31,7 +31,9 @@ int main (int argc, char **argv)
     ** lê ARQ_ENTRADA, escreve ARQ_SAIDA e sai, sem o menu. */
     if (argc > 1 && strcmp (argv[1], "--batch") == 0)
     {
-        fileParsingInit (&ctx);
+        const char *inPath  = argc > 2 ? argv[2] : ARQ_ENTRADA;
+        const char *outPath = argc > 3 ? argv[3] : ARQ_SAIDA;
+        fileParsingInit (&ctx, inPath, outPath);
         rc = 0;
     }
     /* Avalia uma única expressão e imprime só o resultado. */
@@ -40,10 +42,15 @@ int main (int argc, char **argv)
         ctx.EXP = ctx.expNum;
         strncpy (ctx.expNum, argv[2], MAX_GEN - 1);
         ctx.expNum[MAX_GEN - 1] = '\0';
-        char *r = expParsingStart (&ctx);
-        printf ("%s\n", r);
-        free (ctx._TEXP);
-        rc = 0;
+        ctx.error_protected = true;
+        if (setjmp (ctx.on_error) == 0)
+        {
+            char *r = expParsingStart (&ctx);
+            printf ("%s\n", r);
+            free (ctx._TEXP);
+            rc = 0;
+        }
+        else rc = 1; /* expressão inválida: erro já reportado por erroSS */
     }
     else rc = interpretador (&ctx);
 
