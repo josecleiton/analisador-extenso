@@ -15,6 +15,7 @@
 #include "extenso/context.h"
 #include "extenso/dictionary.h"
 #include "extenso/errors.h"
+#include "extenso/parser.h"
 
 int main (int argc, char **argv)
 {
@@ -31,6 +32,17 @@ int main (int argc, char **argv)
     if (argc > 1 && strcmp (argv[1], "--batch") == 0)
     {
         fileParsingInit (&ctx);
+        rc = 0;
+    }
+    /* Avalia uma única expressão e imprime só o resultado. */
+    else if (argc > 2 && strcmp (argv[1], "--eval") == 0)
+    {
+        ctx.EXP = ctx.expNum;
+        strncpy (ctx.expNum, argv[2], MAX_GEN - 1);
+        ctx.expNum[MAX_GEN - 1] = '\0';
+        char *r = expParsingStart (&ctx);
+        printf ("%s\n", r);
+        free (ctx._TEXP);
         rc = 0;
     }
     else rc = interpretador (&ctx);

@@ -1,0 +1,35 @@
+# Casos de correção: <expressao>|<resultado esperado por extenso>
+# Resultados conferidos contra a matemática real (Python). Linhas com # são comentários.
+# Cobrem operações e bugs corrigidos (ex.: divisão/módulo, antes 10x errados).
+
+# --- soma / subtração ---
+dez mais cinco|quinze
+cem menos um|noventa e nove
+um bilhao menos um|novecentos e noventa e nove milhoes novecentos e noventa e nove mil e novecentos e noventa e nove
+
+# --- multiplicação ---
+nove vezes nove|oitenta e um
+novecentos e noventa e nove vezes novecentos e noventa e nove|novecentos e noventa e oito mil e um
+
+# --- divisão inteira (bug corrigido na Fase 6: antes dava 10x o valor) ---
+vinte dividido por seis|tres
+cem dividido por sete|catorze
+tres dividido por dez|zero
+
+# --- módulo (bug corrigido na Fase 6: '3 mod 10' dava vazio) ---
+tres mod dez|tres
+dez mod tres|um
+cem mod sete|dois
+
+# --- precedência e parênteses ---
+dois mais tres vezes quatro|catorze
+abre parentese dois mais tres fecha parentese vezes quatro|vinte
+abre parentese dez mais dois fecha parentese vezes abre parentese dez menos dois fecha parentese|noventa e seis
+
+# --- fatorial ---
+fatorial de zero|um
+fatorial de cinco|cento e vinte
+
+# --- exponenciação (exponenciação por quadrados) ---
+dez elevado a zero|um
+dois elevado a dez|um mil e vinte e quatro

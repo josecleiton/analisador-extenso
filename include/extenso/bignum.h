@@ -26,7 +26,6 @@ bool inverte (char a[]);                        /* strrev */
 int maior (int a, int b);                       /* MAIOR ENTRE DOIS INTEIROS */
 int menor (int a, int b);                       /* MENOR ENTRE DOIS INTEIROS */
 bool strCmpNum (char x[], char y[]);            /* COMPARA OS NUMEROS NAS STRINGS */
-int countDigits (long long x);
 void trataZeros (char **ptrNumber);             /* REMOVE ZEROS À ESQUERDA */
 void ignoraZero (int narg, ...);                /* AVANÇA PONTEIROS PASSADO OS ZEROS */
 

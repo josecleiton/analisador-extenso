@@ -10,7 +10,7 @@ CFLAGS  := $(CSTD) $(WARN) $(OPT) $(INCLUDE)
 # original (ex.: free(ptr-offset), leituras fora de limite). Reativar
 # `-fsanitize=address,undefined` na Fase 6, após a limpeza de buffers/UB.
 DBGFLAGS := $(CSTD) $(WARN) -g -O0 $(INCLUDE)
-LDLIBS  := -lm
+LDLIBS  :=
 
 SRC := $(wildcard src/*.c)
 
@@ -45,9 +45,10 @@ build/debug/%.o: src/%.c | build/debug
 build/release build/debug:
 	mkdir -p $@
 
-# Teste de regressão golden (ver tests/run_golden.sh) — usa a build release.
+# Testes (build release): regressão golden + casos de correção.
 test: $(BIN)
 	./tests/run_golden.sh
+	./tests/run_cases.sh
 
 clean:
 	rm -rf build
