@@ -1,5 +1,4 @@
 #include "extenso/bignum.h"
-#include <math.h>
 
 bool inverte (char a[])
 {
@@ -92,61 +91,44 @@ char* somar (char a[], char b[])
     return soma;
 }
 
- char* subtrair (char a[], char b[])
- {
-    char *min = NULL, *subt = NULL, flagSinal, flagMenor; /* flagMenor = [ se menor == 1, então a string a é menor; se menor == 0, então string a é maior; se menor == -1, ambas têm o mesmo tamanho ] */
+/*
+**  Subtração sem sinal: devolve |a - b|. Não muta as entradas (a versão
+**  original decrementava o minuendo durante o "empréstimo"); usa uma variável
+**  de borrow.
+*/
+char* subtrair (char a[], char b[])
+{
+    char *min = NULL, *subt = NULL, flagMenor;
     int i;
-    int tamMinuendo = strlen(a), tamSubtraendo = strlen(b);
+    int tamA = strlen (a), tamB = strlen (b);
     bool allocated = false;
-    if (! tamMinuendo)
+    if (! tamA)
         return b;
-    else if (! tamSubtraendo)
+    else if (! tamB)
         return a;
-    if (tamMinuendo != tamSubtraendo)
+    if (tamA != tamB)
     {
-        subt = completaMenor (a, b, &flagMenor);
+        subt = completaMenor (a, b, &flagMenor); /* zero-pad o menor */
         allocated = true;
-        if (flagMenor)
-        {
-            min = b;
-            flagSinal = 1;
-        }
-        else
-        {
-            min = a;
-            flagSinal = 0;
-        }
+        min = flagMenor ? b : a;                 /* min = o maior (mais longo) */
     }
     else
     {
-        if (strcmp (a,b) >= 0)
-        {
-            min = a;
-            subt = b;
-            flagSinal = 0;
-        }
-        else
-        {
-            min = b;
-            subt = a;
-            flagSinal = 1;
-        }
+        if (strcmp (a, b) >= 0) { min = a; subt = b; }
+        else                    { min = b; subt = a; }
     }
-    tamMinuendo = strlen (min);
-    tamSubtraendo = strlen (subt);
-    char* diferenca = (char*) alloc (tamMinuendo+1, sizeof (char));
-    for (i=tamMinuendo-1; i>=0; i--)
+    int tam = strlen (min);
+    char* diferenca = (char*) alloc (tam+1, sizeof (char));
+    int borrow = 0;
+    for (i = tam-1; i >= 0; i--)
     {
-        diferenca[i] = (min[i]-'0') - (subt[i]-'0');
-        if (diferenca[i] < 0)
-        {
-            if (i) min[i-1]--;
-            diferenca[i] += 10;
-        }
-        diferenca[i] += '0';
+        int d = (min[i]-'0') - (subt[i]-'0') - borrow;
+        if (d < 0) { d += 10; borrow = 1; }
+        else borrow = 0;
+        diferenca[i] = (char) (d + '0');
     }
     trataZeros (&diferenca);
-    if(allocated) free(subt);
+    if (allocated) free (subt);
     return diferenca;
 }
 
@@ -227,128 +209,142 @@ char* multiplicar (char a[],char b[])
     return produto;
 }
 
+/* Duplica uma string em buffer próprio de heap. */
+static char *bnDup (const char *s)
+{
+    char *r = (char*) alloc (strlen (s) + 1, sizeof (char));
+    strcpy (r, s);
+    return r;
+}
+
+/* Verdadeiro se a string decimal vale zero (vazia ou só zeros). */
+static bool bnIsZero (const char *s)
+{
+    for (; *s; s++) if (*s != '0') return false;
+    return true;
+}
+
+/* Verdadeiro se o número decimal é ímpar. */
+static bool bnIsOdd (const char *s)
+{
+    size_t n = strlen (s);
+    return n && ((s[n-1] - '0') & 1);
+}
+
+/* Divide a string decimal por 2, in-place (remove zeros à esquerda). */
+static void bnHalve (char *s)
+{
+    int carry = 0;
+    char *p;
+    for (p = s; *p; p++)
+    {
+        int d = carry * 10 + (*p - '0');
+        *p = (char) (d / 2 + '0');
+        carry = d % 2;
+    }
+    /* remove zeros à esquerda, mantendo ao menos um dígito */
+    char *q = s;
+    while (q[0] == '0' && q[1] != '\0') q++;
+    if (q != s) memmove (s, q, strlen (q) + 1);
+}
+
+/* Produto que SEMPRE devolve buffer próprio (multiplicar pode devolver alias). */
+static char *bnMul (char *x, char *y)
+{
+    char *t = multiplicar (x, y);
+    if (t == x || t == y) return bnDup (t);
+    return t;
+}
+
+/*
+**  EXPONENCIAÇÃO POR QUADRADOS (binária): O(log expoente) multiplicações,
+**  em vez da multiplicação iterativa O(expoente) da versão original.
+**  Percorre o expoente decimal dividindo-o por 2 a cada passo.
+*/
 char* unExpo (char a[], char b[])
 {
-    char* answer = NULL;
     if (*b == '0' || *b == '\0')
     {
-        answer = (char*) alloc (2, sizeof (char));
-        answer[0] = '1'; answer[1] = '\0';
-        return answer;
+        char *one = (char*) alloc (2, sizeof (char));
+        one[0] = '1'; one[1] = '\0';
+        return one;
     }
-    else if (*b == '-') return answer; /* NULL */
-    int lenA = strlen(a), lenB = strlen(b);
-    answer = (char*) alloc (lenB*10*lenA*2, sizeof (char));
-    strcpy(answer, a);
-    while (strcmp(b, "1"))
+    if (*b == '-') return NULL;
+
+    char *result = (char*) alloc (2, sizeof (char));
+    result[0] = '1'; result[1] = '\0';
+    char *base = bnDup (a);
+    char *e = bnDup (b);
+
+    while (!bnIsZero (e))
     {
-        memswap(answer, a, multiplicar);
-        memswap(b, "1", subtrair);
+        if (bnIsOdd (e))
+        {
+            char *t = bnMul (result, base);
+            free (result);
+            result = t;
+        }
+        bnHalve (e);
+        if (!bnIsZero (e))
+        {
+            char *t = bnMul (base, base);
+            free (base);
+            base = t;
+        }
     }
-    return answer;
+    free (base);
+    free (e);
+    return result;
 }
 
 
 /*
-**  DIVISÃO POSITIVA
+**  DIVISÃO/MÓDULO POSITIVOS — divisão longa clássica.
 **
-**  N = Numerador
-**  Q = Quociente
-**
-**  O algoritmo de divisão foi baseado na divisão do Ensino Fundamental
-**
-**  15467 | 58      Selecione em N o tamanho de D
-**   386  |_____    -- 15
-**    387  266      A subtração de 15 por 58 (D) resulta em um número positivo?
-**      39           -- Não
-**                  Então pegue o proximo numero de N e coloque em 15
-**                  -- 154
-**                  subtraia 154 por 58 até que gerar um resultado negativo
-**                  -- 154 - 58 = 96
-**                  -- 96 - 58 = 38
-**                  Coloque em Q quantas vezes a subtração ocorreu
-**                  -- Q(0) := 2
-**                  Coloque em 38 o proximo digito de N
-**                  -- 386
-**                  Faça a subtração novamente por D
-**                  Coloque em Q quantas vezes a subtração ocorreu
-**                  -- Q(1) := 6
-**                  [...]
-**                  O algoritmo segue até termos
-**                        266 em Q
-**                        39 em N (RESTO)
-**
-**
-**  A função abaixo aplica o algoritmo acima, nele podemos visualizar que
-**  Q sempre terá len(N) - len(D) digitos
-**
+**  Percorre o dividendo dígito a dígito, trazendo cada um para o resto corrente
+**  (cur = rem*10 + dígito) e achando o dígito do quociente q em 0..9 por
+**  subtrações sucessivas de D. Devolve o quociente (DIV) ou o resto (MOD),
+**  sempre em buffer próprio. Ex.: 20/6 -> 3 (resto 2); 3 % 10 -> 3.
 */
-char* unsigneDiv (char a[], char D[], bool MOD) /* TRATAR OS ZEROS 500000/20 */
+char* unsigneDiv (char a[], char D[], bool MOD)
 {
-    const int tn = strlen (a), td = strlen (D); /* len(N) e len(D) respectivamente */
-    if (td > tn)
+    if (!*D) return bnDup ("E");             /* divisão por zero é indeterminada */
+    int tn = strlen (a);
+    char *rem = bnDup ("0");                  /* resto corrente */
+    char *quot = (char*) alloc (tn + 1, sizeof (char));
+    int qi = 0;
+    for (int idx = 0; idx < tn; idx++)
     {
-        if (MOD) return a; /* 2 % 3 == 2 */
-        return NULL; /* 2 / 3 == 0 */
+        /* traz o próximo dígito: cur = rem*10 + a[idx] */
+        int rl = strlen (rem);
+        char *cur = (char*) alloc (rl + 2, sizeof (char));
+        strcpy (cur, rem);
+        cur[rl] = a[idx];
+        cur[rl + 1] = '\0';
+        /* dígito do quociente: quantas vezes D cabe em cur (0..9) */
+        int q = 0;
+        while (strCmpNum (cur, D))            /* enquanto cur >= D */
+        {
+            char *t = subtrair (cur, D);
+            free (cur);
+            cur = t;
+            q++;
+        }
+        quot[qi++] = (char) (q + '0');
+        free (rem);
+        trataZeros (&cur);                     /* normaliza o resto */
+        rem = cur;
     }
-    if (! td) return (char*) "E"; /* divisão por zero é indeterminada */
-    if (*D == '1' && td == 1) return a; /* divisão por um */
-    if (! strcmp (a, D))
+    quot[qi] = '\0';
+    if (MOD)
     {
-        /* divisão de numeros iguais */
-        char *um = (char*) alloc(2, sizeof(char));
-        *um = '1';
-        return um;
+        free (quot);
+        trataZeros (&rem);
+        return rem;                            /* resto ("" representa zero) */
     }
-    if (! tn) return a;
-    /* N, Q e o ponteiro que guarda o inicio da alocação primeira de N */
-    char *N = (char*) alloc (tn+1, sizeof (char));
-    strcpy (N, a);
-    char *Q = (char*) alloc (tn-td+2, sizeof (char)); /* O quociente terá pelo menos tn-td+1 digitos */
-    char *temp = N;
-    int i; /* indice de interações do laço para a divisão */
-    int j = 0, k = 0; /* cursor para escrita na string N e Q*/
-    int l = 0; /* cursor na string de entrada a */
-    size_t countSub; /* conta quantas subtrações foram feitas de N por D */
-    int leN; /* guarda o tamanho atualizado (pela subtração) de N */
-    char handle;
-    for (i=0; k < tn-td+1 && j < tn-td+1; i++)
-    {
-        handle = '\0';
-        charswap (&N[td+j], &handle);
-        leN = strlen (N);
-        countSub = 0ull;
-        while (strCmpNum (N,D))
-        {
-            memswap (N, D, subtrair);
-            countSub++;
-        }
-        if (countSub)
-        {
-            if (j) k--; /* SE A MOVIMENTAÇÃO NÃO GEROU UM 0, RETIRE-O */
-            if (countSub < 10)
-                Q[k++] = countSub + '0';
-            else
-            {
-                int w = countDigits (countSub);
-                for (w--; w >= 0; w--)
-                {
-                    Q[k++] = (countSub / (int) pow (10, w)) + '0';
-                    countSub %= (int) pow (10, w);
-                }
-            }
-            strcpy (&N[td+j+strlen(N)-leN], &a[td+1+l++]);
-            j=0;
-        }
-        else
-        {
-            Q[k++] = '0';
-            charswap (&N[td+j++], &handle);
-        }
-    }
-    if (MOD) strcpy (Q, N);
-    free (temp);
-    return Q;
+    free (rem);
+    trataZeros (&quot);
+    return quot;                               /* quociente ("" representa zero) */
 }
 
 bool strCmpNum (char x[], char y[])
@@ -370,8 +366,6 @@ bool strCmpNum (char x[], char y[])
     return true;
 }
 
-int countDigits (long long x) { return (int) floor (log10 (x)) + 1; }
-
 char* fatorial (char in[])
 {
     char* inTemp = (char*) alloc (strlen (in)+1, sizeof (char));
@@ -382,11 +376,13 @@ char* fatorial (char in[])
     i=0;
     *fat = 1;
     long long num = 0ll;
+    long long place = 1ll;
     inverte (inTemp);
     char2int (inTemp);
     while (i<tamA)
     {
-        num += (long long) inTemp[i] * pow (10, i);
+        num += (long long) inTemp[i] * place;
+        place *= 10;
         i++;
     }
     free(inTemp);
@@ -442,13 +438,18 @@ void ignoraZero (int narg, ...){
     va_end (argList);
 }
 
+/*
+**  Aplica f(a,b) e guarda o resultado em a. Seguro a alias: se f devolver o
+**  próprio a (atalho), nada a fazer; se devolver b, copia sem liberar b (o
+**  chamador é dono de b). Só libera o resultado quando ele é um buffer novo.
+*/
 bool memswap (char a[], char b[], char* (*f)(char*, char*))
 {
     char* temp = f (a, b);
     if (temp)
     {
-        strcpy (a, temp);
-        free (temp);
+        if (temp != a) strcpy (a, temp);
+        if (temp != a && temp != b) free (temp);
     }
     else
         *a = '\0';
@@ -460,8 +461,8 @@ bool memswapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool))
     char* temp = f (a, b, mod);
     if(temp)
     {
-        strcpy (a, temp);
-        free (temp);
+        if (temp != a) strcpy (a, temp);
+        if (temp != a && temp != b) free (temp);
     }
     else
         *a = '\0';
