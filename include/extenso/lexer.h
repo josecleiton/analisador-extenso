@@ -3,26 +3,27 @@
 
 /*
 **  Analisador léxico: quebra a expressão em tokens consultando o dicionário
-**  e enfileira os números encontrados na lista.
+**  e enfileira os números encontrados na lista do contexto.
 */
 #include "extenso/config.h"
+#include "extenso/context.h"
 
-/* Casa a palavra corrente de EXP com o dicionário, atualizando token/tipo. */
-void pegaToken (void);
+/* Casa a palavra corrente de ctx->EXP com o dicionário. */
+void pegaToken (Context *ctx);
 
 /* Pula a palavra em análise. */
-void ajustaEXP (void);
+void ajustaEXP (Context *ctx);
 
 /* Verdadeiro se o próximo token for um delimitador. */
-bool verificaProxToken (void);
+bool verificaProxToken (Context *ctx);
 
 /* Em ordens compostas, avalia plural/singular e enfila a forma inserida. */
-bool resPlural (int i, char *s);
+bool resPlural (Context *ctx, int i, char *s);
 
 /* Coloca hífen em delimitadores compostos (ex.: "dividido por" -> "dividido-por"). */
-void ajustaDelim (int *k, char *temp);
+void ajustaDelim (Context *ctx, int *k, char *temp);
 
-/* Converte EXP para minúsculas. */
-void strToLower (void);
+/* Converte ctx->EXP para minúsculas. */
+void strToLower (Context *ctx);
 
 #endif

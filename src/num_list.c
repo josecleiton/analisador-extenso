@@ -1,26 +1,25 @@
 #include "extenso/num_list.h"
-#include "extenso/state.h"
 #include "extenso/util.h"
 #include "extenso/tokens.h"
 
-void listaInsere (uint16_t i, char *nome, char *valor)
+void listaInsere (Context *ctx, uint16_t i, char *nome, char *valor)
 {
     ListaNum *no = (ListaNum*) alloc (1, sizeof (ListaNum));
-    ListaNum *aux = list;
+    ListaNum *aux = ctx->list;
     no -> info = (Ordem*) alloc (1, sizeof (Ordem));
     strcpy (no->info->nome, nome);
     strcpy (no->info->valor, valor);
     no -> classe = i;
     no -> prox = NULL;
-    if (! list)
+    if (! ctx->list)
     {
-        list = no;
+        ctx->list = no;
         no -> ant = NULL;
         return;
     }
     while (aux && aux->prox)
         aux = aux -> prox;
-    no -> ant = pegaProxNum (list);
+    no -> ant = pegaProxNum (ctx->list);
     aux -> prox = no;
 }
 
@@ -35,9 +34,9 @@ ListaNum *pegaProxNum (ListaNum *inicio)
     return aux;
 }
 
-void listaLibera (void)
+void listaLibera (Context *ctx)
 {
-    ListaNum *aux = list, *zombie = NULL;
+    ListaNum *aux = ctx->list, *zombie = NULL;
     while (aux)
     {
         zombie = aux;
@@ -46,13 +45,13 @@ void listaLibera (void)
             free (zombie->info);
         free (zombie);
     }
-    list = NULL;
+    ctx->list = NULL;
 }
 
-int listaCount (void)
+int listaCount (Context *ctx)
 {
     ListaNum* aux;
     int n;
-    for (n = 0, aux = list; aux; aux = aux -> prox, n++);
+    for (n = 0, aux = ctx->list; aux; aux = aux -> prox, n++);
     return n;
 }

@@ -12,7 +12,7 @@
 #include <string.h>
 #include "extenso/cli.h"
 #include "extenso/config.h"
-#include "extenso/state.h"
+#include "extenso/context.h"
 #include "extenso/dictionary.h"
 #include "extenso/errors.h"
 
@@ -20,18 +20,20 @@ int main (int argc, char **argv)
 {
     Dictionary *d = dictionary_load (ARQ_DICT);
     ErrorTable *e = error_table_load (ARQ_ERROS);
-    dict = d;
-    errtab = e;
+
+    Context ctx = {0};
+    ctx.dict = d;
+    ctx.errtab = e;
 
     int rc;
     /* Modo batch não-interativo (usado pelo teste de regressão):
     ** lê ARQ_ENTRADA, escreve ARQ_SAIDA e sai, sem o menu. */
     if (argc > 1 && strcmp (argv[1], "--batch") == 0)
     {
-        fileParsingInit ();
+        fileParsingInit (&ctx);
         rc = 0;
     }
-    else rc = interpretador ();
+    else rc = interpretador (&ctx);
 
     dictionary_free (d);
     error_table_free (e);

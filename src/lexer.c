@@ -1,103 +1,102 @@
 #include "extenso/lexer.h"
-#include "extenso/state.h"
 #include "extenso/tokens.h"
 #include "extenso/num_list.h"
 #include "extenso/errors.h"
 
-void pegaToken (void)
+void pegaToken (Context *ctx)
 {
     Ordem ref;
     int i = 0, k = 0;
     char trade = '\0';
     char valorTk = '\0';
-    token = '\0';
-    tipoToken = 0;
-    if (!*EXP) return;
-    while (isspace (*EXP)) ++EXP;
-    while (EXP[k] && isalpha (EXP[k])) k++;
-    trade = EXP[k];
-    EXP[k] = '\0';
-    ajustaDelim (&k, &trade);
-    while (i < (int) dict->n)
+    ctx->token = '\0';
+    ctx->tipoToken = 0;
+    if (!*ctx->EXP) return;
+    while (isspace (*ctx->EXP)) ++ctx->EXP;
+    while (ctx->EXP[k] && isalpha (ctx->EXP[k])) k++;
+    trade = ctx->EXP[k];
+    ctx->EXP[k] = '\0';
+    ajustaDelim (ctx, &k, &trade);
+    while (i < (int) ctx->dict->n)
     {
-        strcpy (ref.nome, dict->items[i].nome);
-        strcpy (ref.valor, dict->items[i].valor);
-        if (! strcmp (ref.nome, EXP) || resPlural (i, ref.nome))
+        strcpy (ref.nome, ctx->dict->items[i].nome);
+        strcpy (ref.valor, ctx->dict->items[i].valor);
+        if (! strcmp (ref.nome, ctx->EXP) || resPlural (ctx, i, ref.nome))
         {
             valorTk = *(ref.valor);
             if (isdigit (valorTk))
             {
-                token = valorTk;
-                while (*EXP && (isalpha (*EXP) || *EXP == ' ')) EXP++;
-                *EXP = trade;
-                tipoToken = NUM;
-                flagNUM = true;
-                listaInsere (i, ref.nome, ref.valor);
+                ctx->token = valorTk;
+                while (*ctx->EXP && (isalpha (*ctx->EXP) || *ctx->EXP == ' ')) ctx->EXP++;
+                *ctx->EXP = trade;
+                ctx->tipoToken = NUM;
+                ctx->flagNUM = true;
+                listaInsere (ctx, i, ref.nome, ref.valor);
                 i = -1;
-                if (verificaProxToken ()) return;
+                if (verificaProxToken (ctx)) return;
             }
             else if (strchr (STR_DEL, valorTk))
             {
-                tipoToken = CONJUCAO;
-                while (*EXP && (isalpha (*EXP) || *EXP == ' ' || *EXP == '-')) EXP++;
-                token = valorTk;
-                *EXP = trade;
+                ctx->tipoToken = CONJUCAO;
+                while (*ctx->EXP && (isalpha (*ctx->EXP) || *ctx->EXP == ' ' || *ctx->EXP == '-')) ctx->EXP++;
+                ctx->token = valorTk;
+                *ctx->EXP = trade;
                 if (i != CONJUCAO)
                 {
-                    tipoToken = DELIMITADOR;
-                    flagNUM = false;
+                    ctx->tipoToken = DELIMITADOR;
+                    ctx->flagNUM = false;
                     return;
                 }
                 else
                 {
-                    listaInsere (i, ref.nome, ref.valor);
+                    listaInsere (ctx, i, ref.nome, ref.valor);
                     i = -1;
                 }
             }
         }
-        else ajustaEXP ();
+        else ajustaEXP (ctx);
         i++;
     }
-    erroSS (0);
+    erroSS (ctx, 0);
 }
 
-void ajustaEXP (void)
+void ajustaEXP (Context *ctx)
 {
-    while (*EXP && *EXP == ' ') EXP++;
-    int k = strcspn (EXP, (const char*) " ");
-    EXP[k] = '\0';
+    while (*ctx->EXP && *ctx->EXP == ' ') ctx->EXP++;
+    int k = strcspn (ctx->EXP, (const char*) " ");
+    ctx->EXP[k] = '\0';
 }
 
-bool verificaProxToken (void)
+bool verificaProxToken (Context *ctx)
 {
-    while (*EXP && *EXP == ' ') EXP++; /* Posiciona a analise no inicio do proximo token */
-    char* needle = strchr (EXP, ' ');
+    while (*ctx->EXP && *ctx->EXP == ' ') ctx->EXP++; /* Posiciona a analise no inicio do proximo token */
+    char* needle = strchr (ctx->EXP, ' ');
     if (! needle)
     {
-        if (*EXP) return 0;
+        if (*ctx->EXP) return 0;
         return 1;
     }
-    int k = needle - EXP;
-    EXP[k] = '\0';
+    int k = needle - ctx->EXP;
+    ctx->EXP[k] = '\0';
     char DEL[MAXWLEN] = {'\0'};
-    size_t j = dict->delim_start + 1; /* PULA O 'e' (PRIMEIRO DELIMITADOR) */
-    while (j < dict->n)
+    size_t j = ctx->dict->delim_start + 1; /* PULA O 'e' (PRIMEIRO DELIMITADOR) */
+    while (j < ctx->dict->n)
     {
-        strcpy (DEL, dict->items[j++].nome);
+        strcpy (DEL, ctx->dict->items[j++].nome);
         char* needle2 = strchr (DEL, '-'); /* TRATA O HIFEN NO DELIMITADOR COMPOSTO */
         if (needle2)
             *needle2 = '\0';
-        if (!strcmp (DEL, EXP))
+        if (!strcmp (DEL, ctx->EXP))
         {
-            EXP[k] = ' ';
+            ctx->EXP[k] = ' ';
             return 1;
         }
     }
-    EXP[k] = ' ';
+    ctx->EXP[k] = ' ';
     return 0;
 }
 
-bool resPlural (int i, char *currentToken)
+bool resPlural (Context *ctx, int i, char *currentToken)
 {
     (void) i;
     if (! strchr ("mbtqdscount", *currentToken)) return 0;
@@ -107,12 +106,12 @@ bool resPlural (int i, char *currentToken)
     int k = del - currentToken;
     currentToken[k] = '\0';
 
-    if (! strcmp (currentToken, EXP))
+    if (! strcmp (currentToken, ctx->EXP))
         fl = true;
     else
     {
         ++del;
-        if (! strcmp (del, EXP))
+        if (! strcmp (del, ctx->EXP))
         {
             char temp[MAXWLEN] = {'\0'};
             fl = true;
@@ -124,36 +123,36 @@ bool resPlural (int i, char *currentToken)
     return fl;
 }
 
-void ajustaDelim (int* k, char* temp)
+void ajustaDelim (Context *ctx, int* k, char* temp)
 {
-    if (*EXP != 'a' && *EXP != 'f' && *EXP != 'd' && *EXP != 'e') return;
-    else if (! strcmp (EXP, (const char*) "abre") || ! strcmp (EXP, (const char*) "fecha") || \
-             ! strcmp (EXP, (const char*) "dividido") || ! strcmp (EXP, (const char*) "fatorial") || \
-             ! strcmp (EXP, (const char*) "elevado") \
+    if (*ctx->EXP != 'a' && *ctx->EXP != 'f' && *ctx->EXP != 'd' && *ctx->EXP != 'e') return;
+    else if (! strcmp (ctx->EXP, (const char*) "abre") || ! strcmp (ctx->EXP, (const char*) "fecha") || \
+             ! strcmp (ctx->EXP, (const char*) "dividido") || ! strcmp (ctx->EXP, (const char*) "fatorial") || \
+             ! strcmp (ctx->EXP, (const char*) "elevado") \
             )
     {
         int i = 0;
-        EXP[*k] = '-';
-        while (isalpha(EXP[i]) || EXP[i] == '-') i++;
-        *temp = EXP[i];
-        EXP[i] = '\0';
-        if (strcmp (&EXP[*k+1], (const char*)"parentese") && strcmp (&EXP[*k+1], (const char*) "de") && \
-            strcmp (&EXP[*k+1], (const char*) "por") && strcmp(&EXP[*k+1], (const char*) "a")
+        ctx->EXP[*k] = '-';
+        while (isalpha(ctx->EXP[i]) || ctx->EXP[i] == '-') i++;
+        *temp = ctx->EXP[i];
+        ctx->EXP[i] = '\0';
+        if (strcmp (&ctx->EXP[*k+1], (const char*)"parentese") && strcmp (&ctx->EXP[*k+1], (const char*) "de") && \
+            strcmp (&ctx->EXP[*k+1], (const char*) "por") && strcmp(&ctx->EXP[*k+1], (const char*) "a")
             )
         {
-            EXP[*k] = ' ';
-            erroSS(0);
+            ctx->EXP[*k] = ' ';
+            erroSS (ctx, 0);
             return;
         }
     }
 
 }
 
-void strToLower (void)
+void strToLower (Context *ctx)
 {
     int i = 0;
-    while(EXP[i]){
-        EXP[i] = tolower (EXP[i]);
+    while(ctx->EXP[i]){
+        ctx->EXP[i] = tolower (ctx->EXP[i]);
         i++;
     }
 }

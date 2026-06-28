@@ -7,6 +7,8 @@
 */
 #include "extenso/config.h"
 
+struct Context; /* forward decl (evita ciclo com context.h) */
+
 typedef struct
 {
     char **mensagens;
@@ -23,6 +25,6 @@ void error_table_free (ErrorTable *t);
 const char *error_message (const ErrorTable *t, int tipo);
 
 /* Formata o erro `tipoErro`, registra em log e aborta. */
-void erroSS (int tipoErro);
+void erroSS (struct Context *ctx, int tipoErro);
 
 #endif

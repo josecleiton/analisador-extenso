@@ -1,27 +1,26 @@
 #include "extenso/conversion.h"
-#include "extenso/state.h"
 #include "extenso/tokens.h"
 #include "extenso/semantics.h"
 #include "extenso/num_list.h"
 #include "extenso/bignum.h"
 #include "extenso/util.h"
 
-char *toNum (void)
+char *toNum (Context *ctx)
 {
     char *resultado = NULL, *aux = NULL, *ext = NULL;
-    ListaNum* listHandle = list;
-    uint16_t limit = pegaOrdem(list), ord, proxOrd, proxClasse;
+    ListaNum* listHandle = ctx->list;
+    uint16_t limit = pegaOrdem(ctx->list), ord, proxOrd, proxClasse;
     uint16_t i, flare = 0, flag;
     if (limit) limit = (limit+1-MIL)*3+3;
     else limit+=3;
     ext = (char*) alloc (limit*2+1, sizeof (char));
     aux = ext;
-    while (list && limit)
+    while (ctx->list && limit)
     {
-        i = list -> classe;
+        i = ctx->list -> classe;
         if (i != CONJUCAO && i < MIL)
         {
-            ord = pegaOrdem (list);
+            ord = pegaOrdem (ctx->list);
             if (i < DEZ)
             {
                 if (! flare)
@@ -32,7 +31,7 @@ char *toNum (void)
                     flag = 0;
                 }
                 if (aux - ext && (*(aux-1) != '0' && *aux == '0' && *(aux+1) == '0')) aux++;
-                *aux++ = *(list -> info -> valor);
+                *aux++ = *(ctx->list -> info -> valor);
             }
             else if (i < CEM)
             {
@@ -42,12 +41,12 @@ char *toNum (void)
                     flare = 1;
                     /*flag = 1;*/
                 }
-                strcpy (aux++, list -> info -> valor);
+                strcpy (aux++, ctx->list -> info -> valor);
                 flag = 1;
             }
             else
             {
-                strcpy (aux++, list -> info -> valor);
+                strcpy (aux++, ctx->list -> info -> valor);
                 flare = 1;
                 flag = 2;
             }
@@ -55,18 +54,18 @@ char *toNum (void)
         else if (i != CONJUCAO)
         {
             flare = 0;
-            if (list -> prox)
-                proxOrd = pegaOrdem (list -> prox);
+            if (ctx->list -> prox)
+                proxOrd = pegaOrdem (ctx->list -> prox);
             else proxOrd = NOVECENTOS;
             while (ord - proxOrd >= 1)
             {
                 flare = 1;
                 if (ord - proxOrd == 1)
                 {
-                    proxClasse = pegaProxClasse (list -> prox);
+                    proxClasse = pegaProxClasse (ctx->list -> prox);
                     if (proxClasse >= CEM)
                     {
-                        uint16_t prevClass = list -> ant -> classe;
+                        uint16_t prevClass = ctx->list -> ant -> classe;
                         if (prevClass >= CEM)
                             aux += 2;
                         else if (prevClass >= DEZ)
@@ -97,7 +96,7 @@ char *toNum (void)
                 proxOrd++;
             }
         }
-        list = list -> prox;
+        ctx->list = ctx->list -> prox;
     }
 
     flare = strlen (ext);
@@ -105,11 +104,11 @@ char *toNum (void)
     strcpy (resultado, ext);
     free (ext);
     trataZeros (&resultado);
-    list = listHandle;
+    ctx->list = listHandle;
     return resultado;
 }
 
-void toName (char **resposta)
+void toName (Context *ctx, char **resposta)
 {
     if (!**resposta)
     {
@@ -125,7 +124,7 @@ void toName (char **resposta)
     while (tam > 0)
     {
         ord = (tam - 1)/3;
-        flag = toNameMenOrd (resposta, resultado, &tam, &plural);
+        flag = toNameMenOrd (ctx, resposta, resultado, &tam, &plural);
         tam = strlen (*resposta);
         if (flag)
         {
@@ -133,7 +132,7 @@ void toName (char **resposta)
             {
                 aux = (char*) alloc (5, sizeof (char));
                 ++aux;
-                strcpy (aux, dict->items[ord-1+MIL].nome);
+                strcpy (aux, ctx->dict->items[ord-1+MIL].nome);
                 *--aux = ' ';
                 strcat (resultado, aux);
                 free (aux);
@@ -143,7 +142,7 @@ void toName (char **resposta)
                 aux = (char*) alloc (36, sizeof (char));
                 char* tmp = aux;
                 ++aux;
-                strcpy (aux, dict->items[ord-1+MIL].nome);
+                strcpy (aux, ctx->dict->items[ord-1+MIL].nome);
                 char* del = strchr (aux, ',');
                 aux[del - aux] = '\0';
                 if (plural)
@@ -158,11 +157,11 @@ void toName (char **resposta)
             if ((**resposta) && !((tam - 1)/3))
             {
                 strcat (resultado, (const char*) " e ");
-                flagNUM = false;
+                ctx->flagNUM = false;
             }
             strcat (resultado, " ");
         }
-        if (ord==1 && flagNUM)
+        if (ord==1 && ctx->flagNUM)
         {
             uint16_t AC = 0, c = 0;
             while ((*resposta)[c]) AC += (*resposta)[c++] - '0';
@@ -175,7 +174,7 @@ void toName (char **resposta)
     free (resultado);
 }
 
-int toNameMenOrd (char **numberInput, char *resultado, uint16_t *size, uint16_t *flagPlural)
+int toNameMenOrd (Context *ctx, char **numberInput, char *resultado, uint16_t *size, uint16_t *flagPlural)
 {
     char *currentNumber = *numberInput, label = 0, *tmp = NULL;
     uint16_t tam = *size, count = tam%3;
@@ -193,20 +192,20 @@ int toNameMenOrd (char **numberInput, char *resultado, uint16_t *size, uint16_t 
         {
             switch (count)
             {
-                case 1: flagNUM = UM; break;
-                case 2: flagNUM = VINTE; label--; break;
-                case 3: flagNUM = CEM; break;
+                case 1: ctx->flagNUM = UM; break;
+                case 2: ctx->flagNUM = VINTE; label--; break;
+                case 3: ctx->flagNUM = CEM; break;
             }
             if (count == 2 && *currentNumber == '1')
             {
                 label = 10;
                 currentNumber++;
-                flagNUM = UM;
+                ctx->flagNUM = UM;
                 count--;
             }
             label += *currentNumber - '0';
             tmp = (char*) alloc (25, sizeof (char));
-            strcpy (tmp, dict->items[label-1+flagNUM].nome);
+            strcpy (tmp, ctx->dict->items[label-1+ctx->flagNUM].nome);
             if (strstr (tmp, (const char*)"cem"))
             {
                 strcpy (tmp, (const char*)"cento");
