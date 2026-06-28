@@ -2,24 +2,24 @@
 #define EXTENSO_SEMANTICS_H
 
 /*
-**  Análise semântica: valida ordem/plural/conjunção de um número por extenso.
+**  Semantic analysis: validates order/plural/conjunction of a spelled-out number.
 */
 #include "extenso/context.h"
 #include "extenso/types.h"
 
-/* Analisa o significado da expressão. */
+/* Analyzes the meaning of the expression. */
 bool checkSemantics (Context *ctx);
 
-/* Analisa a centena/dezena/unidade. */
+/* Analyzes the hundreds/tens/units. */
 bool checkUnit (Context *ctx, NumList **inicio);
 
-/* Analisa o plural de ordens (>= MIL). */
+/* Analyzes the plural of magnitudes (>= MIL). */
 void checkPlural (Context *ctx, NumList *inicio);
 
-/* Term do número apontado por inicio. */
+/* Magnitude of the number pointed to by inicio. */
 uint16_t orderOf (NumList *inicio);
 
-/* Próxima "cls" apontada por inicio. */
+/* Next "cls" pointed to by inicio. */
 uint16_t nextClass (NumList *inicio);
 
 #endif

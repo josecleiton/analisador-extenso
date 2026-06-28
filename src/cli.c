@@ -15,7 +15,7 @@ runMenu (Context *ctx)
             clearScreen ();
             puts ("Selecione a entrada:\n a= Arquivo\n t= Teclado\n h= Ajuda\n e= Sair\n\nopcao = ");
             if (scanf ("%c%*c", &op) == EOF)
-                return 0; /* fim da entrada: sai limpo */
+                return 0; /* end of input: clean exit */
             switch (op)
                 {
                 case 'a':
@@ -36,7 +36,7 @@ runMenu (Context *ctx)
                             free (ctx->exprStart);
                         }
                     else
-                        listFree (ctx); /* erro já exibido; limpa estado parcial */
+                        listFree (ctx); /* error already shown; clears partial state */
                     ctx->error_protected = false;
                     CLRBUF;
                     break;
@@ -76,18 +76,18 @@ printHelp (void)
 int
 runFile (Context *ctx, const char *inPath, const char *outPath)
 {
-    ctx->cursor = ctx->buffer; /* garante o buffer mesmo quando chamado fora do menu (--batch) */
+    ctx->cursor = ctx->buffer; /* ensures the buffer even when called outside the menu (--batch) */
     FILE *entrada = openFile (inPath, "r");
     FILE *saida = openFile (outPath, "wt");
     int i = 0;
-    char *expOut = NULL; /* Resultado da expressão analisada */
+    char *expOut = NULL; /* result of the analyzed expression */
     Index temp = buildLineIndex (entrada, false);
     uint16_t *indices = temp.index;
     int count = temp.tam;
     while (count > 0)
         {
-            memset (ctx->buffer, 0, MAX_GEN); /* limpa lixo da linha anterior */
-            ctx->cursor = ctx->buffer;        /* cada linha é parseada do início do buffer */
+            memset (ctx->buffer, 0, MAX_GEN); /* clears leftover from the previous line */
+            ctx->cursor = ctx->buffer;        /* each line is parsed from the start of the buffer */
             fseek (entrada, indices[i++], SEEK_SET);
             fgets (ctx->cursor, MAX_GEN, entrada);
             char *endline = strpbrk (ctx->cursor, "\r\n");
@@ -103,7 +103,7 @@ runFile (Context *ctx, const char *inPath, const char *outPath)
                 }
             else
                 {
-                    /* expressão inválida: erro já reportado; segue para a próxima */
+                    /* invalid expression: error already reported; move on to the next */
                     fputs ("(erro)\n", saida);
                     listFree (ctx);
                 }

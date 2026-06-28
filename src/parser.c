@@ -11,7 +11,7 @@
 char *
 evalExpr (Context *ctx)
 {
-    ctx->isNumber = false; /* estado limpo (importante ao continuar após um erro) */
+    ctx->isNumber = false; /* clean state (important when continuing after an error) */
     lowercaseExpr (ctx);
     char *answer = (char *)alloc (4 * _1KB, sizeof (char));
     char *fResposta = answer;

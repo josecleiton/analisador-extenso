@@ -102,9 +102,9 @@ bigAdd (char a[], char b[])
 }
 
 /*
-**  Subtração sem sinal: devolve |a - b|. Não muta as entradas (a versão
-**  original decrementava o minuendo durante o "empréstimo"); usa uma variável
-**  de borrow.
+**  Unsigned subtraction: returns |a - b|. Does not mutate the inputs (the
+**  original version decremented the minuend during the "borrow"); uses a
+**  borrow variable.
 */
 char *
 bigSub (char a[], char b[])
@@ -119,9 +119,9 @@ bigSub (char a[], char b[])
         return a;
     if (tamA != tamB)
         {
-            subt = padToWidth (a, b, &flagMenor); /* zero-pad o menor */
+            subt = padToWidth (a, b, &flagMenor); /* zero-pad the smaller one */
             allocated = true;
-            min = flagMenor ? b : a; /* min = o maior (mais longo) */
+            min = flagMenor ? b : a; /* min = the larger (longer) one */
         }
     else
         {
@@ -204,7 +204,7 @@ padToWidth (char a[], char b[], char *menor)
         }
 }
 
-/* Remove zeros à esquerda in-place, mantendo ao menos um dígito ("0"). */
+/* Removes leading zeros in-place, keeping at least one digit ("0"). */
 static void
 bnStrip (char *s)
 {
@@ -215,7 +215,7 @@ bnStrip (char *s)
         memmove (s, p, strlen (p) + 1);
 }
 
-/* Multiplicação escolar O(n*m). */
+/* Schoolbook multiplication O(n*m). */
 static char *
 mulSchool (const char *a, const char *b)
 {
@@ -254,7 +254,7 @@ bigMul (char a[], char b[])
     return mulSchool (a, b);
 }
 
-/* Duplica uma string em buffer próprio de heap. */
+/* Duplicates a string into its own heap buffer. */
 static char *
 bnDup (const char *s)
 {
@@ -263,7 +263,7 @@ bnDup (const char *s)
     return r;
 }
 
-/* Verdadeiro se a string decimal vale zero (vazia ou só zeros). */
+/* True if the decimal string equals zero (empty or all zeros). */
 static bool
 bnIsZero (const char *s)
 {
@@ -273,7 +273,7 @@ bnIsZero (const char *s)
     return true;
 }
 
-/* Verdadeiro se o número decimal é ímpar. */
+/* True if the decimal number is odd. */
 static bool
 bnIsOdd (const char *s)
 {
@@ -281,7 +281,7 @@ bnIsOdd (const char *s)
     return n && ((s[n - 1] - '0') & 1);
 }
 
-/* Divide a string decimal por 2, in-place (remove zeros à esquerda). */
+/* Divides the decimal string by 2, in-place (removes leading zeros). */
 static void
 bnHalve (char *s)
 {
@@ -293,7 +293,7 @@ bnHalve (char *s)
             *p = (char)(d / 2 + '0');
             carry = d % 2;
         }
-    /* remove zeros à esquerda, mantendo ao menos um dígito */
+    /* remove leading zeros, keeping at least one digit */
     char *q = s;
     while (q[0] == '0' && q[1] != '\0')
         q++;
@@ -301,7 +301,7 @@ bnHalve (char *s)
         memmove (s, q, strlen (q) + 1);
 }
 
-/* Produto que SEMPRE devolve buffer próprio (bigMul pode devolver alias). */
+/* Product that ALWAYS returns its own buffer (bigMul may return an alias). */
 static char *
 bnMul (char *x, char *y)
 {
@@ -312,9 +312,9 @@ bnMul (char *x, char *y)
 }
 
 /*
-**  EXPONENCIAÇÃO POR QUADRADOS (binária): O(log expoente) multiplicações,
-**  em vez da multiplicação iterativa O(expoente) da versão original.
-**  Percorre o expoente decimal dividindo-o por 2 a cada passo.
+**  EXPONENTIATION BY SQUARING (binary): O(log exponent) multiplications,
+**  instead of the original version's iterative O(exponent) multiplication.
+**  Walks the decimal exponent dividing it by 2 at each step.
 */
 char *
 bigPow (char a[], char b[])
@@ -357,33 +357,34 @@ bigPow (char a[], char b[])
 }
 
 /*
-**  DIVISÃO/MÓDULO POSITIVOS — divisão longa clássica.
+**  POSITIVE DIVISION/MODULO — classic long division.
 **
-**  Percorre o dividendo dígito a dígito, trazendo cada um para o resto corrente
-**  (cur = rem*10 + dígito) e achando o dígito do quociente q em 0..9 por
-**  subtrações sucessivas de D. Devolve o quociente (DIV) ou o resto (MOD),
-**  sempre em buffer próprio. Ex.: 20/6 -> 3 (resto 2); 3 % 10 -> 3.
+**  Walks the dividend digit by digit, bringing each one into the current
+**  remainder (cur = rem*10 + digit) and finding the quotient digit q in 0..9
+**  by successive subtractions of D. Returns the quotient (DIV) or the
+**  remainder (MOD), always in its own buffer. E.g.: 20/6 -> 3 (remainder 2);
+**  3 % 10 -> 3.
 */
 char *
 bigDivMod (char a[], char D[], bool MOD)
 {
     if (!*D)
-        return bnDup ("E"); /* divisão por zero é indeterminada */
+        return bnDup ("E"); /* division by zero is undefined */
     int tn = strlen (a);
-    char *rem = bnDup ("0"); /* resto corrente */
+    char *rem = bnDup ("0"); /* current remainder */
     char *quot = (char *)alloc (tn + 1, sizeof (char));
     int qi = 0;
     for (int idx = 0; idx < tn; idx++)
         {
-            /* traz o próximo dígito: cur = rem*10 + a[idx] */
+            /* bring in the next digit: cur = rem*10 + a[idx] */
             int rl = strlen (rem);
             char *cur = (char *)alloc (rl + 2, sizeof (char));
             strcpy (cur, rem);
             cur[rl] = a[idx];
             cur[rl + 1] = '\0';
-            /* dígito do quociente: quantas vezes D cabe em cur (0..9) */
+            /* quotient digit: how many times D fits into cur (0..9) */
             int q = 0;
-            while (numGreaterEqual (cur, D)) /* enquanto cur >= D */
+            while (numGreaterEqual (cur, D)) /* while cur >= D */
                 {
                     char *t = bigSub (cur, D);
                     free (cur);
@@ -392,7 +393,7 @@ bigDivMod (char a[], char D[], bool MOD)
                 }
             quot[qi++] = (char)(q + '0');
             free (rem);
-            stripLeadingZeros (&cur); /* normaliza o resto */
+            stripLeadingZeros (&cur); /* normalize the remainder */
             rem = cur;
         }
     quot[qi] = '\0';
@@ -400,11 +401,11 @@ bigDivMod (char a[], char D[], bool MOD)
         {
             free (quot);
             stripLeadingZeros (&rem);
-            return rem; /* resto ("" representa zero) */
+            return rem; /* remainder ("" represents zero) */
         }
     free (rem);
     stripLeadingZeros (&quot);
-    return quot; /* quociente ("" representa zero) */
+    return quot; /* quotient ("" represents zero) */
 }
 
 bool
@@ -513,9 +514,10 @@ advancePastZeros (int narg, ...)
 }
 
 /*
-**  Aplica f(a,b) e guarda o result em a. Seguro a alias: se f devolver o
-**  próprio a (atalho), nada a fazer; se devolver b, copia sem liberar b (o
-**  chamador é dono de b). Só libera o result quando ele é um buffer novo.
+**  Applies f(a,b) and stores the result in a. Alias-safe: if f returns a
+**  itself (shortcut), there is nothing to do; if it returns b, copies without
+**  freeing b (the caller owns b). Only frees the result when it is a new
+**  buffer.
 */
 bool
 applyInto (char a[], char b[], char *(*f) (char *, char *))
