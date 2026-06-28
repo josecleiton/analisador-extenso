@@ -4,8 +4,8 @@
 /*
 **  Análise semântica: valida ordem/plural/conjunção de um número por extenso.
 */
-#include "extenso/types.h"
 #include "extenso/context.h"
+#include "extenso/types.h"
 
 /* Analisa o significado da expressão. */
 bool checkSemantics (Context *ctx);

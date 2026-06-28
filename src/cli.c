@@ -1,157 +1,166 @@
 #include "extenso/cli.h"
-#include "extenso/parser.h"
 #include "extenso/num_list.h"
+#include "extenso/parser.h"
 #include "extenso/util.h"
 
-int runMenu (Context *ctx)
+int
+runMenu (Context *ctx)
 {
     ctx->cursor = ctx->buffer;
-    char* result, op;
+    char *result, op;
     puts ("\n\t\tANALISADOR DE EXPRESSOES NUMERICAS POR EXTENSO\n");
     CLRBUF;
-    while(true)
-    {
-        clearScreen ();
-        puts ("Selecione a entrada:\n a= Arquivo\n t= Teclado\n h= Ajuda\n e= Sair\n\nopcao = ");
-        if (scanf ("%c%*c", &op) == EOF) return 0; /* fim da entrada: sai limpo */
-        switch (op)
+    while (true)
         {
-            case 'a':
-                clearScreen ();
-                printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultados podem ser encontrados em %s\n", runFile (ctx, ARQ_ENTRADA, ARQ_SAIDA), ARQ_SAIDA);
-                printResults();
-                CLRBUF;
-                break;
-            case 't':
-                clearScreen ();
-                puts ("Digite uma expressao numerica: ");
-                scanf ("%[^\n]%*c", ctx->cursor);
-                ctx->error_protected = true;
-                if (setjmp (ctx->on_error) == 0)
+            clearScreen ();
+            puts ("Selecione a entrada:\n a= Arquivo\n t= Teclado\n h= Ajuda\n e= Sair\n\nopcao = ");
+            if (scanf ("%c%*c", &op) == EOF)
+                return 0; /* fim da entrada: sai limpo */
+            switch (op)
                 {
-                    result = evalExpr (ctx);
-                    printf ("\nResultado: %s\n", result);
-                    free (ctx->exprStart);
+                case 'a':
+                    clearScreen ();
+                    printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultados podem ser encontrados em %s\n", runFile (ctx, ARQ_ENTRADA, ARQ_SAIDA), ARQ_SAIDA);
+                    printResults ();
+                    CLRBUF;
+                    break;
+                case 't':
+                    clearScreen ();
+                    puts ("Digite uma expressao numerica: ");
+                    scanf ("%[^\n]%*c", ctx->cursor);
+                    ctx->error_protected = true;
+                    if (setjmp (ctx->on_error) == 0)
+                        {
+                            result = evalExpr (ctx);
+                            printf ("\nResultado: %s\n", result);
+                            free (ctx->exprStart);
+                        }
+                    else
+                        listFree (ctx); /* erro já exibido; limpa estado parcial */
+                    ctx->error_protected = false;
+                    CLRBUF;
+                    break;
+                case 'h':
+                    clearScreen ();
+                    printHelp ();
+                    CLRBUF;
+                    break;
+                case 'e':
+                    return 0;
+                default:
+                    CLRBUF;
+                    puts ("Opcao invalida.\n");
                 }
-                else
-                    listFree (ctx); /* erro já exibido; limpa estado parcial */
-                ctx->error_protected = false;
-                CLRBUF;
-                break;
-            case 'h':
-                clearScreen ();
-                printHelp ();
-                CLRBUF;
-                break;
-            case 'e': return 0;
-            default:
-                CLRBUF;
-                puts ("Opcao invalida.\n");
         }
-    }
 }
 
-void printHelp (void)
+void
+printHelp (void)
 {
-    puts("A analise ocorre a partir de regras bem definidas, entao segue uma lista de comandos validos e instrucoes de uso:");
-    puts("\n\nNUMEROS: \n");
-    puts("A ordem e o plural importam. Nao utilize acentos nem pontuacao.");
-    puts("dois milhoes = correto");
-    puts("dois milhao = incorreto");
-    puts("tres mil e quatro milhoes = incorreto");
-    puts("quatro milhoes e tres mil = correto");
-    puts("\n\nFORMATO DAS OPERACOES:\n");
-    puts("Somar: numero mais numero");
-    puts("Subtrair: numero menos numero");
-    puts("Multiplicar: numero vezes numero");
-    puts("Dividir: numero dividido por numero");
-    puts("Resto: numero mod numero");
-    puts("Exponencial: numero elevado a numero");
+    puts ("A analise ocorre a partir de regras bem definidas, entao segue uma lista de comandos validos e instrucoes de uso:");
+    puts ("\n\nNUMEROS: \n");
+    puts ("A ordem e o plural importam. Nao utilize acentos nem pontuacao.");
+    puts ("dois milhoes = correto");
+    puts ("dois milhao = incorreto");
+    puts ("tres mil e quatro milhoes = incorreto");
+    puts ("quatro milhoes e tres mil = correto");
+    puts ("\n\nFORMATO DAS OPERACOES:\n");
+    puts ("Somar: numero mais numero");
+    puts ("Subtrair: numero menos numero");
+    puts ("Multiplicar: numero vezes numero");
+    puts ("Dividir: numero dividido por numero");
+    puts ("Resto: numero mod numero");
+    puts ("Exponencial: numero elevado a numero");
 }
 
-int runFile (Context *ctx, const char *inPath, const char *outPath)
+int
+runFile (Context *ctx, const char *inPath, const char *outPath)
 {
     ctx->cursor = ctx->buffer; /* garante o buffer mesmo quando chamado fora do menu (--batch) */
-    FILE* entrada = openFile (inPath, "r");
-    FILE* saida = openFile (outPath, "wt");
+    FILE *entrada = openFile (inPath, "r");
+    FILE *saida = openFile (outPath, "wt");
     int i = 0;
     char *expOut = NULL; /* Resultado da expressão analisada */
     Index temp = buildLineIndex (entrada, false);
-    uint16_t* indices = temp.index;
+    uint16_t *indices = temp.index;
     int count = temp.tam;
     while (count > 0)
-    {
-        memset (ctx->buffer, 0, MAX_GEN); /* limpa lixo da linha anterior */
-        ctx->cursor = ctx->buffer;        /* cada linha é parseada do início do buffer */
-        fseek (entrada, indices[i++], SEEK_SET);
-        fgets (ctx->cursor, MAX_GEN, entrada);
-        char* endline = strpbrk(ctx->cursor, "\r\n");
-        if(endline) *endline = '\0';
-        ctx->error_protected = true;
-        if (setjmp (ctx->on_error) == 0)
         {
-            expOut = evalExpr(ctx);
-            fputs (expOut, saida);
-            fputc ('\n', saida);
-            free (ctx->exprStart);
+            memset (ctx->buffer, 0, MAX_GEN); /* limpa lixo da linha anterior */
+            ctx->cursor = ctx->buffer;        /* cada linha é parseada do início do buffer */
+            fseek (entrada, indices[i++], SEEK_SET);
+            fgets (ctx->cursor, MAX_GEN, entrada);
+            char *endline = strpbrk (ctx->cursor, "\r\n");
+            if (endline)
+                *endline = '\0';
+            ctx->error_protected = true;
+            if (setjmp (ctx->on_error) == 0)
+                {
+                    expOut = evalExpr (ctx);
+                    fputs (expOut, saida);
+                    fputc ('\n', saida);
+                    free (ctx->exprStart);
+                }
+            else
+                {
+                    /* expressão inválida: erro já reportado; segue para a próxima */
+                    fputs ("(erro)\n", saida);
+                    listFree (ctx);
+                }
+            ctx->error_protected = false;
+            fflush (saida);
+            count--;
         }
-        else
-        {
-            /* expressão inválida: erro já reportado; segue para a próxima */
-            fputs ("(erro)\n", saida);
-            listFree (ctx);
-        }
-        ctx->error_protected = false;
-        fflush (saida);
-        count--;
-    }
-    free(indices);
+    free (indices);
     fclose (saida);
     fflush (stdout);
     fclose (entrada);
     return i;
 }
 
-void printResults(void)
+void
+printResults (void)
 {
-	char ch = '\0';
-	printf("\nDeseja visualizar todas as expressoes resolvidas? (S/N)\n");
-	scanf("%c%*c", &ch);
-	if(ch=='S' || ch=='s' || ch=='\n')
-	{
-		FILE* saida = openFile (ARQ_SAIDA, "rt");
-		size_t s = longestLine(saida) + 1;
-		char* handle = (char*) alloc (s, sizeof (char));
-		printf("\n\tRESULTADOS (uma expressao por linha):\n\n");
-		while(fgets(handle,s,saida))
-			printf("%s",handle);
-		fclose(saida);
-        free(handle);
-	}
+    char ch = '\0';
+    printf ("\nDeseja visualizar todas as expressoes resolvidas? (S/N)\n");
+    scanf ("%c%*c", &ch);
+    if (ch == 'S' || ch == 's' || ch == '\n')
+        {
+            FILE *saida = openFile (ARQ_SAIDA, "rt");
+            size_t s = longestLine (saida) + 1;
+            char *handle = (char *)alloc (s, sizeof (char));
+            printf ("\n\tRESULTADOS (uma expressao por linha):\n\n");
+            while (fgets (handle, s, saida))
+                printf ("%s", handle);
+            fclose (saida);
+            free (handle);
+        }
 }
 
-size_t longestLine (FILE* stream)
+size_t
+longestLine (FILE *stream)
 {
-	size_t k = 0;
-	size_t maior = 1;
-	char c = getc(stream);
-	while(c!=EOF)
-	{
-		k++;
-		if(c=='\n')
-		{
-			maior = (k>maior)?k:maior;
-			k=0;
-		}
-		c=getc(stream);
-	}
-	rewind(stream);
-	return maior;
+    size_t k = 0;
+    size_t maior = 1;
+    char c = getc (stream);
+    while (c != EOF)
+        {
+            k++;
+            if (c == '\n')
+                {
+                    maior = (k > maior) ? k : maior;
+                    k = 0;
+                }
+            c = getc (stream);
+        }
+    rewind (stream);
+    return maior;
 }
 
-void clearScreen (void)
+void
+clearScreen (void)
 {
     int n;
     for (n = 0; n < 10; n++)
-      printf ("\n\n\n\n\n\n\n\n\n\n");
+        printf ("\n\n\n\n\n\n\n\n\n\n");
 }

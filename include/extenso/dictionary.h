@@ -21,8 +21,8 @@ typedef struct
 typedef struct
 {
     DictEntry *items;
-    size_t n;            /* nº de entradas (era TAM_DICT) */
-    size_t delim_start;  /* índice da 1ª entrada delimitadora (era INDEL) */
+    size_t n;           /* nº de entradas (era TAM_DICT) */
+    size_t delim_start; /* índice da 1ª entrada delimitadora (era INDEL) */
 } Dictionary;
 
 /* Carrega o dicionário; `n`/`delim_start` derivados do conteúdo. */

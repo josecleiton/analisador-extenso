@@ -1,48 +1,58 @@
 #include "extenso/util.h"
 
-void *alloc (const size_t count, const size_t blockSize)
+void *
+alloc (const size_t count, const size_t blockSize)
 {
     void *ptr = calloc (count, blockSize);
-    if (! ptr) abortWithLog (true);
+    if (!ptr)
+        abortWithLog (true);
     return ptr;
 }
 
-FILE *openFile (const char filename[], const char type[])
+FILE *
+openFile (const char filename[], const char type[])
 {
     FILE *fileptr = fopen (filename, type);
-    if (! fileptr) abortWithLog (true);
+    if (!fileptr)
+        abortWithLog (true);
     return fileptr;
 }
 
-int abortWithLog (const bool msg)
+int
+abortWithLog (const bool msg)
 {
-    if (msg) fprintf (stderr, "Um erro ocorreu na execução do programa: \n");
+    if (msg)
+        fprintf (stderr, "Um erro ocorreu na execução do programa: \n");
     fprintf (stderr, "%s\n", strerror (errno));
     abort ();
 }
 
-Index buildLineIndex (FILE *in, int limite)
+Index
+buildLineIndex (FILE *in, int limite)
 {
     Index result;
     char handle[MAX_GEN];
     bool rlloc = false;
-    if (!limite) {
-        rlloc = true;
-        limite = 32;
-    }
+    if (!limite)
+        {
+            rlloc = true;
+            limite = 32;
+        }
     int i = 0;
-    uint16_t *index = (uint16_t*) alloc (limite, sizeof (uint16_t));
+    uint16_t *index = (uint16_t *)alloc (limite, sizeof (uint16_t));
     rewind (in);
     index[i++] = ftell (in);
-    while (fgets (handle, MAX_GEN, in)) {
-        index[i++] = ftell (in);
-        if (i == limite && rlloc) {
-            limite <<= 1;
-            index = (uint16_t*) realloc (index, sizeof (uint16_t)*limite);
-            if (!index)
-                abortWithLog (true);
+    while (fgets (handle, MAX_GEN, in))
+        {
+            index[i++] = ftell (in);
+            if (i == limite && rlloc)
+                {
+                    limite <<= 1;
+                    index = (uint16_t *)realloc (index, sizeof (uint16_t) * limite);
+                    if (!index)
+                        abortWithLog (true);
+                }
         }
-    }
     index[--i] = 0;
     rewind (in);
     result.index = index;

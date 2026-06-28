@@ -1,48 +1,54 @@
 #include "extenso/dictionary.h"
 #include "extenso/util.h"
 
-Dictionary *dictionary_load (const char *path)
+Dictionary *
+dictionary_load (const char *path)
 {
     FILE *f = openFile (path, "r");
     size_t cap = 64, n = 0;
-    DictEntry *items = (DictEntry*) alloc (cap, sizeof (DictEntry));
+    DictEntry *items = (DictEntry *)alloc (cap, sizeof (DictEntry));
     char line[MAX_GEN];
     while (fgets (line, sizeof line, f))
-    {
-        line[strcspn (line, "\r\n")] = '\0';
-        if (!line[0]) continue;            /* ignora linhas em branco */
-        char *eq = strchr (line, '=');
-        if (!eq) continue;                 /* linha sem '=' não é entrada */
-        *eq = '\0';
-        if (n == cap)
         {
-            cap <<= 1;
-            items = (DictEntry*) realloc (items, cap * sizeof (DictEntry));
-            if (!items) abortWithLog (true);
+            line[strcspn (line, "\r\n")] = '\0';
+            if (!line[0])
+                continue; /* ignora linhas em branco */
+            char *eq = strchr (line, '=');
+            if (!eq)
+                continue; /* linha sem '=' não é entrada */
+            *eq = '\0';
+            if (n == cap)
+                {
+                    cap <<= 1;
+                    items = (DictEntry *)realloc (items, cap * sizeof (DictEntry));
+                    if (!items)
+                        abortWithLog (true);
+                }
+            strcpy (items[n].name, line);
+            strcpy (items[n].value, eq + 1);
+            n++;
         }
-        strcpy (items[n].name, line);
-        strcpy (items[n].value, eq + 1);
-        n++;
-    }
     fclose (f);
 
-    Dictionary *d = (Dictionary*) alloc (1, sizeof (Dictionary));
+    Dictionary *d = (Dictionary *)alloc (1, sizeof (Dictionary));
     d->items = items;
     d->n = n;
     /* delim_start: primeira entrada cujo value não começa com dígito. */
     d->delim_start = n;
     for (size_t i = 0; i < n; i++)
-        if (!isdigit ((unsigned char) items[i].value[0]))
-        {
-            d->delim_start = i;
-            break;
-        }
+        if (!isdigit ((unsigned char)items[i].value[0]))
+            {
+                d->delim_start = i;
+                break;
+            }
     return d;
 }
 
-void dictionary_free (Dictionary *d)
+void
+dictionary_free (Dictionary *d)
 {
-    if (!d) return;
+    if (!d)
+        return;
     free (d->items);
     free (d);
 }

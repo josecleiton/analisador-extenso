@@ -4,8 +4,8 @@
 /*
 **  ADT da lista encadeada (NumList) que guarda o número em análise.
 */
-#include "extenso/types.h"
 #include "extenso/context.h"
+#include "extenso/types.h"
 
 /* Inserção como fila na lista do contexto. */
 void listAppend (Context *ctx, uint16_t i, char *name, char *value);

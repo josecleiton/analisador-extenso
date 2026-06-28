@@ -41,7 +41,8 @@ Por ser uma aplicação em C, você necessita de um compilador C na sua máquina
 - Se não estiver instalado, use o gerenciador de pacotes da sua distribuição para resolver isso.
 - Compile com `make` (gera `build/analisador`). Para uma build instrumentada (ASan/UBSan) use `make debug`.
 - Alternativamente, sem o Makefile: `clang -std=c11 -O2 *.c -o main -lm` ou `gcc -std=c11 -O2 *.c -o main -lm`
-- Para rodar o teste de regressão golden: `make test`
+- Para rodar os testes: `make test`
+- Para formatar o código de forma consistente: `make format` (requer `clang-format`; verifique com `make format-check`)
 
 ### Do programa
 

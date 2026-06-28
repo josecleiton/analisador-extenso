@@ -23,7 +23,10 @@ DEP := $(OBJ:.o=.d) $(DBGOBJ:.o=.d)
 BIN := build/analisador
 DBGBIN := build/analisador-debug
 
-.PHONY: all debug test clean
+CLANG_FORMAT ?= clang-format
+ALLSRC := $(wildcard src/*.c) $(wildcard include/extenso/*.h)
+
+.PHONY: all debug test clean format format-check
 
 all: $(BIN)
 
@@ -50,6 +53,15 @@ test: $(BIN)
 	./tests/run_golden.sh
 	./tests/run_cases.sh
 	./tests/run_errors.sh
+
+# Formatação consistente (ver .clang-format). Requer clang-format instalado.
+format:
+	@command -v $(CLANG_FORMAT) >/dev/null 2>&1 || { echo "clang-format nao encontrado (instale: brew install clang-format)"; exit 1; }
+	$(CLANG_FORMAT) -i $(ALLSRC)
+
+format-check:
+	@command -v $(CLANG_FORMAT) >/dev/null 2>&1 || { echo "clang-format nao encontrado (instale: brew install clang-format)"; exit 1; }
+	$(CLANG_FORMAT) --dry-run --Werror $(ALLSRC)
 
 clean:
 	rm -rf build
