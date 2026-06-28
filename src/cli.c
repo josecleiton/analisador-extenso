@@ -1,11 +1,10 @@
 #include "extenso/cli.h"
-#include "extenso/state.h"
 #include "extenso/parser.h"
 #include "extenso/util.h"
 
-int interpretador (void)
+int interpretador (Context *ctx)
 {
-    EXP = expNum;
+    ctx->EXP = ctx->expNum;
     char* resultado, op;
     puts ("\n\t\tANALISADOR DE EXPRESSOES NUMERICAS POR EXTENSO\n");
     CLRBUF;
@@ -18,17 +17,17 @@ int interpretador (void)
         {
             case 'a':
                 clearScreen ();
-                printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultado podem ser encontrados em %s\n", fileParsingInit (), ARQ_SAIDA);
+                printf ("\tForam analisadas e resolvidas %d expressoes.\n\tOs resultado podem ser encontrados em %s\n", fileParsingInit (ctx), ARQ_SAIDA);
                 printRes();
                 CLRBUF;
                 break;
             case 't':
                 clearScreen ();
                 puts ("Digite uma expressao numerica: ");
-                scanf ("%[^\n]%*c", EXP);
-                resultado = expParsingStart ();
+                scanf ("%[^\n]%*c", ctx->EXP);
+                resultado = expParsingStart (ctx);
                 printf ("\nResultado: %s\n", resultado);
-                free (_TEXP);
+                free (ctx->_TEXP);
                 CLRBUF;
                 break;
             case 'h':
@@ -62,9 +61,9 @@ void handBook (void)
     puts("Exponencial: numero elevado a numero");
 }
 
-int fileParsingInit (void)
+int fileParsingInit (Context *ctx)
 {
-    EXP = expNum; /* garante o buffer mesmo quando chamado fora do menu (--batch) */
+    ctx->EXP = ctx->expNum; /* garante o buffer mesmo quando chamado fora do menu (--batch) */
     FILE* entrada = openFile (ARQ_ENTRADA, "r");
     FILE* saida = openFile (ARQ_SAIDA, "wt");
     int i = 0;
@@ -75,14 +74,14 @@ int fileParsingInit (void)
     while (count > 0)
     {
         fseek (entrada, indices[i++], SEEK_SET);
-        fgets (EXP, MAX_GEN, entrada);
-        char* endline = strpbrk(EXP, "\r\n");
+        fgets (ctx->EXP, MAX_GEN, entrada);
+        char* endline = strpbrk(ctx->EXP, "\r\n");
         if(endline) *endline = '\0';
-        expOut = expParsingStart();
+        expOut = expParsingStart(ctx);
         fputs (expOut, saida);
         fputc ('\n', saida);
         fflush (saida);
-        free (_TEXP);
+        free (ctx->_TEXP);
         count--;
     }
     free(indices);

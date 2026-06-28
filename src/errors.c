@@ -1,6 +1,6 @@
 #include "extenso/errors.h"
 #include "extenso/config.h"
-#include "extenso/state.h"
+#include "extenso/context.h"
 #include "extenso/util.h"
 #include <time.h>
 
@@ -45,15 +45,15 @@ const char *error_message (const ErrorTable *t, int tipo)
     return t->mensagens[tipo];
 }
 
-void erroSS (int tipoErro)
+void erroSS (Context *ctx, int tipoErro)
 {
     char strErro[MAX_GEN], *strBump;
     int temp, i = 0, tamErro, tamEXP;
-    strcpy (strErro, error_message (errtab, tipoErro));
+    strcpy (strErro, error_message (ctx->errtab, tipoErro));
     strcat (strErro, "\n\n\t");
-    strcat (strErro, _TEXP);
+    strcat (strErro, ctx->_TEXP);
     strcat (strErro, "\n\t");
-    temp = EXP - _TEXP;
+    temp = ctx->EXP - ctx->_TEXP;
     tamErro = strlen (strErro);
     while (i < temp)
     {
@@ -62,7 +62,7 @@ void erroSS (int tipoErro)
     }
     strErro[tamErro+i] = '^';
     strBump = &strErro[tamErro+i+1];
-    for (tamEXP = strlen (_TEXP); tamEXP-temp; tamEXP--)
+    for (tamEXP = strlen (ctx->_TEXP); tamEXP-temp; tamEXP--)
         *strBump++ = '~';
     *strBump++ = '\n';
     *strBump++ = '\0';

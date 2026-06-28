@@ -1,6 +1,5 @@
 #include "extenso/parser.h"
 #include "extenso/config.h"
-#include "extenso/state.h"
 #include "extenso/lexer.h"
 #include "extenso/semantics.h"
 #include "extenso/conversion.h"
@@ -9,31 +8,31 @@
 #include "extenso/bignum.h"
 #include "extenso/util.h"
 
-char *expParsingStart (void)
+char *expParsingStart (Context *ctx)
 {
-    strToLower ();
+    strToLower (ctx);
     char *resposta = (char*) alloc (4*_1KB, sizeof (char));
     char *fResposta = resposta;
-    _TEXP = EXP;
-    pegaToken ();
-    if (!token) erroSS(3);
-    expResTermo (resposta);
-    if (token) erroSS (0);
-    toName (&resposta);
-    _TEXP = fResposta;
+    ctx->_TEXP = ctx->EXP;
+    pegaToken (ctx);
+    if (!ctx->token) erroSS (ctx, 3);
+    expResTermo (ctx, resposta);
+    if (ctx->token) erroSS (ctx, 0);
+    toName (ctx, &resposta);
+    ctx->_TEXP = fResposta;
     return resposta;
 }
 
-void expResTermo (char* resposta)
+void expResTermo (Context *ctx, char* resposta)
 {
     register char op;
     register char* segTermo;
-    expResFator (resposta);
-    while ((op = token) == '+' || op == '-')
+    expResFator (ctx, resposta);
+    while ((op = ctx->token) == '+' || op == '-')
     {
-        pegaToken ();
+        pegaToken (ctx);
         segTermo = (char*) alloc (_1KB, sizeof (char));
-        expResFator (segTermo);
+        expResFator (ctx, segTermo);
         switch (op)
         {
             case '-':
@@ -47,16 +46,16 @@ void expResTermo (char* resposta)
     }
 }
 
-void expResFator (char* resposta)
+void expResFator (Context *ctx, char* resposta)
 {
     register char op;
     register char* segFator;
-    expResFatorial (resposta);
-    while ((op=token) == '*' || op == '/' || op == '%' || op == '^')
+    expResFatorial (ctx, resposta);
+    while ((op=ctx->token) == '*' || op == '/' || op == '%' || op == '^')
     {
-        pegaToken ();
+        pegaToken (ctx);
         segFator = (char*) alloc (_1KB, sizeof (char));
-        expResFatorial (segFator);
+        expResFatorial (ctx, segFator);
         switch (op)
         {
             case '*':
@@ -72,57 +71,57 @@ void expResFator (char* resposta)
             memswap(resposta, segFator, unExpo);
             break;
         }
-        if (*resposta == 'E') erroSS (13);
+        if (*resposta == 'E') erroSS (ctx, 13);
         free (segFator);
     }
 }
 
-void expResFatorial (char* resposta)
+void expResFatorial (Context *ctx, char* resposta)
 {
     register char* proxFator;
-    if (token == '!')
+    if (ctx->token == '!')
     {
-        pegaToken ();
+        pegaToken (ctx);
         proxFator = (char*) alloc (_1KB, sizeof (char));
-        expResParenteses (proxFator);
+        expResParenteses (ctx, proxFator);
         char* temp = fatorial (proxFator);
-        if (! temp) erroSS (8);
+        if (! temp) erroSS (ctx, 8);
         strcpy (resposta, temp);
         free (proxFator);
         free (temp);
-        if (!*resposta) erroSS (7);
+        if (!*resposta) erroSS (ctx, 7);
         return;
     }
-    expResParenteses (resposta);
+    expResParenteses (ctx, resposta);
 }
 
-void expResParenteses (char* resposta)
+void expResParenteses (Context *ctx, char* resposta)
 {
-    if (token == '(')
+    if (ctx->token == '(')
     {
-        pegaToken ();
-        expResTermo (resposta);
-        if (token != ')')   erroSS (1);
-        pegaToken ();
+        pegaToken (ctx);
+        expResTermo (ctx, resposta);
+        if (ctx->token != ')')   erroSS (ctx, 1);
+        pegaToken (ctx);
     }
-    else atomo (resposta);
+    else atomo (ctx, resposta);
 }
 
-void atomo (char* resposta)
+void atomo (Context *ctx, char* resposta)
 {
-    if (flagNUM)
+    if (ctx->flagNUM)
     {
-        if (analiSemantica ())
+        if (analiSemantica (ctx))
         {
-            char* toNumAnswer = toNum();
+            char* toNumAnswer = toNum(ctx);
             strcpy (resposta, toNumAnswer);
             free(toNumAnswer);
-            listaLibera ();
-            flagNUM = false;
-            pegaToken ();
+            listaLibera (ctx);
+            ctx->flagNUM = false;
+            pegaToken (ctx);
             return;
         }
-        erroSS (3);
+        erroSS (ctx, 3);
     }
-    erroSS (0);
+    erroSS (ctx, 0);
 }
