@@ -143,6 +143,34 @@ toDigits (Context *ctx)
     return result;
 }
 
+/*
+**  Appends " " + the magnitude word for order `ord` to `result`:
+**  ord 1 -> " mil"; ord >= 2 -> " milhao"/" milhoes" depending on `plural`.
+**  ord 0 (units triplet) has no magnitude word.
+*/
+static void
+appendMagnitude (Context *ctx, char *result, uint16_t ord, uint16_t plural)
+{
+    if (!ord)
+        return;
+    if (ord == 1) /* "mil" has no plural form */
+        {
+            char buf[MAXWLEN + 1];
+            buf[0] = ' ';
+            strcpy (buf + 1, ctx->dict->items[ord - 1 + MIL].name);
+            strcat (result, buf);
+            return;
+        }
+    char raw[MAXWLEN]; /* "milhao,milhoes" */
+    strcpy (raw, ctx->dict->items[ord - 1 + MIL].name);
+    char *comma = strchr (raw, ',');
+    *comma = '\0';
+    char buf[MAXWLEN + 1];
+    buf[0] = ' ';
+    strcpy (buf + 1, plural ? comma + 1 : raw);
+    strcat (result, buf);
+}
+
 void
 toWords (Context *ctx, char **answer)
 {
@@ -165,32 +193,7 @@ toWords (Context *ctx, char **answer)
             tam = strlen (*answer);
             if (flag)
                 {
-                    if (ord == 1)
-                        {
-                            aux = (char *)alloc (5, sizeof (char));
-                            ++aux;
-                            strcpy (aux, ctx->dict->items[ord - 1 + MIL].name);
-                            *--aux = ' ';
-                            strcat (result, aux);
-                            free (aux);
-                        }
-                    else if (ord)
-                        {
-                            aux = (char *)alloc (36, sizeof (char));
-                            char *tmp = aux;
-                            ++aux;
-                            strcpy (aux, ctx->dict->items[ord - 1 + MIL].name);
-                            char *del = strchr (aux, ',');
-                            aux[del - aux] = '\0';
-                            if (plural)
-                                {
-                                    *--del = '\0';
-                                    aux = del + 2;
-                                }
-                            *--aux = ' ';
-                            strcat (result, aux);
-                            free (tmp);
-                        }
+                    appendMagnitude (ctx, result, ord, plural);
                     if ((**answer) && !((tam - 1) / 3))
                         {
                             strcat (result, (const char *)" e ");

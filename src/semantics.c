@@ -28,69 +28,71 @@ checkSemantics (Context *ctx)
 void
 checkPlural (Context *ctx, NumList *inicio)
 {
-    NumList *aux = inicio;
-    while (aux && (aux->cls < MILHAO || aux->cls == CONJUCAO))
-        aux = aux->next;
-    if (aux && strstr (aux->info->name, (const char *)"oes"))
-        {
-            if (inicio->cls != UM || inicio->cls == CONJUCAO)
-                return;
-        }
-    else if (!aux || inicio->cls == UM || inicio->cls == CONJUCAO)
+    NumList *magnitude = inicio;
+    while (magnitude && (magnitude->cls < MILHAO || magnitude->cls == CONJUCAO))
+        magnitude = magnitude->next;
+    if (!magnitude || inicio->cls == CONJUCAO)
         return;
-    reportError (ctx, 12);
+    /* "um" must pair with the singular form; anything else with the plural
+    ** ("um milhao" / "dois milhoes"). An error is exactly the mismatch. */
+    bool leadingOne = (inicio->cls == UM);
+    bool pluralForm = strstr (magnitude->info->name, (const char *)"oes") != NULL;
+    if (leadingOne == pluralForm)
+        reportError (ctx, 12);
+}
+
+/* After a unit (< 20) the next token may not be a conjunction nor another
+** sub-magnitude part. */
+static void
+checkAfterUnit (Context *ctx, NumList *node)
+{
+    if (!node->next)
+        return;
+    if (node->next->cls == CONJUCAO)
+        reportError (ctx, 11);
+    if (node->next->cls < MIL)
+        reportError (ctx, 2);
+}
+
+/* After a ten/hundred, a smaller part must come through the conjunction 'e'
+** followed by a value no greater than `maxAfter`. */
+static void
+checkConjunctionAfter (Context *ctx, NumList *node, short maxAfter)
+{
+    if (!node->next || (node->next->cls >= MIL && node->next->cls != CONJUCAO))
+        return;
+    if (node->next->cls != CONJUCAO)
+        reportError (ctx, 9);
+    else if (node->next->next == NULL)
+        reportError (ctx, 10);
+    else if (node->next->next->cls > maxAfter)
+        reportError (ctx, 2);
 }
 
 bool
 checkUnit (Context *ctx, NumList **inicio)
 {
-    NumList *lista = *inicio;
-    bool flag = false;
-    while (lista && (lista->cls < MIL || lista->cls == CONJUCAO))
+    NumList *node = *inicio;
+    bool sawAny = false;
+    while (node && (node->cls < MIL || node->cls == CONJUCAO))
         {
-            if (lista->cls < VINTE && lista->cls != DEZ)
+            if (node->cls < VINTE && node->cls != DEZ)
+                checkAfterUnit (ctx, node);
+            else if (node->cls == DEZ || (node->cls >= VINTE && node->cls <= NOVENTA))
+                checkConjunctionAfter (ctx, node, NOVE);
+            else if (node->cls >= CEM && node->cls <= NOVECENTOS)
                 {
-                    if (lista->next)
-                        {
-                            if (lista->next->cls == CONJUCAO)
-                                reportError (ctx, 11);
-                            if (lista->next->cls < MIL)
-                                reportError (ctx, 2);
-                        }
-                }
-            else if (lista->cls == DEZ || (lista->cls >= VINTE && lista->cls <= NOVENTA))
-                {
-                    if (lista->next && (lista->next->cls < MIL || lista->next->cls == CONJUCAO))
-                        {
-                            if (lista->next->cls != CONJUCAO)
-                                reportError (ctx, 9);
-                            else if (lista->next->next == NULL)
-                                reportError (ctx, 10);
-                            else if (lista->next->next->cls > NOVE)
-                                reportError (ctx, 2);
-                        }
-                }
-            else if (lista->cls >= CEM && lista->cls <= NOVECENTOS)
-                {
-                    if (!strcmp (lista->info->name, (const char *)"cem") && (lista->next && lista->next->cls == CONJUCAO))
+                    if (!strcmp (node->info->name, (const char *)"cem") && node->next && node->next->cls == CONJUCAO)
                         reportError (ctx, 12);
-                    if (lista->next && (lista->next->cls < MIL || lista->next->cls == CONJUCAO))
-                        {
-                            if (lista->next->cls != CONJUCAO)
-                                reportError (ctx, 9);
-                            else if (lista->next->next == NULL)
-                                reportError (ctx, 10);
-                            else if (lista->next->next->cls > NOVENTA)
-                                reportError (ctx, 2);
-                        }
+                    checkConjunctionAfter (ctx, node, NOVENTA);
                 }
-            lista = lista->next;
-            flag = true;
+            node = node->next;
+            sawAny = true;
         }
-    *inicio = lista;
-    if (!flag)
+    *inicio = node;
+    if (!sawAny)
         reportError (ctx, 5);
-    return flag;
+    return sawAny;
 }
 
 uint16_t
