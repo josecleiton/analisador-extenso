@@ -12,7 +12,7 @@ struct Context; /* forward decl (evita ciclo com context.h) */
 typedef struct
 {
     char **mensagens;
-    size_t n;            /* nº de mensagens (era NUM_ERROS) */
+    size_t n; /* nº de mensagens (era NUM_ERROS) */
 } ErrorTable;
 
 /* Carrega a tabela; `n` derivado da contagem de linhas. */
