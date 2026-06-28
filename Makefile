@@ -26,7 +26,7 @@ DBGBIN := build/analisador-debug
 CLANG_FORMAT ?= clang-format
 ALLSRC := $(wildcard src/*.c) $(wildcard include/extenso/*.h)
 
-.PHONY: all debug test clean format format-check
+.PHONY: all debug test memcheck clean format format-check
 
 all: $(BIN)
 
@@ -53,6 +53,10 @@ test: $(BIN)
 	./tests/run_golden.sh
 	./tests/run_cases.sh
 	./tests/run_errors.sh
+
+# Verificação de memória com valgrind (requer valgrind; ver tests/run_memcheck.sh).
+memcheck: $(BIN)
+	./tests/run_memcheck.sh
 
 # Formatação consistente (ver .clang-format). Requer clang-format instalado.
 format:

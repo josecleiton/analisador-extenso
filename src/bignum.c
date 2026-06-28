@@ -68,7 +68,7 @@ bigAdd (char a[], char b[])
     int ta = strlen (a), tb = strlen (b), ts = maior (ta, tb);
     if (!ta)
         return b;
-    else if (!tb)
+    if (!tb)
         return a;
     int i, vaium = 0;
     char *soma, *op2, *op1, flag = 0;
@@ -115,7 +115,7 @@ bigSub (char a[], char b[])
     bool allocated = false;
     if (!tamA)
         return b;
-    else if (!tamB)
+    if (!tamB)
         return a;
     if (tamA != tamB)
         {
@@ -185,16 +185,8 @@ padToWidth (char a[], char b[], char *menor)
                 }
             completaZeros[tamMaior - tamMenor] = '\0';
 
-            if (__menor)
-                {
-                    strcat (completaZeros, a);
-                    *menor = __menor;
-                }
-            else
-                {
-                    strcat (completaZeros, b);
-                    *menor = __menor;
-                }
+            strcat (completaZeros, __menor ? a : b);
+            *menor = __menor;
             return completaZeros;
         }
     else
