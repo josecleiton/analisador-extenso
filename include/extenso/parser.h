@@ -2,27 +2,27 @@
 #define EXTENSO_PARSER_H
 
 /*
-**  Avaliador por descida recursiva. Dirige o lexer, chama as operações de
-**  bignum e devolve o result como string de dígitos.
+**  Recursive-descent evaluator. Drives the lexer, calls the bignum operations
+**  and returns the result as a digit string.
 */
 #include "extenso/context.h"
 
-/* Gatilho de partida: avalia ctx->cursor e devolve o result por extenso. */
+/* Entry trigger: evaluates ctx->cursor and returns the result in spelled-out form. */
 char *evalExpr (Context *ctx);
 
-/* Soma/subtrai termos. */
+/* Adds/subtracts terms. */
 void parseTerm (Context *ctx, char *answer);
 
-/* Multiplica/divide/mod/eleva fatores. */
+/* Multiplies/divides/mods/raises factors. */
 void parseFactor (Context *ctx, char *answer);
 
-/* Resolve o bigFactorial de um fator. */
+/* Resolves the bigFactorial of a factor. */
 void parseFactorial (Context *ctx, char *answer);
 
-/* Resolve uma expressão entre parênteses. */
+/* Resolves an expression within parentheses. */
 void parseParen (Context *ctx, char *answer);
 
-/* Devolve o value numérico das expressões por extenso. */
+/* Returns the numeric value of the spelled-out expressions. */
 void parseAtom (Context *ctx, char *answer);
 
 #endif

@@ -6,9 +6,9 @@
 #include "extenso/util.h"
 
 /*
-**  Normaliza o espaçamento da saída in-place: colapsa sequências de espaços em
-**  um só e remove espaços no início e no fim. Garante saída limpa
-**  independentemente dos separadores ad-hoc montados em toWords/toWordsTriplet.
+**  Normalizes output spacing in-place: collapses runs of spaces into a single
+**  one and removes leading and trailing spaces. Guarantees clean output
+**  regardless of the ad-hoc separators assembled in toWords/toWordsTriplet.
 */
 static void
 normalizeSpaces (char *s)
@@ -16,7 +16,7 @@ normalizeSpaces (char *s)
     char *r = s, *w = s;
     int pendente = 0;
     while (*r == ' ')
-        r++; /* pula espaços iniciais */
+        r++; /* skip leading spaces */
     while (*r)
         {
             if (*r == ' ')
@@ -32,7 +32,7 @@ normalizeSpaces (char *s)
                     *w++ = *r++;
                 }
         }
-    *w = '\0'; /* descarta espaços finais pendentes */
+    *w = '\0'; /* discards pending trailing spaces */
 }
 
 char *

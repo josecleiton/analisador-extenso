@@ -2,28 +2,28 @@
 #define EXTENSO_LEXER_H
 
 /*
-**  Analisador léxico: quebra a expressão em tokens consultando o dicionário
-**  e enfileira os números encontrados na lista do contexto.
+**  Lexical analyzer: breaks the expression into tokens by consulting the
+**  dictionary and enqueues the numbers found in the context list.
 */
 #include "extenso/config.h"
 #include "extenso/context.h"
 
-/* Casa a palavra corrente de ctx->cursor com o dicionário. */
+/* Matches the current word at ctx->cursor against the dictionary. */
 void nextToken (Context *ctx);
 
-/* Pula a palavra em análise. */
+/* Skips the word being analyzed. */
 void skipWord (Context *ctx);
 
-/* Verdadeiro se o próximo token for um delimitador. */
+/* True if the next token is a delimiter. */
 bool nextIsDelimiter (Context *ctx);
 
-/* Em ordens compostas, avalia plural/singular e enfila a forma inserida. */
+/* For compound magnitudes, evaluates plural/singular and enqueues the inserted form. */
 bool matchPlural (Context *ctx, int i, char *s);
 
-/* Coloca hífen em delimitadores compostos (ex.: "dividido por" -> "dividido-por"). */
+/* Inserts a hyphen in compound delimiters (e.g.: "dividido por" -> "dividido-por"). */
 void joinCompoundDelim (Context *ctx, int *k, char *temp);
 
-/* Converte ctx->cursor para minúsculas. */
+/* Converts ctx->cursor to lowercase. */
 void lowercaseExpr (Context *ctx);
 
 #endif

@@ -28,8 +28,8 @@ main (int argc, char **argv)
     ctx.errtab = e;
 
     int rc;
-    /* Modo batch não-interativo (usado pelo teste de regressão):
-    ** lê ARQ_ENTRADA, escreve ARQ_SAIDA e sai, sem o menu. */
+    /* Non-interactive batch mode (used by the regression test):
+    ** reads ARQ_ENTRADA, writes ARQ_SAIDA and exits, without the menu. */
     if (argc > 1 && strcmp (argv[1], "--batch") == 0)
         {
             const char *inPath = argc > 2 ? argv[2] : ARQ_ENTRADA;
@@ -37,7 +37,7 @@ main (int argc, char **argv)
             runFile (&ctx, inPath, outPath);
             rc = 0;
         }
-    /* Avalia uma única expressão e imprime só o result. */
+    /* Evaluate a single expression and print only the result. */
     else if (argc > 2 && strcmp (argv[1], "--eval") == 0)
         {
             ctx.cursor = ctx.buffer;
@@ -52,7 +52,7 @@ main (int argc, char **argv)
                     rc = 0;
                 }
             else
-                rc = 1; /* expressão inválida: erro já reportado por reportError */
+                rc = 1; /* invalid expression: error already reported by reportError */
         }
     else
         rc = runMenu (&ctx);

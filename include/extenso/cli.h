@@ -2,27 +2,27 @@
 #define EXTENSO_CLI_H
 
 /*
-**  Interface de linha de comando: menu, modos teclado/arquivo, exibição.
+**  Command-line interface: menu, keyboard/file modes, display.
 */
 #include "extenso/config.h"
 #include "extenso/context.h"
 
-/* Menu que dá início à análise. */
+/* Menu that starts the analysis. */
 int runMenu (Context *ctx);
 
-/* Imprime o manual de uso. */
+/* Prints the usage manual. */
 void printHelp (void);
 
-/* Dispara a análise lendo de inPath e escrevendo em outPath. */
+/* Triggers the analysis reading from inPath and writing to outPath. */
 int runFile (Context *ctx, const char *inPath, const char *outPath);
 
-/* Mostra o arquivo de result. */
+/* Shows the result file. */
 void printResults (void);
 
-/* Tamanho da maior linha do stream. */
+/* Length of the longest line in the stream. */
 size_t longestLine (FILE *stream);
 
-/* Método portável de limpar a tela. */
+/* Portable method to clear the screen. */
 void clearScreen (void);
 
 #endif

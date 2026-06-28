@@ -1,82 +1,116 @@
-# Analisador de expressões numéricas por extenso em C
+# Spelled-out numeric expression analyzer in C
 
-## Introdução
+## Introduction
 
-Este é um **analisador de expressões númericas por __extenso__**, em português, seguindo algumas regras bem definidas.
-A linguagem de programação utilizada: ISO **C11** (o código usa `stdbool.h`, `stdint.h`, declarações no meio do bloco, etc.).
-## Da motivação
+This is an **analyzer of numeric expressions written out in full (`por extenso`)**, in
+Portuguese, following a few well-defined rules. The implementation language is ISO **C11**
+(the code uses `stdbool.h`, `stdint.h`, mid-block declarations, etc.).
 
-Este projeto foi proposto como trabalho final da disciplina Linguagem de Programação I, pelo professor [**Jorge Sampaio Farias**](http://lattes.cnpq.br/6683499592786376), referente ao período 2 do curso de [Sistemas de Informação](http://www.csi.uneb.br/) na [**Universidade do Estado da Bahia (UNEB)**](https://portal.uneb.br/).
+The input numbers are written the way they are spoken in Portuguese (e.g. `dois milhoes`,
+`setenta e quatro`), so the domain vocabulary in the dictionary, the input/output and the
+on-screen messages are intentionally kept in Portuguese.
 
-## Do limite
+## Motivation
 
-O limite de expressões atualmente está em 0 ≤ N < 10³⁴. Mas, o projeto continuará e o próximo passo é atingir 1/10³⁴ < N < 10³⁴.
+This project was proposed as the final assignment for the course *Linguagem de Programação I*,
+by professor [**Jorge Sampaio Farias**](http://lattes.cnpq.br/6683499592786376), in the 2nd
+term of the [Information Systems](http://www.csi.uneb.br/) program at the
+[**State University of Bahia (UNEB)**](https://portal.uneb.br/).
 
-## Conceitos
+## Concepts
 
-###  Interpretador de expressões
+### Expression interpreter
 
-A proposta é de resolver expressões númericas por extenso usando a linguagem C, um problema que requer uma interpretação das expressões de entrada. Porque mesmo que resolvamos expressões simples facilmente, isto é, com apenas uma operação (é necessário atentar para o N), quando há várias operações, fica muito difícil programar o computador, sem deixar o código ilegível. A partir dessa premissa e com os materiais de apoio, implementei um conjunto de rotinas que resolvem corretamente cada operação no momento desejado. Esse subconjunto de rotinas têm prefixo **exp**.
+The goal is to evaluate spelled-out numeric expressions in C — a problem that requires
+interpreting the input. A single-operation expression is easy, but with several operations it
+gets hard to program without making the code unreadable. The evaluator is a recursive-descent
+parser (`parseTerm` / `parseFactor` / `parseFactorial` / `parseParen` / `parseAtom` in
+`src/parser.c`) that resolves each operation at the right moment.
 
-Além disso, precisamos de um analisador gramatical (ou léxico) para sabermos se as palavras que compõem a expressão são válidas, este analisador quebra a expressão em vários tokens. Isso é o que a função `pega_token` faz.
+A lexical analyzer is also needed to check whether the words that make up an expression are
+valid; it breaks the expression into tokens. That is what `nextToken` (in `src/lexer.c`) does.
 
-Um outro subconjunto de rotinas é necessário para a verificação semântica, ou seja, de significado das palavras ali colocadas. Porque "milhao um" está lexicamente correto, porém, não tem o mesmo significado que "um milhao". Nós, nativos da lingua, fazemos essa avaliação automaticamente, mas foi necessário passar isso para o computador. Esse subconjunto de rotinas tem prefixo **sem**.
+A third group of routines performs **semantic** validation — the meaning of the words. For
+example, `milhao um` is lexically correct but does not mean the same as `um milhao`. Native
+speakers do this automatically; here it had to be taught to the computer. See
+`src/semantics.c`.
 
- ![Formalismo](Documentos/analisador.jpg?raw=true "Formalismo de Backus-Naur")
- ###### Gramática de Backus-Naur utilizada pelo analisador.
+ ![Formalism](Documentos/analisador.jpg?raw=true "Backus–Naur formalism")
+ ###### Backus–Naur grammar used by the analyzer.
 
-### Operações com números em strings
+### Arithmetic on numbers stored as strings
 
-Em vista do N ser muito maior do que um `long long`, foi necessário guardar os números como strings, cada digito destes representa uma posição no vetor de caracteres.
+Because the operands can be far larger than a `long long`, the numbers are stored as strings
+(arbitrary precision), where each digit is one position in the character array. The bignum
+routines live in `src/bignum.c` (addition, subtraction, schoolbook multiplication, long
+division/modulo, exponentiation by squaring and factorial).
 
-## Instruções de uso
+## Project layout
 
-### Compilação
+```
+include/extenso/   public headers, one per module
+src/               cli, lexer, parser, semantics, conversion, num_list,
+                   dictionary, errors, bignum, util, main
+lib/               data files (Portuguese vocabulary): dicionario.cfg,
+                   erros.cfg, expressoes.txt
+tests/             golden + correctness + error-recovery test harness
+```
 
-Por ser uma aplicação em C, você necessita de um compilador C na sua máquina, usarei o GCC como exemplo abaixo. Algumas IDEs instalam-no em conjunto, como o DEV C++, mas o seguinte tutorial é para compilá-la no terminal.
+## Usage
 
-- Clone o repositório
-- Abra a pasta *compilha* no seu terminal
-- Verifique se o GCC ou o TCC está instalado com `gcc --version` ou `clang --version`
-- Se não estiver instalado, use o gerenciador de pacotes da sua distribuição para resolver isso.
-- Compile com `make` (gera `build/analisador`). Para uma build instrumentada (ASan/UBSan) use `make debug`.
-- Alternativamente, sem o Makefile: `clang -std=c11 -O2 *.c -o main -lm` ou `gcc -std=c11 -O2 *.c -o main -lm`
-- Para rodar os testes: `make test`
-- Para formatar o código de forma consistente: `make format` (requer `clang-format`; verifique com `make format-check`)
+### Building
 
-### Do programa
+You need a C compiler. With the provided Makefile:
 
-As expressões devem ser formatadas com espaços delimitando as palavras.
+- Build: `make` (produces `build/analisador`).
+- Debug build: `make debug` (produces `build/analisador-debug`, `-g -O0`).
+- Run the tests: `make test`.
+- Format the code consistently: `make format` (requires `clang-format`; check with
+  `make format-check`).
 
-#### Formato das operações
-- Soma 🢥 numero *mais* numero
-- Subtração 🢥 numero *menos* numero
-- Multiplicação 🢥 numero *vezes* numero
-- Divisão 🢥 numero *dividido por* numero
-- Resto da divisão 🢥 numero *mod* numero
-- Fatorial 🢥 *fatorial de* numero
-- Potenciação 🢥 numero *elevado a* numero __*NEW!*__
+Without the Makefile: `cc -std=c11 -O2 -Iinclude src/*.c -o analisador`.
 
-##### OBS: deve-se seguir estritamente as instruções para a analise ocorrer como esperado.
+### Running
 
-#### Não utilize acentos nas palavras
-- Correto = dois milhoes
-- Incorreto = ~~dois milhões~~
+- Interactive menu: `./build/analisador` (choose keyboard or file input).
+- Evaluate one expression: `./build/analisador --eval "setenta e quatro mais dez"`.
+- Batch mode: `./build/analisador --batch [input.txt] [output.txt]` (defaults to
+  `lib/expressoes.txt` → `resultados.txt`).
 
-#### Não utilize pontuação
-- Correto = sete trilhoes e oitenta milhoes
-- Incorreto = ~~sete trilhoes, e oitenta milhoes~~
+Expressions must be written with spaces separating the words.
 
-## Descrição das funções
+#### Operation formats
+- Addition → numero *mais* numero
+- Subtraction → numero *menos* numero
+- Multiplication → numero *vezes* numero
+- Division → numero *dividido por* numero
+- Remainder → numero *mod* numero
+- Factorial → *fatorial de* numero
+- Exponentiation → numero *elevado a* numero
 
-Os comportamentos das funções (e seu algoritmo) estão descritos no arquivo de cabeçalho `interpretador.h`. As funções de operações básicas são "algoritmos clássicos" de soma, subtração, divisão e multiplicação.
+##### NOTE: follow the rules strictly for the analysis to work as expected.
 
+#### Do not use accents
+- Correct = `dois milhoes`
+- Wrong = ~~`dois milhões`~~
 
-## Bibliografia
+#### Do not use punctuation
+- Correct = `sete trilhoes e oitenta milhoes`
+- Wrong = ~~`sete trilhoes, e oitenta milhoes`~~
 
-Todos os documentos de apoio podem ser encontrados na pasta [ExpressionParsing](https://www.dropbox.com/sh/r32lw4bn3owka2m/AAApL63R1qBi4EdnlrZKaBqMa?dl=0) no Dropbox. Agradeço a todos os autores e os credito pela contribuição ao projeto e à minha formação.
+## Function documentation
 
+Each module's behavior is documented in its public header under `include/extenso/`. The basic
+arithmetic routines in `bignum` are the classic algorithms for addition, subtraction,
+multiplication and long division.
 
-## Contato
+## Bibliography
 
-A partir do [email](mailto:jcleitonbc@gmail.com) do Github.
+The supporting material can be found in the
+[ExpressionParsing](https://www.dropbox.com/sh/r32lw4bn3owka2m/AAApL63R1qBi4EdnlrZKaBqMa?dl=0)
+Dropbox folder. Thanks to all the authors for their contribution to this project and to my
+education.
+
+## Contact
+
+Through the [email](mailto:jcleitonbc@gmail.com) on GitHub.

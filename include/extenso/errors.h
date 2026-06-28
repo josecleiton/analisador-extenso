@@ -2,29 +2,29 @@
 #define EXTENSO_ERRORS_H
 
 /*
-**  Tabela de mensagens de erro carregada em memória (ver ARQ_ERROS) e
-**  relatório de erros léxicos/sintáticos/semânticos.
+**  Error message table loaded into memory (see ARQ_ERROS) and reporting of
+**  lexical/syntactic/semantic errors.
 */
 #include "extenso/config.h"
 
-struct Context; /* forward decl (evita ciclo com context.h) */
+struct Context; /* forward decl (avoids a cycle with context.h) */
 
 typedef struct
 {
     char **mensagens;
-    size_t n; /* nº de mensagens (era NUM_ERROS) */
+    size_t n; /* number of messages (was NUM_ERROS) */
 } ErrorTable;
 
-/* Carrega a tabela; `n` derivado da contagem de linhas. */
+/* Loads the table; `n` derived from the line count. */
 ErrorTable *error_table_load (const char *path);
 
-/* Libera a tabela. */
+/* Frees the table. */
 void error_table_free (ErrorTable *t);
 
-/* Mensagem do erro `tipo` (com checagem de limites). */
+/* Message for error `tipo` (with bounds checking). */
 const char *error_message (const ErrorTable *t, int tipo);
 
-/* Formata o erro `tipoErro`, registra em log e aborta. */
+/* Formats error `tipoErro`, logs it and aborts. */
 void reportError (struct Context *ctx, int tipoErro);
 
 #endif

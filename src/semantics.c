@@ -10,7 +10,7 @@ checkSemantics (Context *ctx)
     if (!listSem)
         reportError (ctx, 3);
     if (listCount (ctx) > (DECILHAO - NOVECENTOS) * 4 - 1)
-        reportError (ctx, 7); /* LIMITE DE DECILHÕES */
+        reportError (ctx, 7); /* DECILLION LIMIT */
     uint16_t ord[2], i = 0;
     while (listSem)
         {

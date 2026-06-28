@@ -12,10 +12,10 @@ dictionary_load (const char *path)
         {
             line[strcspn (line, "\r\n")] = '\0';
             if (!line[0])
-                continue; /* ignora linhas em branco */
+                continue; /* ignore blank lines */
             char *eq = strchr (line, '=');
             if (!eq)
-                continue; /* linha sem '=' não é entrada */
+                continue; /* a line without '=' is not an entry */
             *eq = '\0';
             if (n == cap)
                 {
@@ -33,7 +33,7 @@ dictionary_load (const char *path)
     Dictionary *d = (Dictionary *)alloc (1, sizeof (Dictionary));
     d->items = items;
     d->n = n;
-    /* delim_start: primeira entrada cujo value não começa com dígito. */
+    /* delim_start: first entry whose value does not start with a digit. */
     d->delim_start = n;
     for (size_t i = 0; i < n; i++)
         if (!isdigit ((unsigned char)items[i].value[0]))

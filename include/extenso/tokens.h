@@ -2,9 +2,9 @@
 #define EXTENSO_TOKENS_H
 
 /*
-**  Tokens que auxiliam na análise léxica/semântica.
-**  Os valores são exatamente os índices das linhas do ARQ_DICT — esse
-**  acoplamento é intencional (ver dictionary).
+**  Tokens that aid the lexical/semantic analysis.
+**  The values are exactly the line indices of ARQ_DICT — this coupling is
+**  intentional (see dictionary).
 */
 enum tokens
 {

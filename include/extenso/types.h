@@ -4,7 +4,7 @@
 #include "extenso/config.h"
 
 /*
-**  Term: guarda temporariamente uma linha do ARQ_DICT (<name>=<value>).
+**  Term: temporarily holds a line from ARQ_DICT (<name>=<value>).
 */
 typedef struct ordem
 {
@@ -13,8 +13,8 @@ typedef struct ordem
 } Term;
 
 /*
-**  NumList: lista encadeada que carrega o número a ser analisado
-**  semanticamente, casa decimal por casa decimal.
+**  NumList: linked list that carries the number to be analyzed semantically,
+**  decimal place by decimal place.
 */
 typedef struct NumList
 {
@@ -24,7 +24,7 @@ typedef struct NumList
 } NumList;
 
 /*
-**  Index: vetor de posições (offsets) das linhas de um arquivo + seu tamanho.
+**  Index: array of line positions (offsets) of a file + its size.
 */
 typedef struct index
 {

@@ -2,18 +2,18 @@
 #define EXTENSO_CONVERSION_H
 
 /*
-**  Conversão extenso <-> string de dígitos.
+**  Conversion between spelled-out form (extenso) and a digit string.
 */
 #include "extenso/config.h"
 #include "extenso/context.h"
 
-/* Converte de extenso (na lista) para uma string de dígitos. */
+/* Converts from spelled-out form (in the list) to a digit string. */
 char *toDigits (Context *ctx);
 
-/* Converte de uma string de dígitos para extenso. */
+/* Converts from a digit string to spelled-out form. */
 void toWords (Context *ctx, char **answer);
 
-/* Converte a centena/dezena/unidade para extenso. */
+/* Converts the hundreds/tens/units to spelled-out form. */
 int toWordsTriplet (Context *ctx, char **str, char *result, uint16_t *size, uint16_t *flagPlural);
 
 #endif

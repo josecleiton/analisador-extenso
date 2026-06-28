@@ -2,22 +2,22 @@
 #define EXTENSO_UTIL_H
 
 /*
-**  Utilidades: alocação com tratamento de erro, abertura de arquivo e
-**  indexação de linhas de arquivo.
+**  Utilities: allocation with error handling, file opening and file line
+**  indexing.
 */
 #include "extenso/config.h"
 #include "extenso/types.h"
 
-/* calloc abortando em falha. */
+/* calloc that aborts on failure. */
 void *alloc (const size_t count, const size_t blockSize);
 
-/* fopen abortando em falha. */
+/* fopen that aborts on failure. */
 FILE *openFile (const char filename[], const char type[]);
 
-/* Reporta o errno e aborta o programa (falha irrecuperável). */
+/* Reports errno and aborts the program (unrecoverable failure). */
 int abortWithLog (const bool msg);
 
-/* Devolve as posições (offsets) do início de cada linha de `in`. */
+/* Returns the positions (offsets) of the start of each line of `in`. */
 Index buildLineIndex (FILE *in, int limite);
 
 #endif

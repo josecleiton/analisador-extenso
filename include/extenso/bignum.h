@@ -2,34 +2,34 @@
 #define EXTENSO_BIGNUM_H
 
 /*
-**  OPERAÇÕES COM NÚMEROS GUARDADOS EM STRING (BIG INTEGERS)
-**  POR EXEMPLO, O NUMERO 154897
-**  1 5 4 8 9 7 \0 <- VETOR EM MEMÓRIA
-**  0 1 2 3 4 5 6  <- INDICES DO VETOR DE CARACTERES
+**  OPERATIONS ON NUMBERS STORED IN STRINGS (BIG INTEGERS)
+**  FOR EXAMPLE, THE NUMBER 154897
+**  1 5 4 8 9 7 \0 <- ARRAY IN MEMORY
+**  0 1 2 3 4 5 6  <- INDICES OF THE CHARACTER ARRAY
 */
 #include "extenso/config.h"
 #include "extenso/util.h"
 #include <stdarg.h>
 
-char *bigAdd (char op1[], char op2[]);              /* SOMA DE BIGINTEGERS */
-char *bigSub (char a[], char b[]);                  /* SUBTRAÇÃO DE BIGINTEGERS */
-char *padToWidth (char a[], char b[], char *menor); /* ZEROS NA MENOR STRING */
-char *bigMul (char a[], char b[]);                  /* MULTIPLICAÇÃO DE BIGINTEGERS */
-char *bigDivMod (char a[], char D[], bool MOD);     /* DIVISÃO E MODULO SEM SINAL */
-char *bigPow (char a[], char b[]);                  /* EXPONENCIAL SEM SINAL */
-char *bigFactorial (char a[]);                      /* FATORIAL DE BIGINTEGERS */
-bool isAllDigits (char a[]);                        /* STRING É TODA NUMERICA? */
+char *bigAdd (char op1[], char op2[]);              /* SUM OF BIGINTEGERS */
+char *bigSub (char a[], char b[]);                  /* SUBTRACTION OF BIGINTEGERS */
+char *padToWidth (char a[], char b[], char *menor); /* ZEROS ON THE SHORTER STRING */
+char *bigMul (char a[], char b[]);                  /* MULTIPLICATION OF BIGINTEGERS */
+char *bigDivMod (char a[], char D[], bool MOD);     /* UNSIGNED DIVISION AND MODULO */
+char *bigPow (char a[], char b[]);                  /* UNSIGNED EXPONENTIATION */
+char *bigFactorial (char a[]);                      /* FACTORIAL OF BIGINTEGERS */
+bool isAllDigits (char a[]);                        /* IS THE STRING ALL NUMERIC? */
 int factMulSmall (int a, char fat[], int limit);
-bool digitsToValues (char a[]);            /* RETIRA '0' DE CADA CARACTERE */
-bool valuesToDigits (char a[], int tam);   /* ADICIONA '0' EM CADA CARACTERE */
+bool digitsToValues (char a[]);            /* SUBTRACTS '0' FROM EACH CHARACTER */
+bool valuesToDigits (char a[], int tam);   /* ADDS '0' TO EACH CHARACTER */
 bool reverseStr (char a[]);                /* strrev */
-int maior (int a, int b);                  /* MAIOR ENTRE DOIS INTEIROS */
-int menor (int a, int b);                  /* MENOR ENTRE DOIS INTEIROS */
-bool numGreaterEqual (char x[], char y[]); /* COMPARA OS NUMEROS NAS STRINGS */
-void stripLeadingZeros (char **ptrNumber); /* REMOVE ZEROS À ESQUERDA */
-void advancePastZeros (int narg, ...);     /* AVANÇA PONTEIROS PASSADO OS ZEROS */
+int maior (int a, int b);                  /* LARGER OF TWO INTEGERS */
+int menor (int a, int b);                  /* SMALLER OF TWO INTEGERS */
+bool numGreaterEqual (char x[], char y[]); /* COMPARES THE NUMBERS IN THE STRINGS */
+void stripLeadingZeros (char **ptrNumber); /* REMOVES LEADING ZEROS */
+void advancePastZeros (int narg, ...);     /* ADVANCES POINTERS PAST THE ZEROS */
 
-/* GERENCIA MEMORIA ENTRE O RESULTADO E OS OPERADORES DAS FUNÇÕES */
+/* MANAGES MEMORY BETWEEN THE RESULT AND THE OPERANDS OF THE FUNCTIONS */
 bool applyInto (char a[], char b[], char *(*f) (char *, char *));
 bool applyDivInto (char a[], char b[], bool mod, char *(*f) (char *, char *, bool));
 void swapChars (char *a, char *b);

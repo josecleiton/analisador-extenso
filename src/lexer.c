@@ -81,7 +81,7 @@ bool
 nextIsDelimiter (Context *ctx)
 {
     while (*ctx->cursor && *ctx->cursor == ' ')
-        ctx->cursor++; /* Posiciona a analise no inicio do proximo token */
+        ctx->cursor++; /* Positions the analysis at the start of the next token */
     char *needle = strchr (ctx->cursor, ' ');
     if (!needle)
         {
@@ -92,11 +92,11 @@ nextIsDelimiter (Context *ctx)
     int k = needle - ctx->cursor;
     ctx->cursor[k] = '\0';
     char DEL[MAXWLEN] = { '\0' };
-    size_t j = ctx->dict->delim_start + 1; /* PULA O 'e' (PRIMEIRO DELIMITADOR) */
+    size_t j = ctx->dict->delim_start + 1; /* SKIPS THE 'e' (FIRST DELIMITER) */
     while (j < ctx->dict->n)
         {
             strcpy (DEL, ctx->dict->items[j++].name);
-            char *needle2 = strchr (DEL, '-'); /* TRATA O HIFEN NO DELIMITADOR COMPOSTO */
+            char *needle2 = strchr (DEL, '-'); /* HANDLES THE HYPHEN IN THE COMPOUND DELIMITER */
             if (needle2)
                 *needle2 = '\0';
             if (!strcmp (DEL, ctx->cursor))

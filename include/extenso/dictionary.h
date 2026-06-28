@@ -2,13 +2,13 @@
 #define EXTENSO_DICTIONARY_H
 
 /*
-**  Dicionário carregado em memória uma única vez (substitui o acesso por
-**  fseek/fscanf ao ARQ_DICT a cada token).
+**  Dictionary loaded into memory just once (replaces the fseek/fscanf access
+**  to ARQ_DICT on every token).
 **
-**  Cada entrada guarda a linha crua do .cfg: `name` é tudo antes do '=' (pode
-**  conter a forma composta "singular,plural", ex.: "milhao,milhoes") e `value`
-**  é tudo depois do '='. O índice da entrada é exatamente o value do enum
-**  `tokens` correspondente.
+**  Each entry holds the raw line from the .cfg: `name` is everything before
+**  the '=' (it may contain the compound form "singular,plural", e.g.
+**  "milhao,milhoes") and `value` is everything after the '='. The entry index
+**  is exactly the value of the corresponding `tokens` enum.
 */
 #include "extenso/config.h"
 
@@ -21,14 +21,14 @@ typedef struct
 typedef struct
 {
     DictEntry *items;
-    size_t n;           /* nº de entradas (era TAM_DICT) */
-    size_t delim_start; /* índice da 1ª entrada delimitadora (era INDEL) */
+    size_t n;           /* number of entries (was TAM_DICT) */
+    size_t delim_start; /* index of the 1st delimiter entry (was INDEL) */
 } Dictionary;
 
-/* Carrega o dicionário; `n`/`delim_start` derivados do conteúdo. */
+/* Loads the dictionary; `n`/`delim_start` derived from the content. */
 Dictionary *dictionary_load (const char *path);
 
-/* Libera o dicionário. */
+/* Frees the dictionary. */
 void dictionary_free (Dictionary *d);
 
 #endif
