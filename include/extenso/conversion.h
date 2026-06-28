@@ -8,12 +8,12 @@
 #include "extenso/context.h"
 
 /* Converte de extenso (na lista) para uma string de dígitos. */
-char *toNum (Context *ctx);
+char *toDigits (Context *ctx);
 
 /* Converte de uma string de dígitos para extenso. */
-void toName (Context *ctx, char **resposta);
+void toWords (Context *ctx, char **answer);
 
 /* Converte a centena/dezena/unidade para extenso. */
-int toNameMenOrd (Context *ctx, char **str, char *resultado, uint16_t *size, uint16_t *flagPlural);
+int toWordsTriplet (Context *ctx, char **str, char *result, uint16_t *size, uint16_t *flagPlural);
 
 #endif

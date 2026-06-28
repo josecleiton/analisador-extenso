@@ -18,6 +18,6 @@ FILE *openFile (const char filename[], const char type[]);
 int abortWithLog (const bool msg);
 
 /* Devolve as posições (offsets) do início de cada linha de `in`. */
-Index criaIndices (FILE *in, int limite);
+Index buildLineIndex (FILE *in, int limite);
 
 #endif

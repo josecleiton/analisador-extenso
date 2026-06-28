@@ -8,9 +8,9 @@
 /*
 **  Normaliza o espaçamento da saída in-place: colapsa sequências de espaços em
 **  um só e remove espaços no início e no fim. Garante saída limpa
-**  independentemente dos separadores ad-hoc montados em toName/toNameMenOrd.
+**  independentemente dos separadores ad-hoc montados em toWords/toWordsTriplet.
 */
-static void normalizaEspacos (char *s)
+static void normalizeSpaces (char *s)
 {
     char *r = s, *w = s;
     int pendente = 0;
@@ -32,11 +32,11 @@ static void normalizaEspacos (char *s)
     *w = '\0';                       /* descarta espaços finais pendentes */
 }
 
-char *toNum (Context *ctx)
+char *toDigits (Context *ctx)
 {
-    char *resultado = NULL, *aux = NULL, *ext = NULL;
-    ListaNum* listHandle = ctx->list;
-    uint16_t limit = pegaOrdem(ctx->list), ord, proxOrd, proxClasse;
+    char *result = NULL, *aux = NULL, *ext = NULL;
+    NumList* listHandle = ctx->list;
+    uint16_t limit = orderOf(ctx->list), ord, proxOrd, proxClasse;
     uint16_t i, flare = 0, flag;
     if (limit) limit = (limit+1-MIL)*3+3;
     else limit+=3;
@@ -44,10 +44,10 @@ char *toNum (Context *ctx)
     aux = ext;
     while (ctx->list && limit)
     {
-        i = ctx->list -> classe;
+        i = ctx->list -> cls;
         if (i != CONJUCAO && i < MIL)
         {
-            ord = pegaOrdem (ctx->list);
+            ord = orderOf (ctx->list);
             if (i < DEZ)
             {
                 if (! flare)
@@ -58,7 +58,7 @@ char *toNum (Context *ctx)
                     flag = 0;
                 }
                 if (aux - ext && (*(aux-1) != '0' && *aux == '0' && *(aux+1) == '0')) aux++;
-                *aux++ = *(ctx->list -> info -> valor);
+                *aux++ = *(ctx->list -> info -> value);
             }
             else if (i < CEM)
             {
@@ -68,12 +68,12 @@ char *toNum (Context *ctx)
                     flare = 1;
                     /*flag = 1;*/
                 }
-                strcpy (aux++, ctx->list -> info -> valor);
+                strcpy (aux++, ctx->list -> info -> value);
                 flag = 1;
             }
             else
             {
-                strcpy (aux++, ctx->list -> info -> valor);
+                strcpy (aux++, ctx->list -> info -> value);
                 flare = 1;
                 flag = 2;
             }
@@ -81,18 +81,18 @@ char *toNum (Context *ctx)
         else if (i != CONJUCAO)
         {
             flare = 0;
-            if (ctx->list -> prox)
-                proxOrd = pegaOrdem (ctx->list -> prox);
+            if (ctx->list -> next)
+                proxOrd = orderOf (ctx->list -> next);
             else proxOrd = NOVECENTOS;
             while (ord - proxOrd >= 1)
             {
                 flare = 1;
                 if (ord - proxOrd == 1)
                 {
-                    proxClasse = pegaProxClasse (ctx->list -> prox);
+                    proxClasse = nextClass (ctx->list -> next);
                     if (proxClasse >= CEM)
                     {
-                        uint16_t prevClass = ctx->list -> ant -> classe;
+                        uint16_t prevClass = ctx->list -> prev -> cls;
                         if (prevClass >= CEM)
                             aux += 2;
                         else if (prevClass >= DEZ)
@@ -123,45 +123,45 @@ char *toNum (Context *ctx)
                 proxOrd++;
             }
         }
-        ctx->list = ctx->list -> prox;
+        ctx->list = ctx->list -> next;
     }
 
     flare = strlen (ext);
-    resultado = (char*) alloc (flare + 1, sizeof (char));
-    strcpy (resultado, ext);
+    result = (char*) alloc (flare + 1, sizeof (char));
+    strcpy (result, ext);
     free (ext);
-    trataZeros (&resultado);
+    stripLeadingZeros (&result);
     ctx->list = listHandle;
-    return resultado;
+    return result;
 }
 
-void toName (Context *ctx, char **resposta)
+void toWords (Context *ctx, char **answer)
 {
-    if (!**resposta)
+    if (!**answer)
     {
-        strcpy (*resposta, (const char*) "zero");
+        strcpy (*answer, (const char*) "zero");
         return;
     }
-    uint16_t tam = strlen (*resposta);
+    uint16_t tam = strlen (*answer);
     if (tam > DECILHAO-10) return;
-    char *resultado = (char*) alloc (tam*20, sizeof (char));
+    char *result = (char*) alloc (tam*20, sizeof (char));
     char *aux = NULL;
     uint16_t ord, plural;
     int flag;
     while (tam > 0)
     {
         ord = (tam - 1)/3;
-        flag = toNameMenOrd (ctx, resposta, resultado, &tam, &plural);
-        tam = strlen (*resposta);
+        flag = toWordsTriplet (ctx, answer, result, &tam, &plural);
+        tam = strlen (*answer);
         if (flag)
         {
             if (ord == 1)
             {
                 aux = (char*) alloc (5, sizeof (char));
                 ++aux;
-                strcpy (aux, ctx->dict->items[ord-1+MIL].nome);
+                strcpy (aux, ctx->dict->items[ord-1+MIL].name);
                 *--aux = ' ';
-                strcat (resultado, aux);
+                strcat (result, aux);
                 free (aux);
             }
             else if (ord)
@@ -169,7 +169,7 @@ void toName (Context *ctx, char **resposta)
                 aux = (char*) alloc (36, sizeof (char));
                 char* tmp = aux;
                 ++aux;
-                strcpy (aux, ctx->dict->items[ord-1+MIL].nome);
+                strcpy (aux, ctx->dict->items[ord-1+MIL].name);
                 char* del = strchr (aux, ',');
                 aux[del - aux] = '\0';
                 if (plural)
@@ -178,31 +178,31 @@ void toName (Context *ctx, char **resposta)
                     aux = del+2;
                 }
                 *--aux = ' ';
-                strcat (resultado, aux);
+                strcat (result, aux);
                 free (tmp);
             }
-            if ((**resposta) && !((tam - 1)/3))
+            if ((**answer) && !((tam - 1)/3))
             {
-                strcat (resultado, (const char*) " e ");
-                ctx->flagNUM = false;
+                strcat (result, (const char*) " e ");
+                ctx->isNumber = false;
             }
-            strcat (resultado, " ");
+            strcat (result, " ");
         }
-        if (ord==1 && ctx->flagNUM)
+        if (ord==1 && ctx->isNumber)
         {
             uint16_t AC = 0, c = 0;
-            while ((*resposta)[c]) AC += (*resposta)[c++] - '0';
-            if (AC) strcat (resultado, (const char*) " e ");
+            while ((*answer)[c]) AC += (*answer)[c++] - '0';
+            if (AC) strcat (result, (const char*) " e ");
         }
     }
-    aux = strrchr (resultado, 'e');
+    aux = strrchr (result, 'e');
     if (aux && (*(aux-1) == ' ' && *(aux+1) == ' ') && (*(aux+2) == ' ' || *(aux+2) == '\0') && (*(aux+3) == ' ' || *(aux+3) == '\0') ) *aux = '\0';
-    normalizaEspacos (resultado);
-    strcpy (*resposta, resultado);
-    free (resultado);
+    normalizeSpaces (result);
+    strcpy (*answer, result);
+    free (result);
 }
 
-int toNameMenOrd (Context *ctx, char **numberInput, char *resultado, uint16_t *size, uint16_t *flagPlural)
+int toWordsTriplet (Context *ctx, char **numberInput, char *result, uint16_t *size, uint16_t *flagPlural)
 {
     char *currentNumber = *numberInput, label = 0, *tmp = NULL;
     uint16_t tam = *size, count = tam%3;
@@ -220,20 +220,20 @@ int toNameMenOrd (Context *ctx, char **numberInput, char *resultado, uint16_t *s
         {
             switch (count)
             {
-                case 1: ctx->flagNUM = UM; break;
-                case 2: ctx->flagNUM = VINTE; label--; break;
-                case 3: ctx->flagNUM = CEM; break;
+                case 1: ctx->isNumber = UM; break;
+                case 2: ctx->isNumber = VINTE; label--; break;
+                case 3: ctx->isNumber = CEM; break;
             }
             if (count == 2 && *currentNumber == '1')
             {
                 label = 10;
                 currentNumber++;
-                ctx->flagNUM = UM;
+                ctx->isNumber = UM;
                 count--;
             }
             label += *currentNumber - '0';
             tmp = (char*) alloc (25, sizeof (char));
-            strcpy (tmp, ctx->dict->items[label-1+ctx->flagNUM].nome);
+            strcpy (tmp, ctx->dict->items[label-1+ctx->isNumber].name);
             if (strstr (tmp, (const char*)"cem"))
             {
                 strcpy (tmp, (const char*)"cento");
@@ -244,9 +244,9 @@ int toNameMenOrd (Context *ctx, char **numberInput, char *resultado, uint16_t *s
                     count = 1;
                 }
             }
-            strcat (resultado, tmp);
+            strcat (result, tmp);
             if (count != 1 && ((count==3 && currentNumber[1] + currentNumber[2] != '0'+'0') || (count==2 && currentNumber[1] != '0')))
-                strcat (resultado, (const char*) " e ");
+                strcat (result, (const char*) " e ");
             count--;
             currentNumber++;
             free (tmp);

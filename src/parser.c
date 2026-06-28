@@ -8,121 +8,121 @@
 #include "extenso/bignum.h"
 #include "extenso/util.h"
 
-char *expParsingStart (Context *ctx)
+char *evalExpr (Context *ctx)
 {
-    ctx->flagNUM = false; /* estado limpo (importante ao continuar após um erro) */
-    strToLower (ctx);
-    char *resposta = (char*) alloc (4*_1KB, sizeof (char));
-    char *fResposta = resposta;
-    ctx->_TEXP = ctx->EXP;
-    pegaToken (ctx);
-    if (!ctx->token) erroSS (ctx, 3);
-    expResTermo (ctx, resposta);
-    if (ctx->token) erroSS (ctx, 0);
-    toName (ctx, &resposta);
-    ctx->_TEXP = fResposta;
-    return resposta;
+    ctx->isNumber = false; /* estado limpo (importante ao continuar após um erro) */
+    lowercaseExpr (ctx);
+    char *answer = (char*) alloc (4*_1KB, sizeof (char));
+    char *fResposta = answer;
+    ctx->exprStart = ctx->cursor;
+    nextToken (ctx);
+    if (!ctx->token) reportError (ctx, 3);
+    parseTerm (ctx, answer);
+    if (ctx->token) reportError (ctx, 0);
+    toWords (ctx, &answer);
+    ctx->exprStart = fResposta;
+    return answer;
 }
 
-void expResTermo (Context *ctx, char* resposta)
+void parseTerm (Context *ctx, char* answer)
 {
     register char op;
     register char* segTermo;
-    expResFator (ctx, resposta);
+    parseFactor (ctx, answer);
     while ((op = ctx->token) == '+' || op == '-')
     {
-        pegaToken (ctx);
+        nextToken (ctx);
         segTermo = (char*) alloc (_1KB, sizeof (char));
-        expResFator (ctx, segTermo);
+        parseFactor (ctx, segTermo);
         switch (op)
         {
             case '-':
-            memswap(resposta, segTermo, subtrair);
+            applyInto(answer, segTermo, bigSub);
             break;
             case '+':
-            memswap(resposta, segTermo, somar);
+            applyInto(answer, segTermo, bigAdd);
             break;
         }
         free (segTermo);
     }
 }
 
-void expResFator (Context *ctx, char* resposta)
+void parseFactor (Context *ctx, char* answer)
 {
     register char op;
     register char* segFator;
-    expResFatorial (ctx, resposta);
+    parseFactorial (ctx, answer);
     while ((op=ctx->token) == '*' || op == '/' || op == '%' || op == '^')
     {
-        pegaToken (ctx);
+        nextToken (ctx);
         segFator = (char*) alloc (_1KB, sizeof (char));
-        expResFatorial (ctx, segFator);
+        parseFactorial (ctx, segFator);
         switch (op)
         {
             case '*':
-            memswap(resposta, segFator, multiplicar);
+            applyInto(answer, segFator, bigMul);
             break;
             case '/':
-            memswapDiv(resposta, segFator, false, unsigneDiv);
+            applyDivInto(answer, segFator, false, bigDivMod);
             break;
             case '%':
-            memswapDiv(resposta, segFator, true, unsigneDiv);
+            applyDivInto(answer, segFator, true, bigDivMod);
             break;
             case '^':
-            memswap(resposta, segFator, unExpo);
+            applyInto(answer, segFator, bigPow);
             break;
         }
-        if (*resposta == 'E') erroSS (ctx, 13);
+        if (*answer == 'E') reportError (ctx, 13);
         free (segFator);
     }
 }
 
-void expResFatorial (Context *ctx, char* resposta)
+void parseFactorial (Context *ctx, char* answer)
 {
     register char* proxFator;
     if (ctx->token == '!')
     {
-        pegaToken (ctx);
+        nextToken (ctx);
         proxFator = (char*) alloc (_1KB, sizeof (char));
-        expResParenteses (ctx, proxFator);
-        char* temp = fatorial (proxFator);
-        if (! temp) erroSS (ctx, 8);
-        strcpy (resposta, temp);
+        parseParen (ctx, proxFator);
+        char* temp = bigFactorial (proxFator);
+        if (! temp) reportError (ctx, 8);
+        strcpy (answer, temp);
         free (proxFator);
         free (temp);
-        if (!*resposta) erroSS (ctx, 7);
+        if (!*answer) reportError (ctx, 7);
         return;
     }
-    expResParenteses (ctx, resposta);
+    parseParen (ctx, answer);
 }
 
-void expResParenteses (Context *ctx, char* resposta)
+void parseParen (Context *ctx, char* answer)
 {
     if (ctx->token == '(')
     {
-        pegaToken (ctx);
-        expResTermo (ctx, resposta);
-        if (ctx->token != ')')   erroSS (ctx, 1);
-        pegaToken (ctx);
+        nextToken (ctx);
+        parseTerm (ctx, answer);
+        if (ctx->token != ')')   reportError (ctx, 1);
+        nextToken (ctx);
     }
-    else atomo (ctx, resposta);
+    else parseAtom (ctx, answer);
 }
 
-void atomo (Context *ctx, char* resposta)
+void parseAtom (Context *ctx, char* answer)
 {
-    if (ctx->flagNUM)
+    if (ctx->isNumber)
     {
-        if (analiSemantica (ctx))
+        if (checkSemantics (ctx))
         {
-            char* toNumAnswer = toNum(ctx);
-            strcpy (resposta, toNumAnswer);
+            char* toNumAnswer = toDigits(ctx);
+            strcpy (answer, toNumAnswer);
             free(toNumAnswer);
-            listaLibera (ctx);
-            ctx->flagNUM = false;
-            pegaToken (ctx);
+            listFree (ctx);
+            ctx->isNumber = false;
+            nextToken (ctx);
             return;
         }
-        erroSS (ctx, 3);
+        reportError (ctx, 3);
     }
-    erroSS (ctx, 0);
+    reportError (ctx, 0);
 }

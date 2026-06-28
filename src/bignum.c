@@ -1,6 +1,6 @@
 #include "extenso/bignum.h"
 
-bool inverte (char a[])
+bool reverseStr (char a[])
 {
     char c;
     int i, tam = strlen (a);
@@ -13,7 +13,7 @@ bool inverte (char a[])
     return true;
 }
 
-bool char2int (char a[])
+bool digitsToValues (char a[])
 {
     int i, tam = strlen (a);
     for (i=0; i<=tam; i++)
@@ -21,7 +21,7 @@ bool char2int (char a[])
     return true;
 }
 
-bool int2char (char a[], int tam)
+bool valuesToDigits (char a[], int tam)
 {
     int i;
     for (i=0; i<tam-1; i++)
@@ -43,7 +43,7 @@ int menor (int a, int b)
     return (a<=b)*a + (b<a)*b;
 }
 
-bool strIsDigit (char a[])
+bool isAllDigits (char a[])
 {
     int i = 0;
     while (a[i])
@@ -55,7 +55,7 @@ bool strIsDigit (char a[])
     return true;
 }
 
-char* somar (char a[], char b[])
+char* bigAdd (char a[], char b[])
 {
     int ta = strlen (a), tb = strlen (b), ts = maior (ta, tb);
     if (! ta)
@@ -65,7 +65,7 @@ char* somar (char a[], char b[])
     int i, vaium = 0;
     char *soma, *op2, *op1, flag = 0;
     op1 = (ta >= tb) ? a : b;
-    op2 = completaMenor (a, b, &flag);
+    op2 = padToWidth (a, b, &flag);
     bool allocated = true;
     if (! op2) {
         allocated = false;
@@ -86,7 +86,7 @@ char* somar (char a[], char b[])
         soma[i] += '0';
     }
     *--soma += vaium;
-    trataZeros (&soma);
+    stripLeadingZeros (&soma);
     if(allocated) free(op2);
     return soma;
 }
@@ -96,7 +96,7 @@ char* somar (char a[], char b[])
 **  original decrementava o minuendo durante o "empréstimo"); usa uma variável
 **  de borrow.
 */
-char* subtrair (char a[], char b[])
+char* bigSub (char a[], char b[])
 {
     char *min = NULL, *subt = NULL, flagMenor;
     int i;
@@ -108,7 +108,7 @@ char* subtrair (char a[], char b[])
         return a;
     if (tamA != tamB)
     {
-        subt = completaMenor (a, b, &flagMenor); /* zero-pad o menor */
+        subt = padToWidth (a, b, &flagMenor); /* zero-pad o menor */
         allocated = true;
         min = flagMenor ? b : a;                 /* min = o maior (mais longo) */
     }
@@ -118,21 +118,21 @@ char* subtrair (char a[], char b[])
         else                    { min = b; subt = a; }
     }
     int tam = strlen (min);
-    char* diferenca = (char*) alloc (tam+1, sizeof (char));
+    char* difference = (char*) alloc (tam+1, sizeof (char));
     int borrow = 0;
     for (i = tam-1; i >= 0; i--)
     {
         int d = (min[i]-'0') - (subt[i]-'0') - borrow;
         if (d < 0) { d += 10; borrow = 1; }
         else borrow = 0;
-        diferenca[i] = (char) (d + '0');
+        difference[i] = (char) (d + '0');
     }
-    trataZeros (&diferenca);
+    stripLeadingZeros (&difference);
     if (allocated) free (subt);
-    return diferenca;
+    return difference;
 }
 
-char* completaMenor (char a[], char b[], char* menor)
+char* padToWidth (char a[], char b[], char* menor)
 {
     int tamMaior = 0, tamMenor = 0, tamA = strlen(a), tamB = strlen(b);
     char __menor;
@@ -190,7 +190,7 @@ static void bnStrip (char *s)
 static char *mulSchool (const char *a, const char *b)
 {
     int ta = strlen (a), tb = strlen (b);
-    char *produto = (char*) alloc (ta + tb + 2, sizeof (char));
+    char *product = (char*) alloc (ta + tb + 2, sizeof (char));
     int ls = 0, i, j;
     for (i = tb-1; i >= 0; i--)
     {
@@ -198,21 +198,21 @@ static char *mulSchool (const char *a, const char *b)
         for (j = ta-1; j >= 0; j--)
         {
             int temp = (a[j] - '0') * (b[i] - '0') + carry;
-            if (produto[k])
-                temp += produto[k] - '0';
-            produto[k++] = temp%10 + '0';
+            if (product[k])
+                temp += product[k] - '0';
+            product[k++] = temp%10 + '0';
             carry = temp/10;
         }
         if (carry > 0)
-            produto[k] = carry + '0';
+            product[k] = carry + '0';
         ls++;
     }
-    inverte (produto);
-    bnStrip (produto);
-    return produto;
+    reverseStr (product);
+    bnStrip (product);
+    return product;
 }
 
-char* multiplicar (char a[],char b[])
+char* bigMul (char a[],char b[])
 {
     uint16_t ta = strlen (a);
     uint16_t tb = strlen (b);
@@ -262,10 +262,10 @@ static void bnHalve (char *s)
     if (q != s) memmove (s, q, strlen (q) + 1);
 }
 
-/* Produto que SEMPRE devolve buffer próprio (multiplicar pode devolver alias). */
+/* Produto que SEMPRE devolve buffer próprio (bigMul pode devolver alias). */
 static char *bnMul (char *x, char *y)
 {
-    char *t = multiplicar (x, y);
+    char *t = bigMul (x, y);
     if (t == x || t == y) return bnDup (t);
     return t;
 }
@@ -275,7 +275,7 @@ static char *bnMul (char *x, char *y)
 **  em vez da multiplicação iterativa O(expoente) da versão original.
 **  Percorre o expoente decimal dividindo-o por 2 a cada passo.
 */
-char* unExpo (char a[], char b[])
+char* bigPow (char a[], char b[])
 {
     if (*b == '0' || *b == '\0')
     {
@@ -320,7 +320,7 @@ char* unExpo (char a[], char b[])
 **  subtrações sucessivas de D. Devolve o quociente (DIV) ou o resto (MOD),
 **  sempre em buffer próprio. Ex.: 20/6 -> 3 (resto 2); 3 % 10 -> 3.
 */
-char* unsigneDiv (char a[], char D[], bool MOD)
+char* bigDivMod (char a[], char D[], bool MOD)
 {
     if (!*D) return bnDup ("E");             /* divisão por zero é indeterminada */
     int tn = strlen (a);
@@ -337,34 +337,34 @@ char* unsigneDiv (char a[], char D[], bool MOD)
         cur[rl + 1] = '\0';
         /* dígito do quociente: quantas vezes D cabe em cur (0..9) */
         int q = 0;
-        while (strCmpNum (cur, D))            /* enquanto cur >= D */
+        while (numGreaterEqual (cur, D))            /* enquanto cur >= D */
         {
-            char *t = subtrair (cur, D);
+            char *t = bigSub (cur, D);
             free (cur);
             cur = t;
             q++;
         }
         quot[qi++] = (char) (q + '0');
         free (rem);
-        trataZeros (&cur);                     /* normaliza o resto */
+        stripLeadingZeros (&cur);                     /* normaliza o resto */
         rem = cur;
     }
     quot[qi] = '\0';
     if (MOD)
     {
         free (quot);
-        trataZeros (&rem);
+        stripLeadingZeros (&rem);
         return rem;                            /* resto ("" representa zero) */
     }
     free (rem);
-    trataZeros (&quot);
+    stripLeadingZeros (&quot);
     return quot;                               /* quociente ("" representa zero) */
 }
 
-bool strCmpNum (char x[], char y[])
+bool numGreaterEqual (char x[], char y[])
 {
     char* a = x, *b = y;
-    ignoraZero (2, &a, &b);
+    advancePastZeros (2, &a, &b);
     int ta = strlen (a), tb = strlen (b);
     if (ta > tb) return true;
     if (ta == tb)
@@ -380,7 +380,7 @@ bool strCmpNum (char x[], char y[])
     return true;
 }
 
-char* fatorial (char in[])
+char* bigFactorial (char in[])
 {
     char* inTemp = (char*) alloc (strlen (in)+1, sizeof (char));
     register char* fat = (char*) alloc (_1KB, sizeof (char));
@@ -391,8 +391,8 @@ char* fatorial (char in[])
     *fat = 1;
     long long num = 0ll;
     long long place = 1ll;
-    inverte (inTemp);
-    char2int (inTemp);
+    reverseStr (inTemp);
+    digitsToValues (inTemp);
     while (i<tamA)
     {
         num += (long long) inTemp[i] * place;
@@ -402,20 +402,20 @@ char* fatorial (char in[])
     free(inTemp);
     if (num > 400 || num < 0) return NULL;
     for (i=2; i<=num; i++)
-        k = fatorialMultiplicador (i, fat, k);
-    int2char (fat, k+1);
-    inverte (fat);
+        k = factMulSmall (i, fat, k);
+    valuesToDigits (fat, k+1);
+    reverseStr (fat);
     return fat;
 }
 
-int fatorialMultiplicador (int a, char fat[], int limit)
+int factMulSmall (int a, char fat[], int limit)
 {
-    int count, produto, resto = 0;
+    int count, product, resto = 0;
     for (count = 0; count<limit; count++)
     {
-        produto = fat[count] * a + resto;
-        fat[count] = produto % 10;
-        resto = produto / 10;
+        product = fat[count] * a + resto;
+        fat[count] = product % 10;
+        resto = product / 10;
     }
     while (resto)
     {
@@ -426,7 +426,7 @@ int fatorialMultiplicador (int a, char fat[], int limit)
     return limit;
 }
 
-void trataZeros (char** ptrNumber)
+void stripLeadingZeros (char** ptrNumber)
 {
     char* number = *ptrNumber;
     int x;
@@ -439,7 +439,7 @@ void trataZeros (char** ptrNumber)
     *ptrNumber = newNumber;
 }
 
-void ignoraZero (int narg, ...){
+void advancePastZeros (int narg, ...){
     va_list argList;
     va_start (argList, narg);
     char** arg;
@@ -453,11 +453,11 @@ void ignoraZero (int narg, ...){
 }
 
 /*
-**  Aplica f(a,b) e guarda o resultado em a. Seguro a alias: se f devolver o
+**  Aplica f(a,b) e guarda o result em a. Seguro a alias: se f devolver o
 **  próprio a (atalho), nada a fazer; se devolver b, copia sem liberar b (o
-**  chamador é dono de b). Só libera o resultado quando ele é um buffer novo.
+**  chamador é dono de b). Só libera o result quando ele é um buffer novo.
 */
-bool memswap (char a[], char b[], char* (*f)(char*, char*))
+bool applyInto (char a[], char b[], char* (*f)(char*, char*))
 {
     char* temp = f (a, b);
     if (temp)
@@ -470,7 +470,7 @@ bool memswap (char a[], char b[], char* (*f)(char*, char*))
     return (a != NULL);
 }
 
-bool memswapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool))
+bool applyDivInto(char a[], char b[], bool mod, char* (*f)(char*, char*, bool))
 {
     char* temp = f (a, b, mod);
     if(temp)
@@ -483,7 +483,7 @@ bool memswapDiv(char a[], char b[], bool mod, char* (*f)(char*, char*, bool))
     return (a != NULL);
 }
 
-void charswap (char* a, char* b)
+void swapChars (char* a, char* b)
 {
     register char h = *a;
     *a = *b;

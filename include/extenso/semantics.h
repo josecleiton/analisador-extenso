@@ -8,18 +8,18 @@
 #include "extenso/context.h"
 
 /* Analisa o significado da expressão. */
-bool analiSemantica (Context *ctx);
+bool checkSemantics (Context *ctx);
 
 /* Analisa a centena/dezena/unidade. */
-bool semUnidade (Context *ctx, ListaNum **inicio);
+bool checkUnit (Context *ctx, NumList **inicio);
 
 /* Analisa o plural de ordens (>= MIL). */
-void pluralOrdem (Context *ctx, ListaNum *inicio);
+void checkPlural (Context *ctx, NumList *inicio);
 
-/* Ordem do número apontado por inicio. */
-uint16_t pegaOrdem (ListaNum *inicio);
+/* Term do número apontado por inicio. */
+uint16_t orderOf (NumList *inicio);
 
-/* Próxima "classe" apontada por inicio. */
-uint16_t pegaProxClasse (ListaNum *inicio);
+/* Próxima "cls" apontada por inicio. */
+uint16_t nextClass (NumList *inicio);
 
 #endif

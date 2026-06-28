@@ -2,21 +2,21 @@
 #define EXTENSO_NUM_LIST_H
 
 /*
-**  ADT da lista encadeada (ListaNum) que guarda o número em análise.
+**  ADT da lista encadeada (NumList) que guarda o número em análise.
 */
 #include "extenso/types.h"
 #include "extenso/context.h"
 
 /* Inserção como fila na lista do contexto. */
-void listaInsere (Context *ctx, uint16_t i, char *nome, char *valor);
+void listAppend (Context *ctx, uint16_t i, char *name, char *value);
 
-/* Nó do próximo número (classe < MIL) na fila. */
-ListaNum *pegaProxNum (ListaNum *inicio);
+/* Nó do próximo número (cls < MIL) na fila. */
+NumList *lastNumberNode (NumList *inicio);
 
 /* Libera a lista do contexto. */
-void listaLibera (Context *ctx);
+void listFree (Context *ctx);
 
 /* Conta os nós da lista do contexto. */
-int listaCount (Context *ctx);
+int listCount (Context *ctx);
 
 #endif

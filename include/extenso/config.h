@@ -13,10 +13,10 @@
 #include <stdint.h>
 
 /* Arquivos de dados (relativos ao diretório de trabalho). */
-#define ARQ_DICT    "lib/dicionario.cfg"  /* <palavra>=<valor> por linha */
+#define ARQ_DICT    "lib/dicionario.cfg"  /* <palavra>=<value> por linha */
 #define ARQ_ERROS   "lib/erros.cfg"       /* um tipo de erro por linha */
 #define ARQ_ENTRADA "lib/expressoes.txt"  /* expressões a analisar */
-#define ARQ_SAIDA   "resultados.txt"      /* resultado das expressões */
+#define ARQ_SAIDA   "resultados.txt"      /* result das expressões */
 #define ARQ_LOG     "logs.txt"            /* data + descrição de cada erro */
 
 /* STR_DEL: caracteres delimitadores. */

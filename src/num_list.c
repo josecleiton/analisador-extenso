@@ -2,45 +2,45 @@
 #include "extenso/util.h"
 #include "extenso/tokens.h"
 
-void listaInsere (Context *ctx, uint16_t i, char *nome, char *valor)
+void listAppend (Context *ctx, uint16_t i, char *name, char *value)
 {
-    ListaNum *no = (ListaNum*) alloc (1, sizeof (ListaNum));
-    ListaNum *aux = ctx->list;
-    no -> info = (Ordem*) alloc (1, sizeof (Ordem));
-    strcpy (no->info->nome, nome);
-    strcpy (no->info->valor, valor);
-    no -> classe = i;
-    no -> prox = NULL;
+    NumList *no = (NumList*) alloc (1, sizeof (NumList));
+    NumList *aux = ctx->list;
+    no -> info = (Term*) alloc (1, sizeof (Term));
+    strcpy (no->info->name, name);
+    strcpy (no->info->value, value);
+    no -> cls = i;
+    no -> next = NULL;
     if (! ctx->list)
     {
         ctx->list = no;
-        no -> ant = NULL;
+        no -> prev = NULL;
         return;
     }
-    while (aux && aux->prox)
-        aux = aux -> prox;
-    no -> ant = pegaProxNum (ctx->list);
-    aux -> prox = no;
+    while (aux && aux->next)
+        aux = aux -> next;
+    no -> prev = lastNumberNode (ctx->list);
+    aux -> next = no;
 }
 
-ListaNum *pegaProxNum (ListaNum *inicio)
+NumList *lastNumberNode (NumList *inicio)
 {
-    ListaNum* aux = NULL;
+    NumList* aux = NULL;
     while (inicio)
     {
-        if (inicio -> classe < MIL) aux = inicio;
-        inicio = inicio -> prox;
+        if (inicio -> cls < MIL) aux = inicio;
+        inicio = inicio -> next;
     }
     return aux;
 }
 
-void listaLibera (Context *ctx)
+void listFree (Context *ctx)
 {
-    ListaNum *aux = ctx->list, *zombie = NULL;
+    NumList *aux = ctx->list, *zombie = NULL;
     while (aux)
     {
         zombie = aux;
-        aux = aux -> prox;
+        aux = aux -> next;
         if (zombie->info)
             free (zombie->info);
         free (zombie);
@@ -48,10 +48,10 @@ void listaLibera (Context *ctx)
     ctx->list = NULL;
 }
 
-int listaCount (Context *ctx)
+int listCount (Context *ctx)
 {
-    ListaNum* aux;
+    NumList* aux;
     int n;
-    for (n = 0, aux = ctx->list; aux; aux = aux -> prox, n++);
+    for (n = 0, aux = ctx->list; aux; aux = aux -> next, n++);
     return n;
 }
