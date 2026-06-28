@@ -20,8 +20,8 @@ Dictionary *dictionary_load (const char *path)
             items = (DictEntry*) realloc (items, cap * sizeof (DictEntry));
             if (!items) abortWithLog (true);
         }
-        strcpy (items[n].nome, line);
-        strcpy (items[n].valor, eq + 1);
+        strcpy (items[n].name, line);
+        strcpy (items[n].value, eq + 1);
         n++;
     }
     fclose (f);
@@ -29,10 +29,10 @@ Dictionary *dictionary_load (const char *path)
     Dictionary *d = (Dictionary*) alloc (1, sizeof (Dictionary));
     d->items = items;
     d->n = n;
-    /* delim_start: primeira entrada cujo valor não começa com dígito. */
+    /* delim_start: primeira entrada cujo value não começa com dígito. */
     d->delim_start = n;
     for (size_t i = 0; i < n; i++)
-        if (!isdigit ((unsigned char) items[i].valor[0]))
+        if (!isdigit ((unsigned char) items[i].value[0]))
         {
             d->delim_start = i;
             break;

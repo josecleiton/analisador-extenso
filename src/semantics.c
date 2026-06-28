@@ -3,89 +3,89 @@
 #include "extenso/num_list.h"
 #include "extenso/errors.h"
 
-bool analiSemantica (Context *ctx)
+bool checkSemantics (Context *ctx)
 {
-    ListaNum* listSem = ctx->list;
-    if (! listSem) erroSS (ctx, 3);
-    if (listaCount(ctx) > (DECILHAO-NOVECENTOS)*4-1) erroSS (ctx, 7); /* LIMITE DE DECILHÕES */
+    NumList* listSem = ctx->list;
+    if (! listSem) reportError (ctx, 3);
+    if (listCount(ctx) > (DECILHAO-NOVECENTOS)*4-1) reportError (ctx, 7); /* LIMITE DE DECILHÕES */
     uint16_t ord[2], i = 0;
     while (listSem)
     {
-        pluralOrdem(ctx, listSem);
-        semUnidade (ctx, &listSem);
-        ord[i%2] = pegaOrdem (listSem);
-        if (i++%2 && ord[0] <= ord[1]) erroSS (ctx, 2);
-        if (listSem) listSem = listSem -> prox;
+        checkPlural(ctx, listSem);
+        checkUnit (ctx, &listSem);
+        ord[i%2] = orderOf (listSem);
+        if (i++%2 && ord[0] <= ord[1]) reportError (ctx, 2);
+        if (listSem) listSem = listSem -> next;
     }
     return true;
 }
 
-void pluralOrdem (Context *ctx, ListaNum* inicio)
+void checkPlural (Context *ctx, NumList* inicio)
 {
-    ListaNum* aux = inicio;
-    while (aux && (aux -> classe < MILHAO || aux -> classe == CONJUCAO)) aux = aux -> prox;
-    if (aux && strstr (aux -> info -> nome, (const char*) "oes"))
+    NumList* aux = inicio;
+    while (aux && (aux -> cls < MILHAO || aux -> cls == CONJUCAO)) aux = aux -> next;
+    if (aux && strstr (aux -> info -> name, (const char*) "oes"))
     {
-        if (inicio -> classe != UM || inicio -> classe == CONJUCAO) return;
+        if (inicio -> cls != UM || inicio -> cls == CONJUCAO) return;
     }
-    else if (!aux || inicio -> classe == UM || inicio -> classe == CONJUCAO) return;
-    erroSS (ctx, 12);
+    else if (!aux || inicio -> cls == UM || inicio -> cls == CONJUCAO) return;
+    reportError (ctx, 12);
 }
 
-bool semUnidade (Context *ctx, ListaNum** inicio)
+bool checkUnit (Context *ctx, NumList** inicio)
 {
-    ListaNum *lista = *inicio;
+    NumList *lista = *inicio;
     bool flag = false;
-    while (lista && (lista -> classe < MIL || lista -> classe == CONJUCAO))
+    while (lista && (lista -> cls < MIL || lista -> cls == CONJUCAO))
     {
-        if (lista -> classe < VINTE && lista -> classe != DEZ)
+        if (lista -> cls < VINTE && lista -> cls != DEZ)
         {
-            if (lista -> prox)
+            if (lista -> next)
             {
-                if (lista -> prox -> classe == CONJUCAO) erroSS (ctx, 11);
-                if (lista -> prox -> classe < MIL) erroSS (ctx, 2);
+                if (lista -> next -> cls == CONJUCAO) reportError (ctx, 11);
+                if (lista -> next -> cls < MIL) reportError (ctx, 2);
             }
         }
-        else if (lista -> classe == DEZ || (lista -> classe >= VINTE && lista -> classe <= NOVENTA))
+        else if (lista -> cls == DEZ || (lista -> cls >= VINTE && lista -> cls <= NOVENTA))
         {
-            if (lista -> prox && (lista -> prox -> classe < MIL || lista -> prox -> classe == CONJUCAO))
+            if (lista -> next && (lista -> next -> cls < MIL || lista -> next -> cls == CONJUCAO))
             {
-                if (lista -> prox -> classe != CONJUCAO) erroSS (ctx, 9);
-                else if (lista -> prox -> prox == NULL) erroSS (ctx, 10);
-                else if (lista -> prox -> prox -> classe > NOVE) erroSS (ctx, 2);
+                if (lista -> next -> cls != CONJUCAO) reportError (ctx, 9);
+                else if (lista -> next -> next == NULL) reportError (ctx, 10);
+                else if (lista -> next -> next -> cls > NOVE) reportError (ctx, 2);
             }
         }
-        else if (lista -> classe >= CEM && lista -> classe <= NOVECENTOS)
+        else if (lista -> cls >= CEM && lista -> cls <= NOVECENTOS)
         {
-            if (!strcmp (lista -> info -> nome, (const char*) "cem") && (lista -> prox && lista -> prox -> classe == CONJUCAO)) erroSS (ctx, 12);
-            if (lista -> prox && (lista -> prox -> classe < MIL || lista -> prox -> classe == CONJUCAO))
+            if (!strcmp (lista -> info -> name, (const char*) "cem") && (lista -> next && lista -> next -> cls == CONJUCAO)) reportError (ctx, 12);
+            if (lista -> next && (lista -> next -> cls < MIL || lista -> next -> cls == CONJUCAO))
             {
-                if (lista -> prox -> classe != CONJUCAO) erroSS (ctx, 9);
-                else if (lista -> prox -> prox == NULL) erroSS (ctx, 10);
-                else if (lista -> prox -> prox -> classe > NOVENTA) erroSS (ctx, 2);
+                if (lista -> next -> cls != CONJUCAO) reportError (ctx, 9);
+                else if (lista -> next -> next == NULL) reportError (ctx, 10);
+                else if (lista -> next -> next -> cls > NOVENTA) reportError (ctx, 2);
             }
         }
-        lista = lista -> prox;
+        lista = lista -> next;
         flag = true;
     }
     *inicio = lista;
-    if (! flag) erroSS (ctx, 5);
+    if (! flag) reportError (ctx, 5);
     return flag;
 }
 
-uint16_t pegaOrdem (ListaNum* inicio)
+uint16_t orderOf (NumList* inicio)
 {
-    ListaNum* aux = inicio;
-    while (aux && (aux -> classe < MIL || aux -> classe == CONJUCAO)) aux = aux -> prox;
+    NumList* aux = inicio;
+    while (aux && (aux -> cls < MIL || aux -> cls == CONJUCAO)) aux = aux -> next;
     if (! aux) return NOVECENTOS;
-    return aux -> classe;
+    return aux -> cls;
 }
 
-uint16_t pegaProxClasse (ListaNum* inicio)
+uint16_t nextClass (NumList* inicio)
 {
-    uint16_t classe = 0;
-    if (! inicio) return classe;
-    while (inicio -> classe >= MIL) inicio = inicio -> prox;
-    classe = inicio -> classe;
-    return classe;
+    uint16_t cls = 0;
+    if (! inicio) return cls;
+    while (inicio -> cls >= MIL) inicio = inicio -> next;
+    cls = inicio -> cls;
+    return cls;
 }

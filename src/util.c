@@ -21,9 +21,9 @@ int abortWithLog (const bool msg)
     abort ();
 }
 
-Index criaIndices (FILE *in, int limite)
+Index buildLineIndex (FILE *in, int limite)
 {
-    Index resultado;
+    Index result;
     char handle[MAX_GEN];
     bool rlloc = false;
     if (!limite) {
@@ -45,7 +45,7 @@ Index criaIndices (FILE *in, int limite)
     }
     index[--i] = 0;
     rewind (in);
-    resultado.index = index;
-    resultado.tam = i;
-    return resultado;
+    result.index = index;
+    result.tam = i;
+    return result;
 }

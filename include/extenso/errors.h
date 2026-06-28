@@ -25,6 +25,6 @@ void error_table_free (ErrorTable *t);
 const char *error_message (const ErrorTable *t, int tipo);
 
 /* Formata o erro `tipoErro`, registra em log e aborta. */
-void erroSS (struct Context *ctx, int tipoErro);
+void reportError (struct Context *ctx, int tipoErro);
 
 #endif

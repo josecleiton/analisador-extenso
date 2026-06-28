@@ -45,15 +45,15 @@ const char *error_message (const ErrorTable *t, int tipo)
     return t->mensagens[tipo];
 }
 
-void erroSS (Context *ctx, int tipoErro)
+void reportError (Context *ctx, int tipoErro)
 {
     char strErro[MAX_GEN], *strBump;
     int temp, i = 0, tamErro, tamEXP;
     strcpy (strErro, error_message (ctx->errtab, tipoErro));
     strcat (strErro, "\n\n\t");
-    strcat (strErro, ctx->_TEXP);
+    strcat (strErro, ctx->exprStart);
     strcat (strErro, "\n\t");
-    temp = ctx->EXP - ctx->_TEXP;
+    temp = ctx->cursor - ctx->exprStart;
     tamErro = strlen (strErro);
     while (i < temp)
     {
@@ -62,7 +62,7 @@ void erroSS (Context *ctx, int tipoErro)
     }
     strErro[tamErro+i] = '^';
     strBump = &strErro[tamErro+i+1];
-    for (tamEXP = strlen (ctx->_TEXP); tamEXP-temp; tamEXP--)
+    for (tamEXP = strlen (ctx->exprStart); tamEXP-temp; tamEXP--)
         *strBump++ = '~';
     *strBump++ = '\n';
     *strBump++ = '\0';

@@ -5,17 +5,17 @@
 **  Dicionário carregado em memória uma única vez (substitui o acesso por
 **  fseek/fscanf ao ARQ_DICT a cada token).
 **
-**  Cada entrada guarda a linha crua do .cfg: `nome` é tudo antes do '=' (pode
-**  conter a forma composta "singular,plural", ex.: "milhao,milhoes") e `valor`
-**  é tudo depois do '='. O índice da entrada é exatamente o valor do enum
+**  Cada entrada guarda a linha crua do .cfg: `name` é tudo antes do '=' (pode
+**  conter a forma composta "singular,plural", ex.: "milhao,milhoes") e `value`
+**  é tudo depois do '='. O índice da entrada é exatamente o value do enum
 **  `tokens` correspondente.
 */
 #include "extenso/config.h"
 
 typedef struct
 {
-    char nome[MAXWLEN];
-    char valor[MAXWLEN];
+    char name[MAXWLEN];
+    char value[MAXWLEN];
 } DictEntry;
 
 typedef struct

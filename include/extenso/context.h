@@ -17,13 +17,13 @@
 
 typedef struct Context
 {
-    char expNum[MAX_GEN]; /* buffer da expressão em análise */
-    char *EXP;            /* cursor móvel sobre expNum */
-    char *_TEXP;          /* início da expressão, para o caret de erro */
+    char buffer[MAX_GEN]; /* buffer da expressão em análise */
+    char *cursor;            /* cursor móvel sobre buffer */
+    char *exprStart;          /* início da expressão, para o caret de erro */
     char token;           /* token corrente */
-    short tipoToken;      /* tipo do token corrente */
-    unsigned flagNUM;     /* token(s) em análise são número? */
-    ListaNum *list;       /* número analisado por casas, em lista encadeada */
+    short tokenType;      /* tipo do token corrente */
+    unsigned isNumber;     /* token(s) em análise são número? */
+    NumList *list;       /* número analisado por casas, em lista encadeada */
 
     const Dictionary *dict;   /* dicionário em memória (compartilhado) */
     const ErrorTable *errtab; /* tabela de erros em memória (compartilhada) */

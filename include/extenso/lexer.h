@@ -8,22 +8,22 @@
 #include "extenso/config.h"
 #include "extenso/context.h"
 
-/* Casa a palavra corrente de ctx->EXP com o dicionário. */
-void pegaToken (Context *ctx);
+/* Casa a palavra corrente de ctx->cursor com o dicionário. */
+void nextToken (Context *ctx);
 
 /* Pula a palavra em análise. */
-void ajustaEXP (Context *ctx);
+void skipWord (Context *ctx);
 
 /* Verdadeiro se o próximo token for um delimitador. */
-bool verificaProxToken (Context *ctx);
+bool nextIsDelimiter (Context *ctx);
 
 /* Em ordens compostas, avalia plural/singular e enfila a forma inserida. */
-bool resPlural (Context *ctx, int i, char *s);
+bool matchPlural (Context *ctx, int i, char *s);
 
 /* Coloca hífen em delimitadores compostos (ex.: "dividido por" -> "dividido-por"). */
-void ajustaDelim (Context *ctx, int *k, char *temp);
+void joinCompoundDelim (Context *ctx, int *k, char *temp);
 
-/* Converte ctx->EXP para minúsculas. */
-void strToLower (Context *ctx);
+/* Converte ctx->cursor para minúsculas. */
+void lowercaseExpr (Context *ctx);
 
 #endif
