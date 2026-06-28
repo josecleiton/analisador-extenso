@@ -33,3 +33,9 @@ fatorial de cinco|cento e vinte
 # --- exponenciação (exponenciação por quadrados) ---
 dez elevado a zero|um
 dois elevado a dez|um mil e vinte e quatro
+# 2^200 (61 dígitos; acima do limite de conversão por extenso, sai em dígitos)
+dois elevado a duzentos|1606938044258990275541962092341162602522202993782792835301376
+
+# --- números grandes (multiplicação escolar) ---
+# fatorial de quarenta ao quadrado (96 dígitos), conferido contra Python
+fatorial de quarenta vezes fatorial de quarenta|665717749437497189208769764374695648426401518406663862032185661739706282409984000000000000000000

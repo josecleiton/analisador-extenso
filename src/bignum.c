@@ -178,16 +178,20 @@ char* completaMenor (char a[], char b[], char* menor)
     }
 }
 
-char* multiplicar (char a[],char b[])
+/* Remove zeros à esquerda in-place, mantendo ao menos um dígito ("0"). */
+static void bnStrip (char *s)
 {
-    uint16_t ta = strlen (a);
-    uint16_t tb = strlen (b);
-    if ((ta == 0) || (tb == 1 && *b == '1'))
-        return a;
-    else if ((tb == 0) || (ta == 1 && *a == '1'))
-        return b;
-    char* produto = (char*) alloc (ta+tb+10, sizeof (char));
-    int ls = 0, i, j, cursor = 0;
+    char *p = s;
+    while (p[0] == '0' && p[1] != '\0') p++;
+    if (p != s) memmove (s, p, strlen (p) + 1);
+}
+
+/* Multiplicação escolar O(n*m). */
+static char *mulSchool (const char *a, const char *b)
+{
+    int ta = strlen (a), tb = strlen (b);
+    char *produto = (char*) alloc (ta + tb + 2, sizeof (char));
+    int ls = 0, i, j;
     for (i = tb-1; i >= 0; i--)
     {
         int carry = 0, k = ls;
@@ -202,11 +206,21 @@ char* multiplicar (char a[],char b[])
         if (carry > 0)
             produto[k] = carry + '0';
         ls++;
-        cursor=k;
     }
-    (void) cursor;
     inverte (produto);
+    bnStrip (produto);
     return produto;
+}
+
+char* multiplicar (char a[],char b[])
+{
+    uint16_t ta = strlen (a);
+    uint16_t tb = strlen (b);
+    if ((ta == 0) || (tb == 1 && *b == '1'))
+        return a;
+    else if ((tb == 0) || (ta == 1 && *a == '1'))
+        return b;
+    return mulSchool (a, b);
 }
 
 /* Duplica uma string em buffer próprio de heap. */
